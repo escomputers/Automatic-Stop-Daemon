@@ -1,0 +1,6 @@
+unicorn-binance-websocket-api
+unicorn-binance-rest-api
+unicorn-fy
+binance-connector
+tabulate
+jinja2
