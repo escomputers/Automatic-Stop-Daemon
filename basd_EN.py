@@ -118,7 +118,7 @@ def place_new_order(stream_dt):
 
             try:
                 response = client.new_oco_order(**params)
-                email_notification(response)
+                email_notification(response, stream_dt)
 
             except ClientError as error:
                 logging.info(response)
@@ -127,7 +127,7 @@ def place_new_order(stream_dt):
                     error.error_code,
                     error.error_message
                 )
-                email_notification(response)
+                email_notification(response, stream_dt)
         else:
             print(
                 ' [ERROR] Prices relationship for the orders not correct.' +
@@ -169,7 +169,7 @@ def place_new_order(stream_dt):
 
             try:
                 response = client.new_order(**params)
-                email_notification(response)
+                email_notification(response, stream_dt)
 
             except ClientError as error:
                 response = logging.error(
@@ -177,7 +177,7 @@ def place_new_order(stream_dt):
                     error.error_code,
                     error.error_message
                 )
-                email_notification(response)
+                email_notification(response, stream_dt)
 
 # #################################    NON OCO STOP LOSS    ################
         else:
@@ -211,7 +211,7 @@ def place_new_order(stream_dt):
 
             try:
                 response = client.new_order(**params)
-                email_notification(response)
+                email_notification(response, stream_dt)
 
             except ClientError as error:
                 logging.info(response)
@@ -220,7 +220,7 @@ def place_new_order(stream_dt):
                     error.error_code,
                     error.error_message
                 )
-                email_notification(response)
+                email_notification(response, stream_dt)
 
 
 # CHECK FOR TRADES
@@ -366,10 +366,7 @@ def construct_user_time(start_hour, start_mins, working_ival):
 
 
 # MAIL
-def email_notification(response):
-    # sender_email = "emilianos13@gmail.com"
-    # receiver_email = "emilianos13@gmail.com"
-    # password = ""
+def email_notification(response, stream_dt):
 
     message = MIMEMultipart("alternative")
     message["Subject"] = "[BASD] Binance Algorithmic Stop Notification"
@@ -381,10 +378,37 @@ def email_notification(response):
 
     if 'error' in response.keys() or 'error' in response.values():
         title = 'Caution!: order NOT PLACED'
+        msg = response
     else:
         title = 'Success!: order PLACED'
+        symbol = stream_dt['symbol']
+        qty = stream_dt['order_quantity']
 
-    html = template.render(title=title, msg=response)
+        if 'yes' in is_oco.lower():
+            price = str(profit_pr)
+            stop_Limit_Price = str(sl_lmt_pr_oco)
+            stop_Price = str(sl_pr_oco)
+
+        elif 'no' in is_oco.lower():
+            # take profit order
+            if 'no' in is_sl_order.lower():
+                price = None
+                stop_Limit_Price = str(lmt_profit_pr)
+                stop_Price = str(stop_pr)
+            # stop loss order
+            else:
+                price = None
+                stop_Limit_Price = str(lmt_loss_pr)
+                stop_Price = str(sl_pr)
+
+    html = template.render(
+        title=title,
+        symbol=symbol,
+        qty=qty,
+        price=price,
+        stop_Limit_Price=stop_Limit_Price,
+        stop_Price=stop_Price
+    )
 
     part = MIMEText(html, "html")
 
