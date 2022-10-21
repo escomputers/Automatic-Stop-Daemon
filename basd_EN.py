@@ -115,7 +115,7 @@ def place_new_order(stream_dt):
 
             try:
                 response = client.new_oco_order(**params)
-                logging.info(response)
+                mail_notification(response)
 
             except ClientError as error:
                 logging.info(response)
@@ -124,6 +124,7 @@ def place_new_order(stream_dt):
                     error.error_code,
                     error.error_message
                 )
+                mail_notification(response)
         else:
             print(
                 ' [ERROR] Prices relationship for the orders not correct.' +
@@ -207,7 +208,7 @@ def place_new_order(stream_dt):
 
             try:
                 response = client.new_order(**params)
-                logging.info(response)
+                mail_notification(response)
 
             except ClientError as error:
                 logging.info(response)
@@ -216,6 +217,7 @@ def place_new_order(stream_dt):
                     error.error_code,
                     error.error_message
                 )
+                mail_notification(response)
 
 
 # CHECK FOR TRADES
@@ -347,6 +349,19 @@ def is_float(input):
         print(' [ERROR] Type only numbers')
 
 
+# CONSTRUCT USER TIME
+def construct_user_time(start_hour, start_mins, working_ival):
+    # construct user start working time
+    user_start_time_str = str(start_hour) + ':' + str(start_mins)
+    user_start_time = datetime.strptime(user_start_time_str, '%H:%M').time()
+    # construct user end working time
+    user_end_time = (
+        datetime.strptime(user_start_time_str, '%H:%M') +
+        timedelta(hours=working_ival)
+    ).time()
+    return user_start_time, user_end_time
+
+
 # MAIL
 def mail_notification(response):
     sender_email = "emilianos13@gmail.com"
@@ -381,19 +396,6 @@ def mail_notification(response):
         server.sendmail(
             sender_email, receiver_email, message.as_string()
         )
-
-
-# CONSTRUCT USER TIME
-def construct_user_time(start_hour, start_mins, working_ival):
-    # construct user start working time
-    user_start_time_str = str(start_hour) + ':' + str(start_mins)
-    user_start_time = datetime.strptime(user_start_time_str, '%H:%M').time()
-    # construct user end working time
-    user_end_time = (
-        datetime.strptime(user_start_time_str, '%H:%M') +
-        timedelta(hours=working_ival)
-    ).time()
-    return user_start_time, user_end_time
 
 
 # MAIN
