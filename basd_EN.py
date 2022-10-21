@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.9
 
+# IMPORTS
 from unicorn_binance_websocket_api.manager import BinanceWebSocketApiManager
 import unicorn_fy
 from unicorn_binance_rest_api.manager import BinanceRestApiManager
@@ -23,6 +24,8 @@ from tabulate import tabulate
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+from email_validator import validate_email, EmailNotValidError
+
 from jinja2 import Environment, FileSystemLoader
 
 # LOG FILE
@@ -35,7 +38,7 @@ logging.basicConfig(
 )
 
 
-# reset all inputs
+# RESET INPUTS
 def reset_inputs():
     for element in dir():
         if element[0:2] != "__":
@@ -43,7 +46,7 @@ def reset_inputs():
     del element
 
 
-# get LAST PRICE via rest api
+# GET LAST PRICE via rest api
 def get_last_pr(stream_dt):
     ubra = BinanceRestApiManager(api_key, api_secret, exchange="binance.com")
     last_symbol_data = ubra.get_ticker(
@@ -59,7 +62,7 @@ def place_new_order(stream_dt):
     # order_pr = float(stream_dt['order_price'])
     order_pr = 19556.02
 
-    # OCO order
+# #########################################     OCO     ######################
     if 'y' in is_oco.lower():
 
         # TAKE PROFIT price
@@ -115,7 +118,7 @@ def place_new_order(stream_dt):
 
             try:
                 response = client.new_oco_order(**params)
-                mail_notification(response)
+                email_notification(response)
 
             except ClientError as error:
                 logging.info(response)
@@ -124,7 +127,7 @@ def place_new_order(stream_dt):
                     error.error_code,
                     error.error_message
                 )
-                mail_notification(response)
+                email_notification(response)
         else:
             print(
                 ' [ERROR] Prices relationship for the orders not correct.' +
@@ -132,7 +135,7 @@ def place_new_order(stream_dt):
                 ' OCO SELL rule = Limit Price > Last Price > Stop Price'
             )
 
-    # non OCO orders
+# #################################    NON OCO TAKE PROFIT    ################
     else:
         # TAKE PROFIT order
         if 'n' in is_sl_order:
@@ -166,7 +169,7 @@ def place_new_order(stream_dt):
 
             try:
                 response = client.new_order(**params)
-                mail_notification(response)
+                email_notification(response)
 
             except ClientError as error:
                 response = logging.error(
@@ -174,9 +177,9 @@ def place_new_order(stream_dt):
                     error.error_code,
                     error.error_message
                 )
-                mail_notification(response)
+                email_notification(response)
 
-        # STOP LOSS order
+# #################################    NON OCO STOP LOSS    ################
         else:
 
             # STOP LOSS LIMIT price
@@ -208,7 +211,7 @@ def place_new_order(stream_dt):
 
             try:
                 response = client.new_order(**params)
-                mail_notification(response)
+                email_notification(response)
 
             except ClientError as error:
                 logging.info(response)
@@ -217,7 +220,7 @@ def place_new_order(stream_dt):
                     error.error_code,
                     error.error_message
                 )
-                mail_notification(response)
+                email_notification(response)
 
 
 # CHECK FOR TRADES
@@ -226,7 +229,7 @@ def print_stream_data_from_stream_buffer(binance_websocket_api_manager):
     while True:
         if binance_websocket_api_manager.is_manager_stopping():
             exit(0)
-            
+
         old_stream_dt_buff = binance_websocket_api_manager.pop_stream_data_from_stream_buffer()
 
         if old_stream_dt_buff is False:
@@ -363,10 +366,10 @@ def construct_user_time(start_hour, start_mins, working_ival):
 
 
 # MAIL
-def mail_notification(response):
-    sender_email = "emilianos13@gmail.com"
-    receiver_email = "emilianos13@gmail.com"
-    password = "ipxhsmhiembjrynb"
+def email_notification(response):
+    # sender_email = "emilianos13@gmail.com"
+    # receiver_email = "emilianos13@gmail.com"
+    # password = "ipxhsmhiembjrynb"
 
     message = MIMEMultipart("alternative")
     message["Subject"] = "[BASD] Binance Algorithmic Stop Notification"
@@ -400,7 +403,6 @@ def mail_notification(response):
 
 # MAIN
 while True:
-    # COLLECT INPUTS FROM USER
     print()
     tempo.sleep(1)
     print(
@@ -411,6 +413,7 @@ while True:
     )
     print()
 
+# ###################################GET COMMON INPUTS     ###################
     # get api key
     api_key = getpass(prompt='Type or paste your Binance.com API KEY: ')
     if len(api_key) < 64:
@@ -427,15 +430,18 @@ while True:
                 ' [ERROR] Check your API KEY, 64 characters minimum, no spaces'
             )
         else:
+            # initialize tabledata for resume
+            tabledata = []
+
             # get timezone continet
             tz_cont = input(
-                'Type your CONTINENT (IANA timezone format), e.g. Europe: '
+                'Type your CONTINENT (IANA timezone format) e.g. Europe: '
             )
             if tz_cont.isalpha():
 
                 # get timezone city
                 tz_city = input(
-                    'Type your CITY (IANA timezone format), e.g. Rome: '
+                    'Type your CITY (IANA timezone format) e.g. Rome: '
                 )
                 if tz_city.isalpha():
                     usr_tz = tz_cont.capitalize() + '/' + tz_city.capitalize()
@@ -443,16 +449,19 @@ while True:
                     # validate timezone
                     if usr_tz in pytz.all_timezones:
 
+                        # append item to tabledata for resume
+                        tabledata.append(['Timezone', usr_tz])
+
                         # get start hour
                         inp_start_hour = input(
-                            'Type START HOUR (1-24), e.g. 23: '
+                            'Type START HOUR (1-24) e.g. 23: '
                         )
                         if is_hour(inp_start_hour):
                             start_hour = is_hour(inp_start_hour)
 
                             # get start minutes
                             inp_start_mins = input(
-                                'Type START MINUTES (0-59).' +
+                                'Type START MINUTES (0-59). ' +
                                 'Leave it blank for 0 minutes, e.g. 30: '
                             )
                             if is_mins(inp_start_mins):
@@ -460,7 +469,7 @@ while True:
 
                                 # get working interval
                                 inp_working_ival = input(
-                                    'Type how many working HOURS you want.' +
+                                    'Type how many working HOURS you want. ' +
                                     '24 equals to all day, e.g. 8: '
                                 )
                                 if is_working_ival(inp_working_ival):
@@ -468,71 +477,128 @@ while True:
 
                                     # get refresh_ival
                                     inp_refresh_ival = input(
-                                        'Type how much time in SECONDS' +
+                                        'Type how much time in SECONDS ' +
                                         'before controlling again, e.g. 3: '
                                     )
                                     if is_int(inp_refresh_ival):
                                         refresh_ival = is_int(inp_refresh_ival)
 
-                                        # get OCO choice
-                                        is_oco = input(
-                                            'Do you want OCO orders?' +
+                                        # append item to tabledata for resume
+                                        tabledata.append(['Refresh Interval', str(refresh_ival) + 'secs'])
+
+                                        # get email notification choice
+                                        is_email = input(
+                                            'Do you want email notifications? ' +
                                             'Type yes or no: '
                                         )
 
-                                        # OCO orders
+# ##################################    EMAIL NOTIFICATION     ###############
+                                        if 'yes' in is_email.lower():
+                                            sender_email = input(
+                                                'Type sender email address: '
+                                            )
+
+                                            try:
+                                                validate_email(sender_email)
+                                                receiver_email = input(
+                                                    'Type receiver email address: '
+                                                )
+                                                try:
+                                                    validate_email(receiver_email)
+                                                    password = getpass(
+                                                        prompt='Type or paste your email password: '
+                                                    )
+
+                                                    # append item to tabledata for resume
+                                                    tabledata.append(['Email Notification', 'YES'])
+                                                    tabledata.append(['Sender Email', sender_email])
+                                                    tabledata.append(['Receiver Email', receiver_email])
+
+                                                except EmailNotValidError:
+                                                    print('[ERROR] Invalid receiver email address')
+                                                    # restart from the beginning
+                                                    continue
+                                                    reset_inputs()
+                                            except EmailNotValidError:
+                                                print('[ERROR] Invalid sender email address')
+                                                # restart from the beginning
+                                                continue
+                                                reset_inputs()
+
+                                        # get user time
+                                        user_start_time, user_end_time = construct_user_time(
+                                            start_hour, start_mins, working_ival
+                                        )
+
+                                        # append item to tabledata for resume
+                                        tabledata.append(['Start Time', 'everyday at: ' + str(user_start_time)])
+                                        tabledata.append(['End Time', 'everyday at: ' + str(user_end_time)])
+
+                                        # get OCO choice
+                                        is_oco = input(
+                                            'Do you want OCO orders? ' +
+                                            'Type yes or no: '
+                                        )
+
+# #########################################     OCO     ######################
                                         if 'yes' in is_oco.lower():
+
+                                            # append item to tabledata for resume
+                                            tabledata.append(['OCO order', 'YES'])
 
                                             # get PROFIT percentage
                                             inp_profit_pct = input(
-                                                'Type PROFIT percentage,' +
+                                                'Type PROFIT percentage, ' +
                                                 'e.g. 5.20: '
                                             )
                                             if is_float(inp_profit_pct):
                                                 profit_pct = is_float(inp_profit_pct)
 
+                                                # append item to tabledata for resume
+                                                tabledata.append(
+                                                    ['Take Profit Percentage', '+' + str(profit_pct) + '%']
+                                                )
+
                                                 # get STOP LOSS percentage
                                                 inp_sl_oco_pct = input(
-                                                    'Type STOP LOSS' +
-                                                    'percentage. This' +
-                                                    'should be LOWER' +
-                                                    'than symbol market' +
-                                                    'price WHEN order' +
-                                                    'will be placed,' +
+                                                    'Type STOP LOSS ' +
+                                                    'percentage. This ' +
+                                                    'should be LOWER ' +
+                                                    'than symbol market ' +
+                                                    'price WHEN order ' +
+                                                    'will be placed, ' +
                                                     'e.g. 1.20: '
                                                 )
                                                 if is_float(inp_sl_oco_pct):
                                                     sl_oco_pct = is_float(inp_sl_oco_pct)
 
+                                                    # append item to tabledata for resume
+                                                    tabledata.append(
+                                                        ['Stop Loss Percentage', '-' + str(sl_oco_pct) + '%']
+                                                    )
+
                                                     # get SL LIMIT percentage
                                                     inp_sl_lmt_oco_pct = input(
-                                                        'Type STOP LOSS' +
-                                                        'LIMIT percentage.' +
-                                                        'This should be' +
-                                                        'HIGHER than' +
-                                                        'symbol market' +
-                                                        'price WHEN order' +
-                                                        'will be placed,' +
+                                                        'Type STOP LOSS ' +
+                                                        'LIMIT percentage. ' +
+                                                        'This should be ' +
+                                                        'HIGHER than ' +
+                                                        'symbol market ' +
+                                                        'price WHEN order ' +
+                                                        'will be placed, ' +
                                                         'e.g. 1.00: '
                                                     )
                                                     if is_float(inp_sl_lmt_oco_pct):
                                                         sl_lmt_oco_pct = is_float(inp_sl_lmt_oco_pct)
 
-                                                        # get user time
-                                                        user_start_time, user_end_time = construct_user_time(
-                                                            start_hour, start_mins, working_ival
+                                                        # append item to tabledata for resume
+                                                        tabledata.append(
+                                                            ['Stop Loss Limit Percentage', '-' + str(sl_lmt_oco_pct) + '%']
                                                         )
 
-                                                        tabledata = [
-                                                            ['Timezone', usr_tz],
-                                                            ['Start Time', 'everyday at: ' + str(user_start_time)],
-                                                            ['End Time', 'everyday at: ' + str(user_end_time)],
-                                                            ['Refresh Interval', str(refresh_ival) + 'secs'],
-                                                            ['OCO order', 'YES'],
-                                                            ['Take Profit Percentage', '+' + str(profit_pct) + '%'],
-                                                            ['Stop Loss Percentage', '-' + str(sl_oco_pct) + '%'],
-                                                            ['Stop Loss Limit Percentage', '-' + str(sl_lmt_oco_pct) + '%']
-                                                        ]
+                                                        print()
+                                                        print('DATA RESUME')
+                                                        print()
                                                         print(tabulate(tabledata, headers=['Key', 'Value']))
 
                                                         # get data confirmation
@@ -552,18 +618,24 @@ while True:
                                                             continue
                                                             reset_inputs()
 
-                                        # non OCO orders
+# ######################################     NON OCO TAKE PROFIT    ##########
                                         elif 'no' in is_oco.lower():
+
+                                            # append item to tabledata for resume
+                                            tabledata.append(['OCO order', 'NO'])
 
                                             # get order choice, SL or TP
                                             is_sl_order = input(
-                                                'Do you want a STOP LOSS order?' +
-                                                'If not, a take profit order' +
+                                                'Do you want a STOP LOSS order? ' +
+                                                'If not, a take profit order ' +
                                                 'will be placed. Type yes or no: '
                                             )
 
                                             # TAKE PROFIT order
                                             if 'no' in is_sl_order.lower():
+
+                                                # append item to tabledata for resume
+                                                tabledata.append(['Take Profit order', 'YES'])
 
                                                 # get LIMIT PROFIT percentage
                                                 inp_lmt_profit_pct = input(
@@ -572,6 +644,11 @@ while True:
                                                 if is_float(inp_lmt_profit_pct):
                                                     lmt_profit_pct = is_float(inp_lmt_profit_pct)
 
+                                                    # append item to tabledata for resume
+                                                    tabledata.append(
+                                                        ['Take Profit Limit Percentage', '+' + str(lmt_profit_pct) + '%']
+                                                    )
+
                                                     # get STOP PROFIT percentage
                                                     inp_stop_profit_pct = input(
                                                         'Type STOP PROFIT percentage, e.g. 5.25: '
@@ -579,22 +656,14 @@ while True:
                                                     if is_float(inp_stop_profit_pct):
                                                         stop_profit_pct = is_float(inp_stop_profit_pct)
 
-                                                        # get user time
-                                                        user_start_time, user_end_time = construct_user_time(
-                                                            start_hour, start_mins, working_ival
+                                                        # append item to tabledata for resume
+                                                        tabledata.append(
+                                                            ['Stop Profit Percentage', '+' + str(stop_profit_pct) + '%']
                                                         )
 
+                                                        print()
                                                         print('DATA RESUME')
                                                         print()
-                                                        tabledata = [
-                                                            ['Timezone', usr_tz],
-                                                            ['Start Time', 'everyday at: ' + str(user_start_time)],
-                                                            ['End Time', 'everyday at: ' + str(user_end_time)],
-                                                            ['Refresh Interval', str(refresh_ival) + 'secs'],
-                                                            ['OCO order', 'NO'], ['Take Profit order', 'YES'],
-                                                            ['Stop Profit Percentage', '+' + str(stop_profit_pct) + '%'],
-                                                            ['Take Profit Limit Percentage', '+' + str(lmt_profit_pct) + '%']
-                                                        ]
                                                         print(tabulate(tabledata, headers=['Key', 'Value']))
 
                                                         # get data confirmation
@@ -614,8 +683,11 @@ while True:
                                                             continue
                                                             reset_inputs()
 
-                                            # STOP LOSS order
+# #########################################    NON OCO STOP LOSS #############
                                             elif 'yes' in is_sl_order.lower():
+
+                                                # append item to tabledata for resume
+                                                tabledata.append(['Stop Loss order', 'YES'])
 
                                                 # get LIMIT LOSS percentage
                                                 inp_lmt_loss_pct = input(
@@ -624,6 +696,11 @@ while True:
                                                 if is_float(inp_lmt_loss_pct):
                                                     lmt_loss_pct = is_float(inp_lmt_loss_pct)
 
+                                                    # append item to tabledata for resume
+                                                    tabledata.append(
+                                                        ['Limit Loss Percentage', '-' + str(lmt_loss_pct) + '%']
+                                                    )
+
                                                     # get STOP LOSS percentage
                                                     inp_sl_pct = input(
                                                         'Type stop loss percentage, e.g. 1.10: '
@@ -631,22 +708,14 @@ while True:
                                                     if is_float(inp_sl_pct):
                                                         sl_pct = is_float(inp_sl_pct)
 
-                                                        # get user time preferences form construct_user_time()
-                                                        user_start_time, user_end_time = construct_user_time(
-                                                            start_hour, start_mins, working_ival
+                                                        # append item to tabledata for resume
+                                                        tabledata.append(
+                                                            ['Stop Loss Percentage', '-' + str(sl_pct) + '%']
                                                         )
 
+                                                        print()
                                                         print('DATA RESUME')
                                                         print()
-                                                        tabledata = [
-                                                            ['Timezone', usr_tz],
-                                                            ['Start Time', 'everyday at: ' + str(user_start_time)],
-                                                            ['End Time', 'everyday at: ' + str(user_end_time)],
-                                                            ['Refresh Interval', str(refresh_ival) + 'secs'],
-                                                            ['OCO order', 'NO'], ['Stop Loss order', 'YES'],
-                                                            ['Stop Loss Percentage', '-' + str(sl_pct) + '%'],
-                                                            ['Limit Loss Percentage', '-' + str(lmt_loss_pct) + '%']
-                                                        ]
                                                         print(tabulate(tabledata, headers=['Key', 'Value']))
 
                                                         # get data confirmation
