@@ -28,9 +28,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest pytest-cov
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Lint with flake8
-      run: |
-        flake8 . --count --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
         pytest basd_EN.py --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
