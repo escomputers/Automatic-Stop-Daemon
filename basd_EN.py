@@ -293,7 +293,7 @@ def validate_floats(input):
 def mail_notification(response):
     sender_email = "emilianos13@gmail.com"
     receiver_email = "emilianos13@gmail.com"
-    password = "ipxhsmhiembjrynb"
+    password = ""
 
     message = MIMEMultipart("alternative")
     message["Subject"] = "[BASD] Binance Algorithmic Stop Notification"
