@@ -369,7 +369,7 @@ def construct_user_time(start_hour, start_mins, working_ival):
 def email_notification(response):
     # sender_email = "emilianos13@gmail.com"
     # receiver_email = "emilianos13@gmail.com"
-    # password = "ipxhsmhiembjrynb"
+    # password = ""
 
     message = MIMEMultipart("alternative")
     message["Subject"] = "[BASD] Binance Algorithmic Stop Notification"
