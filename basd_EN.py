@@ -133,7 +133,7 @@ def place_oco_order(symbol, qty, order_pr, last_pr):
             'OCO SELL rule = Limit Price > Last Price > Stop Price'
         if 'yes' in is_email.lower():
             msg = 'Error! Order NOT PLACED'
-            email_notification(
+            oco_mail_body(
                 error, msg, symbol, qty, profit_pr, profit_pct,
                 sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct
             )
