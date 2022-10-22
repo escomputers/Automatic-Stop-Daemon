@@ -28,6 +28,12 @@ from email_validator import validate_email, EmailNotValidError
 
 from jinja2 import Environment, FileSystemLoader
 
+
+# load jinja2 template
+env = Environment(loader=FileSystemLoader('templates'))
+template = env.get_template('mail.html')
+
+
 # LOG FILE
 logging.getLogger('unicorn_binance_websocket_api')
 logging.basicConfig(
@@ -97,21 +103,21 @@ def place_oco_order(symbol, qty, order_pr, last_pr):
 
         try:
             client.new_oco_order(**params)
-            if 'yes' in is_email.lower():
-                email_notification(
-                    symbol, qty, profit_pr, profit_pct,
-                    sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct
-                )
+            msg = 'Success! Order PLACED'
+            error = None
 
         except ClientError as error:
+            msg = 'Error! Order NOT PLACED'
+            error = logging.error(
+                error.status_code,
+                error.error_code,
+                error.error_message
+            )
+
+        finally:
             if 'yes' in is_email.lower():
-                error = logging.error(
-                    error.status_code,
-                    error.error_code,
-                    error.error_message
-                )
-                email_notification(
-                    error, symbol, qty, profit_pr, profit_pct,
+                oco_mail_body(
+                    error, msg, symbol, qty, profit_pr, profit_pct,
                     sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct
                 )
             else:
@@ -126,8 +132,9 @@ def place_oco_order(symbol, qty, order_pr, last_pr):
         error = '[ERROR]Prices relationship for the orders not correct. \n' + \
             'OCO SELL rule = Limit Price > Last Price > Stop Price'
         if 'yes' in is_email.lower():
+            msg = 'Error! Order NOT PLACED'
             email_notification(
-                error, symbol, qty, profit_pr, profit_pct,
+                error, msg, symbol, qty, profit_pr, profit_pct,
                 sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct
             )
 
@@ -162,19 +169,23 @@ def place_tp_order(symbol, qty, order_pr):
 
     try:
         client.new_order(**params)
-        if 'yes' in is_email.lower():
-            email_notification(
-                symbol, qty, lmt_profit_pr, stop_pr, lmt_profit_pct)
+        msg = 'Success! Order PLACED'
+        error = None
 
     except ClientError as error:
+        msg = 'Error! Order NOT PLACED'
+        error = logging.error(
+            error.status_code,
+            error.error_code,
+            error.error_message
+        )
+
+    finally:
         if 'yes' in is_email.lower():
-            error = logging.error(
-                error.status_code,
-                error.error_code,
-                error.error_message
+            tp_mail_body(
+                error, msg, symbol, qty,
+                lmt_profit_pr, stop_pr, lmt_profit_pct
             )
-            email_notification(
-                error, symbol, qty, lmt_profit_pr, stop_pr, lmt_profit_pct)
         else:
             # log to file
             logging.error(
@@ -215,17 +226,23 @@ def place_sl_order(symbol, qty, order_pr):
 
     try:
         client.new_order(**params)
-        if 'yes' in is_email.lower():
-            email_notification(symbol, qty, lmt_loss_pr, sl_pr, lmt_loss_pct)
+        msg = 'Success! Order PLACED'
+        error = None
 
     except ClientError as error:
+        msg = 'Error! Order NOT PLACED'
+        error = logging.error(
+            error.status_code,
+            error.error_code,
+            error.error_message
+        )
+
+    finally:
         if 'yes' in is_email.lower():
-            error = logging.error(
-                error.status_code,
-                error.error_code,
-                error.error_message
+            sl_mail_body(
+                error, msg, symbol, qty,
+                lmt_loss_pr, sl_pr, lmt_loss_pct
             )
-            email_notification(error, symbol, qty, lmt_loss_pr, sl_pr, lmt_loss_pct)
         else:
             # log to file
             logging.error(
@@ -264,7 +281,6 @@ def print_stream_data_from_stream_buffer(binance_websocket_api_manager):
 
             # get order status
             try:
-
                 # define global variables
                 order_price = stream_dt['order_price']
                 # order_pr = float(order_price)
@@ -408,71 +424,59 @@ def construct_user_time(start_hour, start_mins, working_ival):
     return user_start_time, user_end_time
 
 
-# MAIL
-# def email_notification(symbol, qty, lmt_profit_pr, stop_pr, lmt_profit_pct, error=''):  # take profit
-# def email_notification(symbol, qty, lmt_loss_pr, sl_pr, lmt_loss_pct, error=''):  # stop loss
-def email_notification(symbol, qty, profit_pr, profit_pct, sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct, error=''):  # OCO
-
-    message = MIMEMultipart('alternative')
-    message['Subject'] = '[BASD] Binance Algorithmic Notification'
-    message['From'] = sender_email
-    message['To'] = receiver_email
-
-    env = Environment(loader=FileSystemLoader('templates'))
-    template = env.get_template('mail.html')
-
-    if 'error' in error:
-        # title = 'Caution!: order NOT PLACED'
-        title = error
-    else:
-        title = 'Success! Order PLACED'
-
-    if 'yes' in is_oco.lower():
-        order_type = 'OCO'
-        lmt_loss_pct = None
-        lmt_profit_pct = None
-        price = str(profit_pr)
-        profit_pct = str(profit_pct)
-        stop_Limit_Price = str(sl_lmt_pr_oco)
-        stop_Price = str(sl_pr_oco)
-        sl_lmt_oco_pct = str(sl_lmt_oco_pct)
-
-    elif 'no' in is_oco.lower():
-        # take profit order
-        if 'no' in is_sl_order.lower():
-            order_type = 'Take Profit'
-            price = None
-            lmt_loss_pct = None
-            sl_lmt_oco_pct = None
-            profit_pct = None
-            stop_Limit_Price = str(lmt_profit_pr)
-            stop_Price = str(stop_pr)
-            lmt_profit_pct = str(lmt_profit_pct)
-
-        # stop loss order
-        else:
-            order_type = 'Stop Loss'
-            price = None
-            lmt_profit_pct = None
-            sl_lmt_oco_pct = None
-            profit_pct = None
-            stop_Limit_Price = str(lmt_loss_pr)
-            stop_Price = str(sl_pr)
-            lmt_loss_pct = str(lmt_loss_pct)
-
+# OCO mail body
+def oco_mail_body(error, msg, symbol, qty, profit_pr, profit_pct, sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct):
     html = template.render(
-        title=title,
-        order_type=order_type,
+        error=error,
+        title=msg,
+        order_type='OCO',
         symbol=symbol,
         qty=qty,
-        price=price,
-        stop_Limit_Price=stop_Limit_Price,
-        stop_Price=stop_Price,
-        lmt_profit_pct=lmt_profit_pct,
-        lmt_loss_pct=lmt_loss_pct,
-        profit_pct=profit_pct,
-        sl_lmt_oco_pct=sl_lmt_oco_pct
+        price=str(profit_pr),
+        stop_Limit_Price=str(sl_lmt_pr_oco),
+        stop_Price=str(sl_pr_oco),
+        profit_pct=str(profit_pct),
+        sl_lmt_oco_pct=str(sl_lmt_oco_pct)
     )
+    send_mail(html)
+
+
+# Take Profit order mail body
+def tp_mail_body(error, msg, symbol, qty, lmt_profit_pr, stop_pr, lmt_profit_pct):
+    html = template.render(
+        error=error,
+        title=msg,
+        order_type='Take Profit',
+        symbol=symbol,
+        qty=qty,
+        stop_Limit_Price=str(lmt_profit_pr),
+        stop_Price=str(stop_pr),
+        lmt_profit_pct=str(lmt_profit_pct)
+    )
+    send_mail(html)
+
+
+# Stop Loss order mail body
+def sl_mail_body(error, msg, symbol, qty, lmt_loss_pr, sl_pr, lmt_loss_pct):
+    html = template.render(
+        error=error,
+        title=msg,
+        order_type='Stop Loss',
+        symbol=symbol,
+        qty=qty,
+        stop_Limit_Price=str(lmt_loss_pr),
+        stop_Price=str(sl_pr),
+        lmt_loss_pct=str(lmt_loss_pct)
+    )
+    send_mail(html)
+
+
+# SEND MAIL
+def send_mail(html):
+    message = MIMEMultipart('alternative')
+    message['Subject'] = '[BASD] Binance Algorithmic Stop Daemon - Notification'
+    message['From'] = sender_email
+    message['To'] = receiver_email
 
     part = MIMEText(html, 'html')
 
