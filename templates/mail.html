@@ -111,16 +111,40 @@
                                                         <td class="tbrr p30-15" style="padding: 60px 30px; border-radius:26px 26px 0px 0px;" bgcolor="#12325c">
                                                             <table width="100%" border="0" cellspacing="0" cellpadding="0">
                                                                 <tr>
-                                                                    <td class="h1 pb25" style="color:#ffffff; font-family:'Source Sans Pro'; font-size:40px; line-height:46px; text-align:center; padding-bottom:25px;"><div mc:edit="text_2"> {{ title }} </div></td>
+                                                                    <td class="h2 pb25" style="color:#ffffff; font-family:'Source Sans Pro'; font-size:40px; line-height:46px; text-align:center; padding-bottom:25px;">
+																	<div mc:edit="text_2"> 
+																	{{ title }}
+																	</div>
+																	</td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td class="text-center pb25" style="color:#fff; font-family:'Source Sans Pro'; font-size:24px; line-height:30px; text-align:center; padding-bottom:25px;">
 																	<div mc:edit="text_3"> 
-																	{{symbol}}<br />
-																	{{qty}}<br />
-																	{{price}}<br />
-																	{{stop_Limit_Price}}<br />
-																	{{stop_Price}}<br />
+																	ORDER TYPE: {{ order_type }}<br />
+																	SYMBOL: {{ symbol }}<br />
+																	QUANTITY: {{ qty }}<br />
+																	
+																	{% if price %}
+																		TRIGGER PROFIT PRICE: {{ price }}<br />
+																		PROFIT: +{{ profit_pct }}%<br />
+																		LIMIT LOSS PRICE: {{ stop_Limit_Price }}<br />
+																		TRIGGER LOSS PRICE: {{ stop_Price }}<br />
+																		LOSS: -{{ sl_lmt_oco_pct }}%<br />
+																		
+																	{% else %}
+																	
+																	LIMIT PRICE: {{ stop_Limit_Price }}<br />
+																	TRIGGER PRICE: {{ stop_Price }}<br />
+																	
+																		{% if lmt_profit_pct %}
+																			PROFIT: +{{ lmt_profit_pct }}%<br />
+																		{% endif %}
+																	
+																		{% if lmt_loss_pct %}
+																			LOSS: -{{ lmt_loss_pct }}%<br />
+																		{% endif %}
+																	{% endif %}	
+																	
 																	<span class="m-hide"><br /></span>
 																	</div>
 																	</td>

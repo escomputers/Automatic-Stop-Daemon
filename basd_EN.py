@@ -46,6 +46,195 @@ def reset_inputs():
     del element
 
 
+# PLACE OCO ORDER
+def place_oco_order(symbol, qty, order_pr, last_pr):
+
+    # TAKE PROFIT price
+    profit_pr = round(
+        (order_pr + round(((order_pr / 100) * profit_pct), 8)), 2
+    )
+
+    # STOP LOSS price
+    sl_pr_oco = round(
+        (
+            order_pr - round(
+                ((order_pr / 100) * sl_oco_pct), 8
+            )
+        ), 2
+    )
+
+    # LIMIT PRICE
+    sl_lmt_pr_oco = round(
+        (
+            order_pr - round(
+                ((order_pr / 100) * sl_lmt_oco_pct), 8
+            )
+        ), 2
+    )
+
+    # new order
+    params = {
+        'symbol': symbol,
+        'side': 'SELL',
+        'stopLimitTimeInForce': 'GTC',
+        'quantity': qty,
+        'price': str(profit_pr),
+        'stopPrice': str(sl_pr_oco),
+        'stopLimitPrice': str(sl_lmt_pr_oco)
+    }
+
+    client = Client(
+        api_key, api_secret, base_url='https://api.binance.com'
+    )
+
+    '''
+    OCO SELL rule = Limit Price > Last Price > Stop Price
+    OCO BUY rule  = Limit Price < Last Price < Stop Price
+    '''
+
+    # if stop and limit prices respect OCO rules, place orders
+    if last_pr > sl_pr_oco and last_pr < sl_lmt_pr_oco:
+
+        try:
+            client.new_oco_order(**params)
+            if 'yes' in is_email.lower():
+                email_notification(
+                    symbol, qty, profit_pr, profit_pct,
+                    sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct
+                )
+
+        except ClientError as error:
+            if 'yes' in is_email.lower():
+                error = logging.error(
+                    error.status_code,
+                    error.error_code,
+                    error.error_message
+                )
+                email_notification(
+                    error, symbol, qty, profit_pr, profit_pct,
+                    sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct
+                )
+            else:
+                # logging.info(response)
+                # log to file
+                logging.error(
+                    error.status_code,
+                    error.error_code,
+                    error.error_message
+                )
+    else:
+        error = '[ERROR]Prices relationship for the orders not correct. \n' + \
+            'OCO SELL rule = Limit Price > Last Price > Stop Price'
+        if 'yes' in is_email.lower():
+            email_notification(
+                error, symbol, qty, profit_pr, profit_pct,
+                sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct
+            )
+
+
+# PLACE TAKE PROFIT ORDER
+def place_tp_order(symbol, qty, order_pr):
+
+    # LIMIT PROFIT price
+    lmt_profit_pr = round(
+        (order_pr + round(((order_pr / 100) * lmt_profit_pct), 8)), 2
+    )
+
+    # STOP PROFIT price
+    stop_pr = round(
+        (order_pr + round(((order_pr / 100) * stop_profit_pct), 8)), 2
+    )
+
+    # new order
+    params = {
+        'symbol': symbol,
+        'side': 'SELL',
+        'type': 'TAKE_PROFIT_LIMIT',
+        'timeInForce': 'GTC',
+        'quantity': qty,
+        'price': str(lmt_profit_pr),
+        'stopPrice': str(stop_pr),
+    }
+
+    client = Client(
+        api_key, api_secret, base_url='https://api.binance.com'
+    )
+
+    try:
+        client.new_order(**params)
+        if 'yes' in is_email.lower():
+            email_notification(
+                symbol, qty, lmt_profit_pr, stop_pr, lmt_profit_pct)
+
+    except ClientError as error:
+        if 'yes' in is_email.lower():
+            error = logging.error(
+                error.status_code,
+                error.error_code,
+                error.error_message
+            )
+            email_notification(
+                error, symbol, qty, lmt_profit_pr, stop_pr, lmt_profit_pct)
+        else:
+            # log to file
+            logging.error(
+                error.status_code,
+                error.error_code,
+                error.error_message
+            )
+
+
+# STOP LOSS ORDER
+def place_sl_order(symbol, qty, order_pr):
+
+    # STOP LOSS LIMIT price
+    lmt_loss_pr = round(
+        (order_pr - round(((order_pr / 100) * lmt_loss_pct), 8)), 2
+    )
+
+    # STOP LOSS price
+    sl_pr = round(
+        (order_pr - round(((order_pr / 100) * sl_pct), 8)), 2
+    )
+
+    # new order
+    params = {
+        'symbol': symbol,
+        'side': 'SELL',
+        'type': 'STOP_LOSS_LIMIT',
+        'timeInForce': 'GTC',
+        'quantity': qty,
+        'price': str(lmt_loss_pr),
+        'stopPrice': str(sl_pr),
+
+    }
+
+    client = Client(
+        api_key, api_secret, base_url='https://api.binance.com'
+    )
+
+    try:
+        client.new_order(**params)
+        if 'yes' in is_email.lower():
+            email_notification(symbol, qty, lmt_loss_pr, sl_pr, lmt_loss_pct)
+
+    except ClientError as error:
+        if 'yes' in is_email.lower():
+            error = logging.error(
+                error.status_code,
+                error.error_code,
+                error.error_message
+            )
+            email_notification(error, symbol, qty, lmt_loss_pr, sl_pr, lmt_loss_pct)
+        else:
+            # log to file
+            logging.error(
+                error.status_code,
+                error.error_code,
+                error.error_message
+            )
+
+
 # GET LAST PRICE via rest api
 def get_last_pr(stream_dt):
     ubra = BinanceRestApiManager(api_key, api_secret, exchange="binance.com")
@@ -54,173 +243,6 @@ def get_last_pr(stream_dt):
     )
     last_pr = float(last_symbol_data['lastPrice'])
     return last_pr
-
-
-# PLACE ORDER
-def place_new_order(stream_dt):
-
-    # order_pr = float(stream_dt['order_price'])
-    order_pr = 19556.02
-
-# #########################################     OCO     ######################
-    if 'y' in is_oco.lower():
-
-        # TAKE PROFIT price
-        profit_pr = round(
-            (order_pr + round(((order_pr / 100) * profit_pct), 8)), 2
-        )
-
-        # STOP LOSS price
-        sl_pr_oco = round(
-            (
-                order_pr - round(
-                    ((order_pr / 100) * sl_oco_pct), 8
-                )
-            ), 2
-        )
-
-        # LIMIT PRICE
-        sl_lmt_pr_oco = round(
-            (
-                order_pr - round(
-                    ((order_pr / 100) * sl_lmt_oco_pct), 8
-                )
-            ), 2
-        )
-
-        # new order
-        params = {
-            'symbol': stream_dt['symbol'],
-            'side': 'SELL',
-            'stopLimitTimeInForce': 'GTC',
-            # 'quantity': stream_dt['order_quantity'],
-            'quantity': 0.00119,
-            'price': str(profit_pr),
-            'stopPrice': str(sl_pr_oco),
-            'stopLimitPrice': str(sl_lmt_pr_oco)
-
-        }
-
-        client = Client(
-            api_key, api_secret, base_url='https://api.binance.com'
-        )
-
-        '''
-        OCO SELL rule = Limit Price > Last Price > Stop Price
-        OCO BUY rule  = Limit Price < Last Price < Stop Price
-        '''
-
-        # get LAST SYMBOL PRICE
-        last_pr = get_last_pr(stream_dt)
-
-        # if stop and limit prices respect OCO rules, place orders
-        if last_pr > sl_pr_oco and last_pr < sl_lmt_pr_oco:
-
-            try:
-                response = client.new_oco_order(**params)
-                email_notification(response, stream_dt)
-
-            except ClientError as error:
-                logging.info(response)
-                logging.error(
-                    error.status_code,
-                    error.error_code,
-                    error.error_message
-                )
-                email_notification(response, stream_dt)
-        else:
-            print(
-                ' [ERROR] Prices relationship for the orders not correct.' +
-                '\n' +
-                ' OCO SELL rule = Limit Price > Last Price > Stop Price'
-            )
-
-# #################################    NON OCO TAKE PROFIT    ################
-    else:
-        # TAKE PROFIT order
-        if 'n' in is_sl_order:
-
-            # LIMIT PROFIT price
-            lmt_profit_pr = round(
-                (order_pr + round(((order_pr / 100) * lmt_profit_pct), 8)), 2
-            )
-
-            # STOP PROFIT price
-            stop_pr = round(
-                (order_pr + round(((order_pr / 100) * stop_profit_pct), 8)), 2
-            )
-
-            # new order
-            params = {
-                'symbol': stream_dt['symbol'],
-                'side': 'SELL',
-                'type': 'TAKE_PROFIT_LIMIT',
-                'timeInForce': 'GTC',
-                # 'quantity': stream_dt['order_quantity'],
-                'quantity': 0.00119,
-                'price': str(lmt_profit_pr),
-                'stopPrice': str(stop_pr),
-
-            }
-
-            client = Client(
-                api_key, api_secret, base_url='https://api.binance.com'
-            )
-
-            try:
-                response = client.new_order(**params)
-                email_notification(response, stream_dt)
-
-            except ClientError as error:
-                response = logging.error(
-                    error.status_code,
-                    error.error_code,
-                    error.error_message
-                )
-                email_notification(response, stream_dt)
-
-# #################################    NON OCO STOP LOSS    ################
-        else:
-
-            # STOP LOSS LIMIT price
-            lmt_loss_pr = round(
-                (order_pr - round(((order_pr / 100) * lmt_loss_pct), 8)), 2
-            )
-
-            # STOP LOSS price
-            sl_pr = round(
-                (order_pr - round(((order_pr / 100) * sl_pct), 8)), 2
-            )
-
-            # new order
-            params = {
-                'symbol': stream_dt['symbol'],
-                'side': 'SELL',
-                'type': 'STOP_LOSS_LIMIT',
-                'timeInForce': 'GTC',
-                # 'quantity': stream_dt['order_quantity'],
-                'quantity': 0.00119,
-                'price': str(lmt_loss_pr),
-                'stopPrice': str(sl_pr),
-
-            }
-
-            client = Client(
-                api_key, api_secret, base_url='https://api.binance.com'
-            )
-
-            try:
-                response = client.new_order(**params)
-                email_notification(response, stream_dt)
-
-            except ClientError as error:
-                logging.info(response)
-                logging.error(
-                    error.status_code,
-                    error.error_code,
-                    error.error_message
-                )
-                email_notification(response, stream_dt)
 
 
 # CHECK FOR TRADES
@@ -242,9 +264,30 @@ def print_stream_data_from_stream_buffer(binance_websocket_api_manager):
 
             # get order status
             try:
+
+                # define global variables
+                order_price = stream_dt['order_price']
+                # order_pr = float(order_price)
+                order_pr = 19556.02
+
+                symbol = stream_dt['symbol']
+
+                # qty = stream_dt['order_quantity']
+                qty = 0.00119
+
                 order_status = stream_dt['current_order_status']
                 if order_status == 'CANCELED':
-                    place_new_order(stream_dt)
+                    # get LAST SYMBOL PRICE
+                    last_pr = get_last_pr(stream_dt)
+                    # OCO order
+                    if 'yes' in is_oco.lower():
+                        place_oco_order(symbol, qty, order_pr, last_pr)
+                    # TAKE PROFIT order
+                    elif 'no' in is_sl_order.lower():
+                        place_tp_order(symbol, qty, order_pr)
+                    # STOP LOSS order
+                    else:
+                        place_sl_order(symbol, qty, order_pr)
             except KeyError:
                 continue
 
@@ -366,51 +409,72 @@ def construct_user_time(start_hour, start_mins, working_ival):
 
 
 # MAIL
-def email_notification(response, stream_dt):
+# def email_notification(symbol, qty, lmt_profit_pr, stop_pr, lmt_profit_pct, error=''):  # take profit
+# def email_notification(symbol, qty, lmt_loss_pr, sl_pr, lmt_loss_pct, error=''):  # stop loss
+def email_notification(symbol, qty, profit_pr, profit_pct, sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct, error=''):  # OCO
 
-    message = MIMEMultipart("alternative")
-    message["Subject"] = "[BASD] Binance Algorithmic Stop Notification"
-    message["From"] = sender_email
-    message["To"] = receiver_email
+    message = MIMEMultipart('alternative')
+    message['Subject'] = '[BASD] Binance Algorithmic Notification'
+    message['From'] = sender_email
+    message['To'] = receiver_email
 
     env = Environment(loader=FileSystemLoader('templates'))
     template = env.get_template('mail.html')
 
-    if 'error' in response.keys() or 'error' in response.values():
-        title = 'Caution!: order NOT PLACED'
-        msg = response
+    if 'error' in error:
+        # title = 'Caution!: order NOT PLACED'
+        title = error
     else:
-        title = 'Success!: order PLACED'
-        symbol = stream_dt['symbol']
-        qty = stream_dt['order_quantity']
+        title = 'Success! Order PLACED'
 
-        if 'yes' in is_oco.lower():
-            price = str(profit_pr)
-            stop_Limit_Price = str(sl_lmt_pr_oco)
-            stop_Price = str(sl_pr_oco)
+    if 'yes' in is_oco.lower():
+        order_type = 'OCO'
+        lmt_loss_pct = None
+        lmt_profit_pct = None
+        price = str(profit_pr)
+        profit_pct = str(profit_pct)
+        stop_Limit_Price = str(sl_lmt_pr_oco)
+        stop_Price = str(sl_pr_oco)
+        sl_lmt_oco_pct = str(sl_lmt_oco_pct)
 
-        elif 'no' in is_oco.lower():
-            # take profit order
-            if 'no' in is_sl_order.lower():
-                price = None
-                stop_Limit_Price = str(lmt_profit_pr)
-                stop_Price = str(stop_pr)
-            # stop loss order
-            else:
-                price = None
-                stop_Limit_Price = str(lmt_loss_pr)
-                stop_Price = str(sl_pr)
+    elif 'no' in is_oco.lower():
+        # take profit order
+        if 'no' in is_sl_order.lower():
+            order_type = 'Take Profit'
+            price = None
+            lmt_loss_pct = None
+            sl_lmt_oco_pct = None
+            profit_pct = None
+            stop_Limit_Price = str(lmt_profit_pr)
+            stop_Price = str(stop_pr)
+            lmt_profit_pct = str(lmt_profit_pct)
+
+        # stop loss order
+        else:
+            order_type = 'Stop Loss'
+            price = None
+            lmt_profit_pct = None
+            sl_lmt_oco_pct = None
+            profit_pct = None
+            stop_Limit_Price = str(lmt_loss_pr)
+            stop_Price = str(sl_pr)
+            lmt_loss_pct = str(lmt_loss_pct)
 
     html = template.render(
         title=title,
+        order_type=order_type,
         symbol=symbol,
         qty=qty,
         price=price,
         stop_Limit_Price=stop_Limit_Price,
-        stop_Price=stop_Price
+        stop_Price=stop_Price,
+        lmt_profit_pct=lmt_profit_pct,
+        lmt_loss_pct=lmt_loss_pct,
+        profit_pct=profit_pct,
+        sl_lmt_oco_pct=sl_lmt_oco_pct
     )
 
-    part = MIMEText(html, "html")
+    part = MIMEText(html, 'html')
 
     # Add HTML/plain-text parts to MIMEMultipart message
     # The email client will try to render the last part first
@@ -418,14 +482,14 @@ def email_notification(response, stream_dt):
 
     # Create secure connection with server and send email
     context = ssl.create_default_context()
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
         server.login(sender_email, password)
         server.sendmail(
             sender_email, receiver_email, message.as_string()
         )
 
 
-# MAIN
+# COLLECT USER PREFERENCES
 while True:
     print()
     tempo.sleep(1)
@@ -519,7 +583,7 @@ while True:
 # ##################################    EMAIL NOTIFICATION     ###############
                                         if 'yes' in is_email.lower():
                                             sender_email = input(
-                                                'Type sender email address: '
+                                                'Type sender email address (GMAIL only): '
                                             )
 
                                             try:
@@ -530,7 +594,7 @@ while True:
                                                 try:
                                                     validate_email(receiver_email)
                                                     password = getpass(
-                                                        prompt='Type or paste your email password: '
+                                                        prompt='Type or paste your gmail app password: '
                                                     )
 
                                                     # append item to tabledata for resume
