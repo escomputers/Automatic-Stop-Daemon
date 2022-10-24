@@ -118,7 +118,7 @@ def place_oco_order(symbol, qty, order_pr, last_pr):
             if 'yes' in is_email.lower():
                 oco_mail_body(
                     error, msg, symbol, qty, profit_pr, profit_pct,
-                    sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct
+                    sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct, last_pr
                 )
             else:
                 # logging.info(response)
@@ -135,12 +135,12 @@ def place_oco_order(symbol, qty, order_pr, last_pr):
             msg = 'Error! Sell order NOT PLACED'
             oco_mail_body(
                 error, msg, symbol, qty, profit_pr, profit_pct,
-                sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct
+                sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct, last_pr
             )
 
 
 # PLACE TAKE PROFIT ORDER
-def place_tp_order(symbol, qty, order_pr):
+def place_tp_order(symbol, qty, order_pr, last_pr):
 
     # LIMIT PROFIT price
     lmt_profit_pr = round(
@@ -184,7 +184,7 @@ def place_tp_order(symbol, qty, order_pr):
         if 'yes' in is_email.lower():
             tp_mail_body(
                 error, msg, symbol, qty,
-                lmt_profit_pr, stop_pr, lmt_profit_pct
+                lmt_profit_pr, stop_pr, lmt_profit_pct, last_pr
             )
         else:
             # log to file
@@ -196,7 +196,7 @@ def place_tp_order(symbol, qty, order_pr):
 
 
 # STOP LOSS ORDER
-def place_sl_order(symbol, qty, order_pr):
+def place_sl_order(symbol, qty, order_pr, last_pr):
 
     # STOP LOSS LIMIT price
     lmt_loss_pr = round(
@@ -241,7 +241,7 @@ def place_sl_order(symbol, qty, order_pr):
         if 'yes' in is_email.lower():
             sl_mail_body(
                 error, msg, symbol, qty,
-                lmt_loss_pr, sl_pr, lmt_loss_pct
+                lmt_loss_pr, sl_pr, lmt_loss_pct, last_pr
             )
         else:
             # log to file
@@ -279,31 +279,37 @@ def print_stream_data_from_stream_buffer(binance_websocket_api_manager):
             unicornfy = unicorn_fy.UnicornFy()
             stream_dt = unicornfy.binance_com_websocket(old_stream_dt_buff)
 
-            # get order status
             try:
-                # define global variables
-                order_price = stream_dt['order_price']
-                # order_pr = float(order_price)
-                order_pr = 19556.02
-
-                symbol = stream_dt['symbol']
-
-                # qty = stream_dt['order_quantity']
-                qty = 0.00119
-
+                # get order status and order side
                 order_status = stream_dt['current_order_status']
                 if order_status == 'CANCELED':
+
+                    side = stream_dt['side']
+
+                    # if side == 'BUY':
+                    # get global variables
+
+                    order_price = stream_dt['order_price']
+                    # order_pr = float(order_price)
+                    order_pr = 19556.02
+
+                    symbol = stream_dt['symbol']
+
+                    # qty = stream_dt['order_quantity']
+                    qty = 0.00119
+
                     # get LAST SYMBOL PRICE
                     last_pr = get_last_pr(stream_dt)
+
                     # OCO order
                     if 'yes' in is_oco.lower():
                         place_oco_order(symbol, qty, order_pr, last_pr)
                     # TAKE PROFIT order
                     elif 'no' in is_sl_order.lower():
-                        place_tp_order(symbol, qty, order_pr)
+                        place_tp_order(symbol, qty, order_pr, last_pr)
                     # STOP LOSS order
                     else:
-                        place_sl_order(symbol, qty, order_pr)
+                        place_sl_order(symbol, qty, order_pr, last_pr)
             except KeyError:
                 continue
 
@@ -425,9 +431,9 @@ def construct_user_time(start_hour, start_mins, working_ival):
 
 
 # OCO mail body
-def oco_mail_body(error, msg, symbol, qty, profit_pr, profit_pct, sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct):
-    profit_order_value = float(qty * profit_pr)
-    loss_order_value = float(qty * sl_lmt_pr_oco)
+def oco_mail_body(error, msg, symbol, qty, profit_pr, profit_pct, sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct, last_pr):
+    profit_order_value = round((float(qty * profit_pr)), 2)
+    loss_order_value = round((float(qty * sl_lmt_pr_oco)), 2)
     html = template.render(
         error=error,
         title=msg,
@@ -440,14 +446,15 @@ def oco_mail_body(error, msg, symbol, qty, profit_pr, profit_pct, sl_lmt_pr_oco,
         profit_pct=str(profit_pct),
         sl_lmt_oco_pct=str(sl_lmt_oco_pct),
         profit_order_value=str(profit_order_value),
-        loss_order_value=str(loss_order_value)
+        loss_order_value=str(loss_order_value),
+        last_pr=str(last_pr)
     )
     send_mail(html)
 
 
 # Take Profit order mail body
-def tp_mail_body(error, msg, symbol, qty, lmt_profit_pr, stop_pr, lmt_profit_pct):
-    order_value = float(qty * lmt_profit_pr)
+def tp_mail_body(error, msg, symbol, qty, lmt_profit_pr, stop_pr, lmt_profit_pct, last_pr):
+    order_value = round((float(qty * lmt_profit_pr)), 2)
     html = template.render(
         error=error,
         title=msg,
@@ -457,14 +464,15 @@ def tp_mail_body(error, msg, symbol, qty, lmt_profit_pr, stop_pr, lmt_profit_pct
         stop_Limit_Price=str(lmt_profit_pr),
         stop_Price=str(stop_pr),
         lmt_profit_pct=str(lmt_profit_pct),
-        order_value=str(order_value)
+        order_value=str(order_value),
+        last_pr=str(last_pr)
     )
     send_mail(html)
 
 
 # Stop Loss order mail body
-def sl_mail_body(error, msg, symbol, qty, lmt_loss_pr, sl_pr, lmt_loss_pct):
-    order_value = float(qty * lmt_loss_pr)
+def sl_mail_body(error, msg, symbol, qty, lmt_loss_pr, sl_pr, lmt_loss_pct, last_pr):
+    order_value = round((float(qty * lmt_loss_pr)), 2)
     html = template.render(
         error=error,
         title=msg,
@@ -474,7 +482,8 @@ def sl_mail_body(error, msg, symbol, qty, lmt_loss_pr, sl_pr, lmt_loss_pct):
         stop_Limit_Price=str(lmt_loss_pr),
         stop_Price=str(sl_pr),
         lmt_loss_pct=str(lmt_loss_pct),
-        order_value=str(order_value)
+        order_value=str(order_value),
+        last_pr=str(last_pr)
     )
     send_mail(html)
 

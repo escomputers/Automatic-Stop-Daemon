@@ -371,6 +371,11 @@
 							   quantity: <b>{{ qty }}</b>
 							  </td>
 							</tr>
+							<tr>
+							  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
+							   last price: <b>{{ last_pr }}</b>
+							  </td>
+							</tr>
 							<!-- empty row -->
 							<tr><td></td></tr>
 							<!-- if OCO -->
@@ -456,7 +461,7 @@
 								<table role="presentation" border="0" cellpadding="0" cellspacing="0">
 								  <tbody>
 									<tr>
-							        <td> <a href="https://www.tradingview.com/chart/?symbol=BINANCE%3ABTCUSDT&interval=D" target="_blank">
+							        <td> <a href="https://www.tradingview.com/chart/?symbol=BINANCE%3A{{ symbol }}&interval=D" target="_blank">
 									TRADINGVIEW CHART</a>
 									</td>
 									</tr>
