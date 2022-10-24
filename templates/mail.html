@@ -334,14 +334,13 @@
   </head>
   <body>
     <span class="preheader">
-	ORDER PLACED.
+	SELL ORDER PLACED.
 	</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
       <tr>
-        <td>&nbsp;</td>
+        <td></td>
         <td class="container">
           <div class="content">
-
             <!-- START CENTERED WHITE CONTAINER -->
             <table role="presentation" class="main">
 
@@ -354,14 +353,8 @@
                         {{ title }}
 						</td>
 				    </tr>
-					<table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
-                          <tbody>
-						    <tr>
-							<td></td>
-							</tr>
-							</tbody>
-							</table>
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
+						</br>
+						<table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
                           <tbody>
 						    <tr>
 							  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
@@ -378,10 +371,13 @@
 							   quantity: <b>{{ qty }}</b>
 							  </td>
 							</tr>
+							<!-- empty row -->
+							<tr><td></td></tr>
+							<!-- if OCO -->
 							{% if price %}
 								<tr>
 								  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
-								   trigger profit price: <b>{{ price }}</b>
+								   profit price: <b>{{ price }}</b>
 								  </td>
 								</tr>
 								<tr>
@@ -390,6 +386,13 @@
 								  </td>
 								</tr>
 								<tr>
+								<tr>
+								  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
+								   profit order value: <b>{{ profit_order_value }}</b> fee excl.
+								  </td>
+								</tr>
+							   <!-- empty row -->
+							   <tr><td></td></tr>
 								  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
 								   limit loss price: <b>{{ stop_Limit_Price }}</b>
 								  </td>
@@ -403,8 +406,15 @@
 								  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
 								   loss: <b>-{{ sl_lmt_oco_pct }}%</b>
 								  </td>
-								</tr>								
+								</tr>
+								<tr>
+								  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
+								   loss order value: <b>{{ loss_order_value }}</b> fee excl.
+								  </td>
+								</tr>
+								
 							{% else %}
+							<!-- if non OCO -->
 								<tr>
 								  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
 								   limit price: <b>{{ stop_Limit_Price }}</b>
@@ -415,22 +425,32 @@
 								   trigger price: <b>{{ stop_Price }}</b>
 								  </td>
 								</tr>
-								{% if lmt_profit_pct %}
+									{% if lmt_profit_pct %}
+									<tr>
+									  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
+									   profit: <b>+{{ lmt_profit_pct }}%</b>
+									  </td>
+									</tr>
+									{% endif %}
+									{% if lmt_loss_pct %}
+									<tr>
+									  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
+									   loss: <b>-{{ lmt_loss_pct }}%</b>
+									  </td>
+									</tr>
+									{% endif %}
 								<tr>
 								  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
-								   profit: <b>+{{ lmt_profit_pct }}%</b>
+								   order value: <b>{{ order_value }}</b> fee excl.
 								  </td>
 								</tr>
-								{% endif %}
-								{% if lmt_loss_pct %}
-								<tr>
-								  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
-								   loss: <b>-{{ lmt_loss_pct }}%</b>
-								  </td>
-								</tr>
-								{% endif %}
 						    {% endif %}
 							
+						<!-- empty row -->	
+						    <tr>
+							<td></td>
+							</tr>
+
 							<tr>
 							  <td align="center">
 								<table role="presentation" border="0" cellpadding="0" cellspacing="0">

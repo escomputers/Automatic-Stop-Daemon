@@ -103,11 +103,11 @@ def place_oco_order(symbol, qty, order_pr, last_pr):
 
         try:
             client.new_oco_order(**params)
-            msg = 'Success! Order PLACED'
+            msg = 'Success! Sell order PLACED'
             error = None
 
         except ClientError as error:
-            msg = 'Error! Order NOT PLACED'
+            msg = 'Error! Sell order NOT PLACED'
             error = logging.error(
                 error.status_code,
                 error.error_code,
@@ -132,7 +132,7 @@ def place_oco_order(symbol, qty, order_pr, last_pr):
         error = '[ERROR]Prices relationship for the orders not correct. \n' + \
             'OCO SELL rule = Limit Price > Last Price > Stop Price'
         if 'yes' in is_email.lower():
-            msg = 'Error! Order NOT PLACED'
+            msg = 'Error! Sell order NOT PLACED'
             oco_mail_body(
                 error, msg, symbol, qty, profit_pr, profit_pct,
                 sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct
@@ -169,11 +169,11 @@ def place_tp_order(symbol, qty, order_pr):
 
     try:
         client.new_order(**params)
-        msg = 'Success! Order PLACED'
+        msg = 'Success! Sell order PLACED'
         error = None
 
     except ClientError as error:
-        msg = 'Error! Order NOT PLACED'
+        msg = 'Error! Sell order NOT PLACED'
         error = logging.error(
             error.status_code,
             error.error_code,
@@ -226,11 +226,11 @@ def place_sl_order(symbol, qty, order_pr):
 
     try:
         client.new_order(**params)
-        msg = 'Success! Order PLACED'
+        msg = 'Success! Sell order PLACED'
         error = None
 
     except ClientError as error:
-        msg = 'Error! Order NOT PLACED'
+        msg = 'Error! Sell order NOT PLACED'
         error = logging.error(
             error.status_code,
             error.error_code,
@@ -426,6 +426,8 @@ def construct_user_time(start_hour, start_mins, working_ival):
 
 # OCO mail body
 def oco_mail_body(error, msg, symbol, qty, profit_pr, profit_pct, sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct):
+    profit_order_value = float(qty * profit_pr)
+    loss_order_value = float(qty * sl_lmt_pr_oco)
     html = template.render(
         error=error,
         title=msg,
@@ -436,13 +438,16 @@ def oco_mail_body(error, msg, symbol, qty, profit_pr, profit_pct, sl_lmt_pr_oco,
         stop_Limit_Price=str(sl_lmt_pr_oco),
         stop_Price=str(sl_pr_oco),
         profit_pct=str(profit_pct),
-        sl_lmt_oco_pct=str(sl_lmt_oco_pct)
+        sl_lmt_oco_pct=str(sl_lmt_oco_pct),
+        profit_order_value=str(profit_order_value),
+        loss_order_value=str(loss_order_value)
     )
     send_mail(html)
 
 
 # Take Profit order mail body
 def tp_mail_body(error, msg, symbol, qty, lmt_profit_pr, stop_pr, lmt_profit_pct):
+    order_value = float(qty * lmt_profit_pr)
     html = template.render(
         error=error,
         title=msg,
@@ -451,13 +456,15 @@ def tp_mail_body(error, msg, symbol, qty, lmt_profit_pr, stop_pr, lmt_profit_pct
         qty=qty,
         stop_Limit_Price=str(lmt_profit_pr),
         stop_Price=str(stop_pr),
-        lmt_profit_pct=str(lmt_profit_pct)
+        lmt_profit_pct=str(lmt_profit_pct),
+        order_value=str(order_value)
     )
     send_mail(html)
 
 
 # Stop Loss order mail body
 def sl_mail_body(error, msg, symbol, qty, lmt_loss_pr, sl_pr, lmt_loss_pct):
+    order_value = float(qty * lmt_loss_pr)
     html = template.render(
         error=error,
         title=msg,
@@ -466,7 +473,8 @@ def sl_mail_body(error, msg, symbol, qty, lmt_loss_pr, sl_pr, lmt_loss_pct):
         qty=qty,
         stop_Limit_Price=str(lmt_loss_pr),
         stop_Price=str(sl_pr),
-        lmt_loss_pct=str(lmt_loss_pct)
+        lmt_loss_pct=str(lmt_loss_pct),
+        order_value=str(order_value)
     )
     send_mail(html)
 
@@ -592,22 +600,29 @@ while True:
 
                                             try:
                                                 validate_email(sender_email)
-                                                receiver_email = input(
-                                                    'Type receiver email address: '
-                                                )
-                                                try:
-                                                    validate_email(receiver_email)
-                                                    password = getpass(
-                                                        prompt='Type or paste your gmail app password: '
+                                                if '@gmail.com' in sender_email:
+                                                    receiver_email = input(
+                                                        'Type receiver email address: '
                                                     )
+                                                    try:
+                                                        validate_email(receiver_email)
+                                                        password = getpass(
+                                                            prompt='Type or paste your gmail app password: '
+                                                        )
 
-                                                    # append item to tabledata for resume
-                                                    tabledata.append(['Email Notification', 'YES'])
-                                                    tabledata.append(['Sender Email', sender_email])
-                                                    tabledata.append(['Receiver Email', receiver_email])
+                                                        # append item to tabledata for resume
+                                                        tabledata.append(['Email Notification', 'YES'])
+                                                        tabledata.append(['Sender Email', sender_email])
+                                                        tabledata.append(['Receiver Email', receiver_email])
 
-                                                except EmailNotValidError:
-                                                    print('[ERROR] Invalid receiver email address')
+                                                    except EmailNotValidError:
+                                                        print('[ERROR] Invalid receiver email address')
+                                                        # restart from the beginning
+                                                        continue
+                                                        reset_inputs()
+                                                # not Gmail address
+                                                else:
+                                                    print('[ERROR] Only Gmail account currently supported')
                                                     # restart from the beginning
                                                     continue
                                                     reset_inputs()
@@ -631,7 +646,6 @@ while True:
                                             'Do you want OCO orders? ' +
                                             'Type yes or no: '
                                         )
-
 # #########################################     OCO     ######################
                                         if 'yes' in is_oco.lower():
 
