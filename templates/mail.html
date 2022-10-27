@@ -3,7 +3,7 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>[BASD] Binance Algorithmic Stop Daemon - Notification</title>
+    <title>[BASD] Notification</title>
     <style>
       /* -------------------------------------
           GLOBAL RESETS
@@ -334,11 +334,15 @@
   </head>
   <body>
     <span class="preheader">
-	SELL ORDER PLACED.
+	  {% if error_msg %}
+	ERROR! SELL ORDER NOT PLACED.
+  {% else %}
+	SUCCESS! SELL ORDER PLACED.
+  {% endif %}
 	</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
       <tr>
-        <td></td>
+	  <td>&nbsp;</td>
         <td class="container">
           <div class="content">
             <!-- START CENTERED WHITE CONTAINER -->
@@ -348,12 +352,18 @@
               <tr>
                 <td class="wrapper">
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                    <tr>
+					<tr>
                       <td align="center" style="color:#ffffff; font-family:'Source Sans Pro'; font-size:24px;">
-                        {{ title }}
+					  {% if error %}
+                        {{ error_msg }}
+					  {% else %}
+					    {{ title }}
+					  {% endif %}
 						</td>
 				    </tr>
-						</br>
+					
+					</br> <!-- empty row -->
+					
 						<table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
                           <tbody>
 						    <tr>
