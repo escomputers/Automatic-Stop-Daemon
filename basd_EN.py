@@ -416,12 +416,13 @@ def the_thread(window):
     while True:
         time.sleep(1)
         window.write_event_value('-THREAD-', (threading.current_thread().name, i))      # Data sent is a tuple of thread name and counter
-        # cp('This is cheating from the thread', c='white on green')
+        cp('This is cheating from the thread', c='white on green')
         i += 1
 
 
 def main():
-    sg.theme('DarkAmber')
+    sg.theme('Default 1')
+    # sg.theme('Dark Grey 2')
 
     layout = [
             [sg.Text('BASD', size=(30, 1), font=("Helvetica", 18, 'bold')), sg.Push()],
@@ -451,9 +452,9 @@ def main():
         api_secret = values['-APISECRET-']
         if len(api_key) < 64:
             window['-TABLEDATA-'].print('[ERROR] Check your API Key, 64 characters minimum, no spaces', background_color='black', text_color='red', font=("Helvetica", 14))
-        if len(api_secret) < 64:
+        elif len(api_secret) < 64:
             window['-TABLEDATA-'].print('[ERROR] Check your API Secret Key, 64 characters minimum, no spaces', background_color='black', text_color='red', font=("Helvetica", 14))
-        if api_key == api_secret:
+        elif api_key == api_secret:
             window['-TABLEDATA-'].print('[ERROR] API Key and API Secret Key cannot be the same', background_color='black', text_color='red', font=("Helvetica", 14))
         else:
             window['-TABLEDATA-'].print('[OK]', background_color='black', text_color='green', font=("Helvetica", 14))
