@@ -1,3 +1,4 @@
+PySimpleGUI
 binance-connector
 tabulate
 jinja2
