@@ -3,12 +3,12 @@
 # IMPORTS
 from curses.ascii import isalpha
 import logging
-import time
+# import time
 import pytz
 import threading
 import smtplib
 import ssl
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 
 from binance.websocket.spot.websocket_client import SpotWebsocketClient
 from binance.lib.utils import config_logging
@@ -301,7 +301,7 @@ def check_time():
     now = (datetime.now(tmzone))
 
     # check if it's time to work or not
-    if now.time() >= user_start_time and now.time() <= user_end_time:
+    if now.time() >= user_start_time_def and now.time() <= user_end_time_def:
         # yes
         websocket_connect()
     else:
@@ -406,7 +406,7 @@ def is_valid_time(window, input):
     try:
         input = datetime.strptime(input, timeformat)
         window['-TABLEDATA-'].print('[OK] Start Time', background_color='black', text_color='green', font=("Helvetica", 14))
-        return input
+        return str(input.time())
     except ValueError:
         window['-TABLEDATA-'].print('[ERROR] Type a valid time format, e.g. 15:30', background_color='black', text_color='red', font=("Helvetica", 14))
 
@@ -423,15 +423,16 @@ def main():
             [sg.Text('Timezone City', font=("Helvetica", 12)), sg.Input(k='-CITY-', enable_events=True, font=("Helvetica", 12), tooltip='Type your CITY (IANA timezone format) e.g. Rome')],
             [sg.Text('Start Time', font=("Helvetica", 12)), sg.Input(k='-STARTTIME-', enable_events=True, font=("Helvetica", 12), tooltip='Type START TIME (1-24h)(0-59m) e.g. 23:45')],
             [sg.Text('Active Hours', font=("Helvetica", 12)), sg.Input(k='-WORKINGINTERVAL-', enable_events=True, font=("Helvetica", 12), tooltip='Type how many working HOURS you want. 24 equals to all day, e.g. 8')],
+            [sg.Text('End Time', font=("Helvetica", 12)), sg.Input(k='-ENDTIME-', enable_events=True, font=("Helvetica", 12))],
             [sg.Checkbox('Email Notification', font=("Helvetica", 12), default=True, k='-EMAILCHOICE-')],
             [sg.Checkbox('Place OCO order', font=("Helvetica", 12), default=False, k='-OCOCHOICE-')],
             [sg.MLine(size=(80, 10), autoscroll=True, reroute_stdout=True, write_only=True, reroute_cprint=True, k='-TABLEDATA-')],
-            # [sg.StatusBar("", size=(0, 1), key='-STATUS-')],
+            # [sg.StatusBar('', size=(0, 1), key='-STATUS-')],
             [sg.Button('Confirm'), sg.Button('Quit')],
             ]
 
     # Create the window
-    window = sg.Window('Binance Algorithmic Stop Daemon', layout, element_justification='r')
+    window = sg.Window('Binance Algorithmic Stop Daemon', layout, element_justification='r')    
 
     # Display and interact with the Window using an Event Loop
     while True:
@@ -465,6 +466,8 @@ def main():
                 window['-TABLEDATA-'].print('[ERROR] API Key and API Secret Key cannot be the same', background_color='black', text_color='red', font=("Helvetica", 14))
             else:
                 window['-TABLEDATA-'].print('[OK] API Key and API Secret Key', background_color='black', text_color='green', font=("Helvetica", 14))
+                window['-APIKEY-'].update('', background_color='black', text_color='green')
+                window['-APISECRET-'].update('', background_color='black', text_color='green')
 
         # validate TIMEZONE CONTINENT
         if event == '-CONTINENT-' and tz_cont:
@@ -485,6 +488,8 @@ def main():
             usr_tz = tz_cont.capitalize() + '/' + tz_city.capitalize()
             if usr_tz in pytz.all_timezones:
                 window['-TABLEDATA-'].print('[OK] Timezone', background_color='black', text_color='green', font=("Helvetica", 14))
+                window['-CONTINENT-'].update(tz_cont.capitalize(), background_color='black', text_color='green')
+                window['-CITY-'].update(tz_city.capitalize(), background_color='black', text_color='green')
             else:
                 window['-TABLEDATA-'].print(
                         '[ERROR] Timezone: ' + tz_cont.capitalize() + '/' + tz_city.capitalize() +
@@ -495,21 +500,27 @@ def main():
         # validate START TIME
         if event == '-STARTTIME-' and values['-STARTTIME-']:
             if is_valid_time(window, inp_start_time):
-                user_start_time = (is_valid_time(window, inp_start_time)).time()
-        
+                start_time = is_valid_time(window, inp_start_time)
+                user_start_time = datetime.strptime(start_time, '%H:%M:%S')
+                user_start_time_def = str(user_start_time.time())[:-3]  # remove seconds from string
+
         # validate WORKING INTERVAL
         if event == '-WORKINGINTERVAL-' and values['-WORKINGINTERVAL-']:
             if is_hour(window, inp_working_ival):
                 working_ival = is_hour(window, inp_working_ival)
+                window['-WORKINGINTERVAL-'].update(working_ival, background_color='black', text_color='green')
 
         # construct USER END TIME
         try:
             if user_start_time and working_ival:
-                # TOGLIERE SECONDI PRIMA
-                user_end_time = (user_start_time + timedelta(hours=working_ival)).time()
-                window['-TABLEDATA-'].print(str(user_end_time), background_color='black', text_color='green', font=("Helvetica", 14))
+                end_time = (user_start_time + timedelta(hours=working_ival)).time()
+                user_end_time = str(end_time)[:-3]  # remove seconds from string
+                user_end_time_def = datetime.strptime(user_end_time, '%H:%M')
+                window['-ENDTIME-'].update(user_end_time, background_color='black', text_color='green')
         except UnboundLocalError:
             continue
+
+
 
         # See if user wants to quit or window was closed
         if event == sg.WINDOW_CLOSED or event == 'Quit':
