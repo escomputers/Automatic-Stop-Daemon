@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 # IMPORTS
+from curses.ascii import isalpha
 import logging
 import time
 import pytz
@@ -308,19 +309,6 @@ def check_time():
         websocket_connect()
 
 
-# CONSTRUCT USER TIME
-def construct_user_time(start_hour, start_mins, working_ival):
-    # construct user start working time
-    user_start_time_str = str(start_hour) + ':' + str(start_mins)
-    user_start_time = datetime.strptime(user_start_time_str, '%H:%M').time()
-    # construct user end working time
-    user_end_time = (
-        datetime.strptime(user_start_time_str, '%H:%M') +
-        timedelta(hours=working_ival)
-    ).time()
-    return user_start_time, user_end_time
-
-
 # OCO mail body
 def oco_mail_body(error_msg, msg, symbol, qty, profit_pr, profit_pct, sl_lmt_pr_oco, sl_pr_oco, sl_lmt_oco_pct, last_pr):
     profit_order_value = round((float(qty * profit_pr)), 2)
@@ -401,38 +389,40 @@ def send_mail(html):
         )
 
 
+# VALIDATION
+def is_hour(window, input):
+    try:
+        input = int(input)
+        if input >= 1 and input <= 24:
+            return input
+        else:
+            window['-TABLEDATA-'].print('[ERROR] Type a valid value between 1 and 24', background_color='black', text_color='red', font=("Helvetica", 14))
+    except ValueError:
+        window['-TABLEDATA-'].print('[ERROR] Type only numbers', background_color='black', text_color='red', font=("Helvetica", 14))
+
+
+def is_valid_time(window, input):
+    timeformat = "%H:%M"
+    try:
+        input = datetime.strptime(input, timeformat)
+        window['-TABLEDATA-'].print('[OK] Start Time', background_color='black', text_color='green', font=("Helvetica", 14))
+        return input
+    except ValueError:
+        window['-TABLEDATA-'].print('[ERROR] Type a valid time format, e.g. 15:30', background_color='black', text_color='red', font=("Helvetica", 14))
+
+
 # WINDOW CONTENTS
-THREAD_EVENT = '-THREAD-'
-cp = sg.cprint
-
-
-def the_thread(window):
-    """
-    The thread that communicates with the application through the window's events.
-
-    Once a second wakes and sends a new event and associated value to the window
-    """
-    i = 0
-    while True:
-        time.sleep(1)
-        window.write_event_value('-THREAD-', (threading.current_thread().name, i))      # Data sent is a tuple of thread name and counter
-        cp('This is cheating from the thread', c='white on green')
-        i += 1
-
-
 def main():
     sg.theme('Default 1')
-    # sg.theme('Dark Grey 2')
 
     layout = [
             [sg.Text('BASD', size=(30, 1), font=("Helvetica", 18, 'bold')), sg.Push()],
-            [sg.Text('API Key', font=("Helvetica", 12)), sg.Input(k='-APIKEY-', font=("Helvetica", 12), tooltip='Type or paste your Binance.com API KEY', password_char='*')],
-            [sg.Text('API Secret', font=("Helvetica", 12)), sg.Input(k='-APISECRET-', font=("Helvetica", 12), tooltip='Type or paste your Binance.com SECRET KEY', password_char='*')],
-            [sg.Text('Timezone Continent', font=("Helvetica", 12)), sg.Input(k='-CONTINENT-', font=("Helvetica", 12), tooltip='Type your CONTINENT (IANA timezone format) e.g. Europe')],
-            [sg.Text('Timezone City', font=("Helvetica", 12)), sg.Input(k='-CITY-', font=("Helvetica", 12), tooltip='Type your CITY (IANA timezone format) e.g. Rome')],
-            [sg.Text('Start Hour', font=("Helvetica", 12)), sg.Input(k='-STARTHOUR-', font=("Helvetica", 12), tooltip='Type START HOUR (1-24) e.g. 23')],
-            [sg.Text('Start Minutes', font=("Helvetica", 12)), sg.Input(k='-STARTMINUTES-', font=("Helvetica", 12), tooltip='Type START MINUTES (0-59). Leave it blank for 0 minutes, e.g. 30')],
-            [sg.Text('Active Hours', font=("Helvetica", 12)), sg.Input(k='-WORKINGINTERVAL-', font=("Helvetica", 12), tooltip='Type how many working HOURS you want. 24 equals to all day, e.g. 8')],
+            [sg.Text('API Key', font=("Helvetica", 12)), sg.Input(k='-APIKEY-', enable_events=True, font=("Helvetica", 12), tooltip='Type or paste your Binance.com API KEY', password_char='*')],
+            [sg.Text('API Secret', font=("Helvetica", 12)), sg.Input(k='-APISECRET-', enable_events=True, font=("Helvetica", 12), tooltip='Type or paste your Binance.com SECRET KEY', password_char='*')],
+            [sg.Text('Timezone Continent', font=("Helvetica", 12)), sg.Input(k='-CONTINENT-', enable_events=True, font=("Helvetica", 12), tooltip='Type your CONTINENT (IANA timezone format) e.g. Europe')],
+            [sg.Text('Timezone City', font=("Helvetica", 12)), sg.Input(k='-CITY-', enable_events=True, font=("Helvetica", 12), tooltip='Type your CITY (IANA timezone format) e.g. Rome')],
+            [sg.Text('Start Time', font=("Helvetica", 12)), sg.Input(k='-STARTTIME-', enable_events=True, font=("Helvetica", 12), tooltip='Type START TIME (1-24h)(0-59m) e.g. 23:45')],
+            [sg.Text('Active Hours', font=("Helvetica", 12)), sg.Input(k='-WORKINGINTERVAL-', enable_events=True, font=("Helvetica", 12), tooltip='Type how many working HOURS you want. 24 equals to all day, e.g. 8')],
             [sg.Checkbox('Email Notification', font=("Helvetica", 12), default=True, k='-EMAILCHOICE-')],
             [sg.Checkbox('Place OCO order', font=("Helvetica", 12), default=False, k='-OCOCHOICE-')],
             [sg.MLine(size=(80, 10), autoscroll=True, reroute_stdout=True, write_only=True, reroute_cprint=True, k='-TABLEDATA-')],
@@ -446,32 +436,84 @@ def main():
     # Display and interact with the Window using an Event Loop
     while True:
         event, values = window.read()
-        # cp(event, values)
 
+        # define global variables
         api_key = values['-APIKEY-']
         api_secret = values['-APISECRET-']
-        if len(api_key) < 64:
-            window['-TABLEDATA-'].print('[ERROR] Check your API Key, 64 characters minimum, no spaces', background_color='black', text_color='red', font=("Helvetica", 14))
-        elif len(api_secret) < 64:
-            window['-TABLEDATA-'].print('[ERROR] Check your API Secret Key, 64 characters minimum, no spaces', background_color='black', text_color='red', font=("Helvetica", 14))
-        elif api_key == api_secret:
-            window['-TABLEDATA-'].print('[ERROR] API Key and API Secret Key cannot be the same', background_color='black', text_color='red', font=("Helvetica", 14))
-        else:
-            window['-TABLEDATA-'].print('[OK]', background_color='black', text_color='green', font=("Helvetica", 14))
+        tz_cont = values['-CONTINENT-']
+        tz_city = values['-CITY-']
+        inp_start_time = values['-STARTTIME-']
+        inp_working_ival = values['-WORKINGINTERVAL-']
+
+        # validate API KEY
+        if event == '-APIKEY-' and api_key:
+            if len(api_key) < 64:
+                window['-TABLEDATA-'].print('[ERROR] Check your API Key, 64 characters minimum, no spaces', background_color='black', text_color='red', font=("Helvetica", 14))
+            else:
+                window['-TABLEDATA-'].print('[OK] API Key', background_color='black', text_color='green', font=("Helvetica", 14))
+
+        # validate API SECRET KEY
+        if event == '-APISECRET-' and api_secret:
+            if len(api_secret) < 64:
+                window['-TABLEDATA-'].print('[ERROR] Check your API Secret Key, 64 characters minimum, no spaces', background_color='black', text_color='red', font=("Helvetica", 14))
+            else:
+                window['-TABLEDATA-'].print('[OK] API Secret Key', background_color='black', text_color='green', font=("Helvetica", 14))
+
+        # validate API KEYS
+        if api_key and api_secret and len(api_key) >= 64 and len(api_secret) >= 64:
+            if api_key == api_secret:
+                window['-TABLEDATA-'].print('[ERROR] API Key and API Secret Key cannot be the same', background_color='black', text_color='red', font=("Helvetica", 14))
+            else:
+                window['-TABLEDATA-'].print('[OK] API Key and API Secret Key', background_color='black', text_color='green', font=("Helvetica", 14))
+
+        # validate TIMEZONE CONTINENT
+        if event == '-CONTINENT-' and tz_cont:
+            if tz_cont.isalpha():
+                window['-TABLEDATA-'].print('[OK] Timezone Continent format', background_color='black', text_color='green', font=("Helvetica", 14))
+            else:
+                window['-TABLEDATA-'].print('[ERROR] Type only letters', background_color='black', text_color='red', font=("Helvetica", 14))
+
+        # validate TIMEZONE CITY
+        if event == '-CITY-' and tz_city:
+            if tz_city.isalpha():
+                window['-TABLEDATA-'].print('[OK] Timezone City format', background_color='black', text_color='green', font=("Helvetica", 14))
+            else:
+                window['-TABLEDATA-'].print('[ERROR] Type only letters', background_color='black', text_color='red', font=("Helvetica", 14))
+
+        # validate TIMEZONE
+        if tz_cont.isalpha() and tz_city.isalpha():
+            usr_tz = tz_cont.capitalize() + '/' + tz_city.capitalize()
+            if usr_tz in pytz.all_timezones:
+                window['-TABLEDATA-'].print('[OK] Timezone', background_color='black', text_color='green', font=("Helvetica", 14))
+            else:
+                window['-TABLEDATA-'].print(
+                        '[ERROR] Timezone: ' + tz_cont.capitalize() + '/' + tz_city.capitalize() +
+                        ' you entered is not valid. \n ' +
+                        'Check it at: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List.', background_color='black', text_color='red', font=("Helvetica", 14)
+                    )
+
+        # validate START TIME
+        if event == '-STARTTIME-' and values['-STARTTIME-']:
+            if is_valid_time(window, inp_start_time):
+                user_start_time = (is_valid_time(window, inp_start_time)).time()
+        
+        # validate WORKING INTERVAL
+        if event == '-WORKINGINTERVAL-' and values['-WORKINGINTERVAL-']:
+            if is_hour(window, inp_working_ival):
+                working_ival = is_hour(window, inp_working_ival)
+
+        # construct USER END TIME
+        try:
+            if user_start_time and working_ival:
+                # TOGLIERE SECONDI PRIMA
+                user_end_time = (user_start_time + timedelta(hours=working_ival)).time()
+                window['-TABLEDATA-'].print(str(user_end_time), background_color='black', text_color='green', font=("Helvetica", 14))
+        except UnboundLocalError:
+            continue
 
         # See if user wants to quit or window was closed
         if event == sg.WINDOW_CLOSED or event == 'Quit':
             break
-
-        '''
-        window['-STATUS-'].update(state)
-
-        if event.startswith('Start'):
-            threading.Thread(target=the_thread, args=(window,), daemon=True).start()
-        if event == THREAD_EVENT:
-            cp(f'Data from the thread ', colors='white on purple', end='')
-            cp(f'{values[THREAD_EVENT]}', colors='white on red')
-        '''
 
     # Finish up by removing from the screen
     window.close()
