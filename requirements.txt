@@ -1,4 +1,4 @@
 binance-connector
 tabulate
 jinja2
-email_validator
+email-validator
