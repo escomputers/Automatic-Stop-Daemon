@@ -746,7 +746,7 @@ while True:
 
                                                 # get STOP LOSS percentage
                                                 inp_sl_pct = input(
-                                                    'Type stop loss percentage, e.g. 1.10: '
+                                                    'Type STOP LOSS percentage, e.g. 1.10: '
                                                 )
                                                 if is_float(inp_sl_pct):
                                                     sl_pct = is_float(inp_sl_pct)
