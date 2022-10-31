@@ -31,14 +31,6 @@ config_logging(logging, logging.DEBUG)
 regex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
 
 
-# RESET INPUTS
-def reset_inputs():
-    for element in dir():
-        if element[0:2] != '__':
-            del globals()[element]
-    del element
-
-
 # PLACE OCO ORDER
 def place_oco_order(symbol, qty, order_pr, last_pr):
 
@@ -677,6 +669,7 @@ def main():
             if is_email(window, receiver_email):
                 valid_receiver_email = is_email(window, receiver_email)
                 window['TABLEDATA'].print('[OK] Valid receiver email address', text_color='green', font=('Helvetica', 14))
+                window['RECEIVEREMAIL'].update(valid_receiver_email, background_color='#C4BFBE', text_color='green')
 
         # validate ORDER inputs
         # OCO
