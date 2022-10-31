@@ -397,7 +397,7 @@
 								</tr>
 								<tr>
 								  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
-								   profit: <b>+{{ profit_pct }}%</b>
+								   profit: <b>+{{ oco_profit_pct }}%</b>
 								  </td>
 								</tr>
 								<tr>
@@ -419,7 +419,7 @@
 								</tr>
 								<tr>
 								  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
-								   loss: <b>-{{ sl_lmt_oco_pct }}%</b>
+								   loss: <b>-{{ oco_lmt_pct }}%</b>
 								  </td>
 								</tr>
 								<tr>
@@ -440,17 +440,17 @@
 								   trigger price: <b>{{ stop_Price }}</b>
 								  </td>
 								</tr>
-									{% if lmt_profit_pct %}
+									{% if tp_lmt_pct %}
 									<tr>
 									  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
-									   profit: <b>+{{ lmt_profit_pct }}%</b>
+									   profit: <b>+{{ tp_lmt_pct }}%</b>
 									  </td>
 									</tr>
 									{% endif %}
-									{% if lmt_loss_pct %}
+									{% if sl_lmt_pct %}
 									<tr>
 									  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
-									   loss: <b>-{{ lmt_loss_pct }}%</b>
+									   loss: <b>-{{ sl_lmt_pct }}%</b>
 									  </td>
 									</tr>
 									{% endif %}
