@@ -3,7 +3,6 @@
 # IMPORTS
 import logging
 import pytz
-import threading
 import smtplib
 import ssl
 from datetime import datetime, time, timedelta
