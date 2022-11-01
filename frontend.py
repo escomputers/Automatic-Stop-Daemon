@@ -86,6 +86,7 @@ def main():
         [sg.Text('Stop Loss -%', font=('Helvetica', 12), k='SLTXT'), sg.Push(), sg.Input(k='SL', enable_events=True, font=('Helvetica', 12), tooltip='Type Stop Loss Stop percentage, e.g. 1.10')],
         [sg.Text('Limit Loss -``%', font=('Helvetica', 12), k='SLLTXT'), sg.Push(), sg.Input(k='SLL', enable_events=True, font=('Helvetica', 12), tooltip='Type Stop Loss Limit percentage, e.g. 1.15')],
         # TABLEDATA
+        [sg.Text('Output', font=('Helvetica', 12))],
         [sg.MLine(size=(80, 10), autoscroll=True, reroute_stdout=True, write_only=True, reroute_cprint=True, k='TABLEDATA')],
         # BUTTONS
         [sg.Push(), sg.Button('Confirm'), sg.Button('Quit')],
@@ -155,6 +156,9 @@ def main():
         inp_sl_stop_pct = values['SL']
         inp_sl_lmt_pct = values['SLL']
 
+        # initialize DATA dictionary
+        backend_args = {}
+
         # validate API KEY
         if api_key:
             if len(api_key) < 64:
@@ -170,13 +174,14 @@ def main():
                 window['TABLEDATA'].print('[OK] API Secret Key', text_color='green', font=('Helvetica', 14))
 
         # validate API KEYS
-        if api_key and api_secret and len(api_key) >= 64 and len(api_secret) >= 64:
+        if len(api_key) >= 64 and len(api_secret) >= 64:
             if api_key == api_secret:
                 window['TABLEDATA'].print('[ERROR] API Key and API Secret Key cannot be the same', text_color='red', font=('Helvetica', 14))
             else:
                 window['TABLEDATA'].print('[OK] API Key and API Secret Key', text_color='green', font=('Helvetica', 14))
-                window['APIKEY'].update('', background_color='#C4BFBE', text_color='green')
-                window['APISECRET'].update('', background_color='#C4BFBE', text_color='green')
+                backend_args.update({'api_key':api_key, 'api_secret':api_secret})
+                window['APIKEY'].update(background_color='#C4BFBE', text_color='green')
+                window['APISECRET'].update(background_color='#C4BFBE', text_color='green')
 
         # validate TIMEZONE CONTINENT
         if tz_cont:
@@ -196,6 +201,7 @@ def main():
         if tz_cont.isalpha() and tz_city.isalpha():
             usr_tz = tz_cont.capitalize() + '/' + tz_city.capitalize()
             if usr_tz in pytz.all_timezones:
+                backend_args.update({'usr_tz':usr_tz})
                 window['TABLEDATA'].print('[OK] Timezone', text_color='green', font=('Helvetica', 14))
                 window['CONTINENT'].update(tz_cont.capitalize(), background_color='#C4BFBE', text_color='green')
                 window['CITY'].update(tz_city.capitalize(), background_color='#C4BFBE', text_color='green')
@@ -209,8 +215,9 @@ def main():
         if inp_start_time:
             if is_valid_time(window, inp_start_time):
                 start_time = is_valid_time(window, inp_start_time)
-                user_start_time = datetime.strptime(start_time, '%H:%M:%S')
-                user_start_time_def = str(user_start_time.time())[:-3]  # remove seconds from string
+                # user_start_time = str(start_time)[:-3]  # remove seconds from string
+                user_start_time = datetime.strptime(str(start_time)[:-3], '%H:%M')  # used for calc
+                user_start_time_def = datetime.strptime(str(start_time)[:-3], '%H:%M').time()  # used for backend function
 
         # validate WORKING INTERVAL
         if inp_working_ival:
@@ -223,13 +230,15 @@ def main():
             if user_start_time and working_ival:
                 end_time = (user_start_time + timedelta(hours=working_ival)).time()
                 user_end_time = str(end_time)[:-3]  # remove seconds from string
-                user_end_time_def = datetime.strptime(user_end_time, '%H:%M')
+                user_end_time_def = datetime.strptime(user_end_time, '%H:%M').time()
                 window['ENDTIME'].update(user_end_time, background_color='#C4BFBE', text_color='green')
+                backend_args.update({'user_start_time_def':user_start_time_def, 'user_end_time_def':user_end_time_def})
         except UnboundLocalError:
             continue
 
         # show order inputs according to radio buttons
         if tp_choice:
+            backend_args.update({'tp_choice':tp_choice})
             window['TPSLTXT'].update(visible=True)
             window['TPSL'].update(visible=True)
             window['TPLTXT'].update(visible=True)
@@ -260,6 +269,7 @@ def main():
             window['OCOLLTXT'].update(visible=False)
             window['OCOLL'].update(visible=False)
         if oco_choice:
+            backend_args.update({'oco_choice':oco_choice})
             window['OCOTPTXT'].update(visible=True)
             window['OCOTP'].update(visible=True)
             window['OCOSLTXT'].update(visible=True)
@@ -299,6 +309,8 @@ def main():
             if is_email(window, receiver_email):
                 valid_receiver_email = is_email(window, receiver_email)
                 window['TABLEDATA'].print('[OK] Valid receiver email address', text_color='green', font=('Helvetica', 14))
+                window['RECEIVEREMAIL'].update(valid_receiver_email, background_color='#C4BFBE', text_color='green')
+                backend_args.update({'email_choice':email_choice, 'valid_sender_email':valid_sender_email, 'password':password, 'valid_receiver_email':valid_receiver_email})
 
         # validate ORDER inputs
         # OCO
@@ -314,6 +326,7 @@ def main():
             if is_float(window, inp_oco_lmt_pct):
                 oco_lmt_pct = is_float(window, inp_oco_lmt_pct)
                 window['TABLEDATA'].print('[OK] Valid OCO Stop Loss Limit -%', text_color='green', font=('Helvetica', 14))
+                backend_args.update({'oco_profit_pct':oco_profit_pct, 'oco_sl_pct':oco_sl_pct, 'oco_lmt_pct':oco_lmt_pct})
         # TP
         if inp_tp_stop_pct:
             if is_float(window, inp_tp_stop_pct):
@@ -323,6 +336,7 @@ def main():
             if is_float(window, inp_tp_lmt_pct):
                 tp_lmt_pct = is_float(window, inp_tp_lmt_pct)
                 window['TABLEDATA'].print('[OK] Valid Take Profit Stop Limit +%', text_color='green', font=('Helvetica', 14))
+                backend_args.update({'tp_stop_pct':tp_stop_pct, 'tp_lmt_pct':tp_lmt_pct})
         # SL
         if inp_sl_stop_pct:
             if is_float(window, inp_sl_stop_pct):
@@ -332,9 +346,10 @@ def main():
             if is_float(window, inp_sl_lmt_pct):
                 sl_lmt_pct = is_float(window, inp_sl_lmt_pct)
                 window['TABLEDATA'].print('[OK] Valid Stop Loss Limit -%', text_color='green', font=('Helvetica', 14))
+                backend_args.update({'sl_stop_pct':sl_stop_pct, 'sl_lmt_pct':sl_lmt_pct})
 
         if event == 'Confirm':
-            check_time(usr_tz, user_start_time_def, user_end_time_def)
+            check_time(backend_args)
 
         # See if user wants to quit or window was closed
         if event == sg.WINDOW_CLOSED or event == 'Quit':
