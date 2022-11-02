@@ -188,6 +188,16 @@ def main():
                 window['TABLEDATA'].print('[OK] API Secret Key', text_color='green', font=('Helvetica', 14))
                 window['Confirm'].update(disabled=False)
 
+        # validate API SECRET KEY as required
+        if api_key and not api_secret:
+            window['TABLEDATA'].print('[ERROR] Api Secret Key cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
+
+        # validate API KEY as required
+        if api_secret and not api_key:
+            window['TABLEDATA'].print('[ERROR] Api Key cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
+
         # validate API KEYS
         if len(api_key) >= 64 and len(api_secret) >= 64:
             if api_key == api_secret:
@@ -216,6 +226,16 @@ def main():
                 window['TABLEDATA'].print('[ERROR] Type only letters', text_color='red', font=('Helvetica', 14))
                 window['Confirm'].update(disabled=True)
 
+        # validate TIMEZONE CONTINENT as required
+        if tz_city and not tz_cont:
+            window['TABLEDATA'].print('[ERROR] Timezone Continent cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
+
+        # validate TIMEZONE CITY as required
+        if tz_cont and not tz_city:
+            window['TABLEDATA'].print('[ERROR] Timezone City cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
+
         # validate TIMEZONE
         if tz_cont.isalpha() and tz_city.isalpha():
             usr_tz = tz_cont.capitalize() + '/' + tz_city.capitalize()
@@ -243,6 +263,16 @@ def main():
         if inp_working_ival:
             if is_hour(window, inp_working_ival):
                 working_ival = is_hour(window, inp_working_ival)
+
+        # validate WORKING INTERVAL as required
+        if inp_start_time and not inp_working_ival:
+            window['TABLEDATA'].print('[ERROR] Active Hours cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
+
+        # validate START TIME as required
+        if inp_working_ival and not inp_start_time:
+            window['TABLEDATA'].print('[ERROR] Start Time cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
 
         # construct USER END TIME
         try:
@@ -314,6 +344,11 @@ def main():
             window['RECEIVEREMAILTXT'].update(visible=False)
             window['RECEIVEREMAIL'].update(visible=False)
 
+        # validate SENDER MAIL as required field
+        if email_choice and not sender_email:
+            window['TABLEDATA'].print('[ERROR] Gmail Sender Address cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
+
         # validate SENDER EMAIL
         if sender_email:
             if is_email(window, sender_email):
@@ -326,14 +361,12 @@ def main():
                     window['Confirm'].update(disabled=True)
 
         # validate PASSWORD
-        '''
-        if password == '' and valid_sender_email:
-            window['TABLEDATA'].print('[OK] Password is filled', text_color='green', font=('Helvetica', 14))
-            window['Confirm'].update(disabled=False)
-        else:
+        if sender_email and not password or receiver_email and not password:
             window['TABLEDATA'].print('[ERROR] Password cannot be empty', text_color='red', font=('Helvetica', 14))
             window['Confirm'].update(disabled=True)
-        '''
+
+        # window['TABLEDATA'].print('[OK] Password is filled', text_color='green', font=('Helvetica', 14))
+        # window['Confirm'].update(disabled=False)
 
         # validate RECEIVER EMAIL
         if receiver_email:
@@ -341,6 +374,11 @@ def main():
                 valid_receiver_email = is_email(window, receiver_email)
                 window['TABLEDATA'].print('[OK] Valid receiver email address', text_color='green', font=('Helvetica', 14))
                 backend_args.update({'email_choice':email_choice, 'valid_sender_email':valid_sender_email, 'password':password, 'valid_receiver_email':valid_receiver_email})
+
+        # validate RECEIVER EMAIL as required
+        if sender_email and not receiver_email or password and not receiver_email:
+            window['TABLEDATA'].print('[ERROR] Receiver Email Address cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
 
         # validate ORDER inputs
         # OCO
@@ -357,6 +395,21 @@ def main():
                 oco_lmt_pct = is_float(window, inp_oco_lmt_pct)
                 window['TABLEDATA'].print('[OK] Valid OCO Stop Loss Limit -%', text_color='green', font=('Helvetica', 14))
                 backend_args.update({'oco_profit_pct':oco_profit_pct, 'oco_sl_pct':oco_sl_pct, 'oco_lmt_pct':oco_lmt_pct})
+
+        # validate OCO fields ar required
+        if oco_choice and not inp_oco_profit_pct or oco_choice and not inp_oco_sl_pct or oco_choice and not inp_oco_lmt_pct:
+            window['TABLEDATA'].print('[ERROR] OCO fields cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
+        if inp_oco_profit_pct and not inp_oco_sl_pct or inp_oco_profit_pct and not inp_oco_lmt_pct:
+            window['TABLEDATA'].print('[ERROR] OCO Take Profit cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
+        if inp_oco_sl_pct and not inp_oco_profit_pct or inp_oco_sl_pct and not inp_oco_lmt_pct:
+            window['TABLEDATA'].print('[ERROR] OCO Stop Loss cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
+        if inp_oco_lmt_pct and not inp_oco_sl_pct or inp_oco_lmt_pct and not inp_oco_profit_pct:
+            window['TABLEDATA'].print('[ERROR] OCO Stop Loss Limit cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
+
         # TP
         if inp_tp_stop_pct:
             if is_float(window, inp_tp_stop_pct):
@@ -367,6 +420,18 @@ def main():
                 tp_lmt_pct = is_float(window, inp_tp_lmt_pct)
                 window['TABLEDATA'].print('[OK] Valid Take Profit Stop Limit +%', text_color='green', font=('Helvetica', 14))
                 backend_args.update({'tp_stop_pct':tp_stop_pct, 'tp_lmt_pct':tp_lmt_pct})
+
+        # validate TP fields ar required
+        if tp_choice and not inp_tp_stop_pct or tp_choice and not inp_tp_lmt_pct:
+            window['TABLEDATA'].print('[ERROR] Take Profit fields cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
+        if inp_tp_stop_pct and not inp_tp_lmt_pct:
+            window['TABLEDATA'].print('[ERROR] Take Profit Stop cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
+        if inp_tp_lmt_pct and not inp_tp_stop_pct:
+            window['TABLEDATA'].print('[ERROR] Take Profit Limit cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
+
         # SL
         if inp_sl_stop_pct:
             if is_float(window, inp_sl_stop_pct):
@@ -378,29 +443,45 @@ def main():
                 window['TABLEDATA'].print('[OK] Valid Stop Loss Limit -%', text_color='green', font=('Helvetica', 14))
                 backend_args.update({'sl_stop_pct':sl_stop_pct, 'sl_lmt_pct':sl_lmt_pct})
 
+        # validate SL fields ar required
+        if sl_choice and not inp_sl_stop_pct or sl_choice and not inp_sl_lmt_pct:
+            window['TABLEDATA'].print('[ERROR] Stop Loss fields cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
+        if inp_sl_stop_pct and not inp_sl_lmt_pct:
+            window['TABLEDATA'].print('[ERROR] Stop Loss Stop cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
+        if inp_sl_lmt_pct and not inp_sl_stop_pct:
+            window['TABLEDATA'].print('[ERROR] Stop Loss Limit cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
+
         if event == 'Confirm':
-            window['APIKEY'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-            window['APISECRET'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-            window['CONTINENT'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-            window['CITY'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-            window['STARTTIME'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-            window['WORKINGINTERVAL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-            window['ENDTIME'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-            if email_choice:
-                window['SENDEREMAIL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-                window['PASSWORD'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-                window['RECEIVEREMAIL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-            if oco_choice:
-                window['OCOTP'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-                window['OCOSL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-                window['OCOLL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-            if tp_choice:
-                window['TPSL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-                window['TPL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-            if sl_choice:
-                window['SL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-                window['SLL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-            # check_time(backend_args)
+            if not api_key or not api_secret or not tz_cont or not tz_city or not start_time or not working_ival or not oco_choice and not tp_choice and not sl_choice:
+                window['TABLEDATA'].print('[ERROR] Some required fields are missing', text_color='red', font=('Helvetica', 14))
+                window['Confirm'].update(disabled=True)
+            else:
+                window['Confirm'].update(disabled=False)
+                window['APIKEY'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                window['APISECRET'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                window['CONTINENT'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                window['CITY'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                window['STARTTIME'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                window['WORKINGINTERVAL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                window['ENDTIME'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                if email_choice:
+                    window['SENDEREMAIL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                    window['PASSWORD'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                    window['RECEIVEREMAIL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                if oco_choice:
+                    window['OCOTP'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                    window['OCOSL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                    window['OCOLL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                if tp_choice:
+                    window['TPSL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                    window['TPL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                if sl_choice:
+                    window['SL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                    window['SLL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                # check_time(backend_args)
 
         # See if user wants to quit or window was closed
         if event == sg.WINDOW_CLOSED or event == 'Quit':

@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Key file
+keyfile
+
 # Distribution / packaging
 .Python
 build/
@@ -38,6 +41,9 @@ pip-delete-this-directory.txt
 
 # Execution logs
 *.log
+
+# All text files
+*.txt
 
 # Unit test / coverage reports
 htmlcov/
