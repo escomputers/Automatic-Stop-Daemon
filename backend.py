@@ -5,7 +5,7 @@ import logging
 import pytz
 import smtplib
 import ssl
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from binance.websocket.spot.websocket_client import SpotWebsocketClient
 from binance.lib.utils import config_logging
@@ -212,7 +212,7 @@ def place_sl_order(symbol, qty, order_pr, last_pr):
                 pass
 
 
-# OCO mail body
+# OCO email body
 def oco_mail_body(error_msg, msg, symbol, qty, profit_pr, oco_profit_pct, sl_lmt_pr_oco, sl_pr_oco, oco_lmt_pct, last_pr):
     profit_order_value = round((float(qty * profit_pr)), 2)
     loss_order_value = round((float(qty * sl_lmt_pr_oco)), 2)
@@ -234,7 +234,7 @@ def oco_mail_body(error_msg, msg, symbol, qty, profit_pr, oco_profit_pct, sl_lmt
     send_mail(html)
 
 
-# Take Profit order mail body
+# Take Profit email body
 def tp_mail_body(error_msg, msg, symbol, qty, lmt_profit_pr, stop_pr, tp_lmt_pct, last_pr):
     order_value = round((float(qty * lmt_profit_pr)), 2)
     html = template.render(
@@ -252,7 +252,7 @@ def tp_mail_body(error_msg, msg, symbol, qty, lmt_profit_pr, stop_pr, tp_lmt_pct
     send_mail(html)
 
 
-# Stop Loss order mail body
+# Stop Loss email body
 def sl_mail_body(error_msg, msg, symbol, qty, lmt_loss_pr, sl_pr, sl_lmt_pct, last_pr):
     order_value = round((float(qty * lmt_loss_pr)), 2)
     html = template.render(
@@ -275,7 +275,7 @@ def send_mail(html):
     message = MIMEMultipart('alternative')
     message['Subject'] = '[BASD] Binance Algorithmic Stop Daemon - Notification'
     message['From'] = sender_email
-    message['To'] = valid_receiver_email
+    message['To'] = receiver_email
 
     part = MIMEText(html, 'html')
 
@@ -288,107 +288,141 @@ def send_mail(html):
     with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
         server.login(sender_email, password)
         server.sendmail(
-            sender_email, valid_receiver_email, message.as_string()
+            sender_email, receiver_email, message.as_string()
         )
 
 
-# GET LAST PRICE VIA REST API
-def get_last_pr(symbol):
-    client = Client(
-        api_key, api_secret, base_url='https://api.binance.com'
-    )
-    response = client.ticker_price(symbol)
-    last_pr = round((float(response['price'])), 2)
-    return last_pr
-
-
-# CHECK FOR FILLED BUY ORDERS
-def listen_to_filled_orders(message):
-    try:
-        # get order type
-        order_type = message['e']
-
-        # if order was executed
-        if order_type == 'executionReport':
-            order_status = message['X']
-            side = message['S']
-
-            if order_status == 'CANCELED' and side == 'BUY':
-                # get global variables
-
-                # order_pr = float(message['p'])
-                order_pr = 20763
-
-                symbol = message['s']
-
-                # qty = flot(message['q'])
-                qty = 0.00052
-
-                # get LAST SYMBOL PRICE
-                last_pr = get_last_pr(symbol)
-
-                # OCO order
-                if oco_choice:
-                    place_oco_order(symbol, qty, order_pr, last_pr)
-                # TAKE PROFIT order
-                if tp_choice:
-                    place_tp_order(symbol, qty, order_pr, last_pr)
-                # STOP LOSS order
-                else:
-                    place_sl_order(symbol, qty, order_pr, last_pr)
-
-    except KeyError:
-        pass
-
-
 # CONNECT TO BINANCE.COM
-def websocket_connect():
-    client = Client(api_key, base_url='https://api.binance.com')
-    response = client.new_listen_key()
-
-    logging.info('Receving listen key : {}'.format(response['listenKey']))
-
-    ws_client = SpotWebsocketClient(stream_url='wss://stream.binance.com:9443')
-    ws_client.start()
-
-    ws_client.user_data(
-        listen_key=response['listenKey'],
-        id=1,
-        callback=listen_to_filled_orders,
-    )
+def websocket_connect(frontend_args):
 
 
-def check_time(backend_args):
+    # CHECK FOR FILLED BUY ORDERS
+    def listen_to_filled_orders(message):
+        try:
+            # get order type
+            order_type = message['e']
+
+            # if order was executed
+            if order_type == 'executionReport':
+                order_status = message['X']
+                side = message['S']
+
+                if order_status == 'CANCELED' and side == 'BUY':
+                    # get global variables
+
+                    # order_pr = float(message['p'])
+                    order_pr = 20763
+
+                    symbol = message['s']
+
+                    # qty = flot(message['q'])
+                    qty = 0.00052
+
+                    # get LAST SYMBOL PRICE
+                    # last_pr = get_last_pr(symbol, api_key, api_secret)
+                    response = client.ticker_price(symbol)
+                    last_pr = round((float(response['price'])), 2)
+
+                    return symbol, qty, order_pr, last_pr
+
+        except KeyError:
+            pass
+
+
     try:
         # define email variables in order to be read properly as function arguments
-        api_key = backend_args['api_key']
-        api_secret = backend_args['api_secret']
-        email_choice = backend_args['email_choice']
-        oco_choice = backend_args['oco_choice']
-        tp_choice = backend_args['tp_choice']
-        sender_email = backend_args['valid_sender_email']
-        password = backend_args['password']
-        receiver_email = backend_args['valid_receiver_email']
-        oco_profit_pct = backend_args['oco_profit_pct']
-        oco_sl_pct = backend_args['oco_sl_pct']
-        oco_lmt_pct = backend_args['oco_lmt_pct']
-        tp_lmt_pct = backend_args['tp_lmt_pct']
-        tp_stop_pct = backend_args['tp_stop_pct']
-        sl_lmt_pct = backend_args['sl_lmt_pct']
-        sl_stop_pct = backend_args['sl_stop_pct']
+        api_key = frontend_args['api_key']
+        api_secret = frontend_args['api_secret']
+        email_choice = frontend_args['email_choice']
+        oco_choice = frontend_args['oco_choice']
+        tp_choice = frontend_args['tp_choice']
+        sender_email = frontend_args['valid_sender_email']
+        password = frontend_args['password']
+        receiver_email = frontend_args['valid_receiver_email']
+        oco_profit_pct = frontend_args['oco_profit_pct']
+        oco_sl_pct = frontend_args['oco_sl_pct']
+        oco_lmt_pct = frontend_args['oco_lmt_pct']
+        tp_lmt_pct = frontend_args['tp_lmt_pct']
+        tp_stop_pct = frontend_args['tp_stop_pct']
+        sl_lmt_pct = frontend_args['sl_lmt_pct']
+        sl_stop_pct = frontend_args['sl_stop_pct']
     except KeyError:
         pass
 
     # get time zone of specified location
-    tmzone = pytz.timezone(backend_args['usr_tz'])
+    tmzone = pytz.timezone(frontend_args['usr_tz'])
 
     # change current time accordingly
     now = (datetime.now(tmzone))
 
     # check if it's time to work or not
-    if now.time() >= backend_args['user_start_time_def'] and now.time() <= backend_args['user_end_time_def']:
+    if now.time() >= frontend_args['user_start_time_def'] and now.time() <= frontend_args['user_end_time_def']:
         # yes
-        websocket_connect()
+        client = Client(api_key, base_url='https://api.binance.com')
+        response = client.new_listen_key()
+
+        logging.info('Receving listen key : {}'.format(response['listenKey']))
+
+        ws_client = SpotWebsocketClient(stream_url='wss://stream.binance.com:9443')
+        ws_client.start()
+
+        ws_client.user_data(
+            listen_key=response['listenKey'],
+            id=1,
+            callback=listen_to_filled_orders,
+        )
+
+        try:
+            symbol = listen_to_filled_orders(symbol)
+            qty = listen_to_filled_orders(qty)
+            order_pr = listen_to_filled_orders(order_pr)
+            last_pr = listen_to_filled_orders(last_pr)
+
+            # OCO order
+            if oco_choice:
+                place_oco_order(symbol, qty, order_pr, last_pr)
+            # TAKE PROFIT order
+            if tp_choice:
+                place_tp_order(symbol, qty, order_pr, last_pr)
+            # STOP LOSS order
+            else:
+                place_sl_order(symbol, qty, order_pr, last_pr)
+        except UnboundLocalError:
+            pass
     else:
-        # ws_client.stop()
-        websocket_connect()
+
+        '''
+        ws_client.stop()
+        '''
+
+        client = Client(api_key, base_url='https://api.binance.com')
+        response = client.new_listen_key()
+
+        logging.info('Receving listen key : {}'.format(response['listenKey']))
+
+        ws_client = SpotWebsocketClient(stream_url='wss://stream.binance.com:9443')
+        ws_client.start()
+
+        ws_client.user_data(
+            listen_key=response['listenKey'],
+            id=1,
+            callback=listen_to_filled_orders,
+        )
+
+        try:
+            symbol = listen_to_filled_orders(symbol)
+            qty = listen_to_filled_orders(qty)
+            order_pr = listen_to_filled_orders(order_pr)
+            last_pr = listen_to_filled_orders(last_pr)
+
+            # OCO order
+            if oco_choice:
+                place_oco_order(symbol, qty, order_pr, last_pr)
+            # TAKE PROFIT order
+            if tp_choice:
+                place_tp_order(symbol, qty, order_pr, last_pr)
+            # STOP LOSS order
+            else:
+                place_sl_order(symbol, qty, order_pr, last_pr)
+        except UnboundLocalError:
+            pass
