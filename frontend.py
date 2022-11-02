@@ -364,9 +364,9 @@ def main():
         if sender_email and not password or receiver_email and not password:
             window['TABLEDATA'].print('[ERROR] Password cannot be empty', text_color='red', font=('Helvetica', 14))
             window['Confirm'].update(disabled=True)
-
-        # window['TABLEDATA'].print('[OK] Password is filled', text_color='green', font=('Helvetica', 14))
-        # window['Confirm'].update(disabled=False)
+        if sender_email and password and receiver_email and password:
+            window['TABLEDATA'].print('[OK] Password not empty', text_color='green', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=False)
 
         # validate RECEIVER EMAIL
         if receiver_email:
@@ -481,7 +481,7 @@ def main():
                 if sl_choice:
                     window['SL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
                     window['SLL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
-                # check_time(backend_args)
+                check_time(backend_args)
 
         # See if user wants to quit or window was closed
         if event == sg.WINDOW_CLOSED or event == 'Quit':
