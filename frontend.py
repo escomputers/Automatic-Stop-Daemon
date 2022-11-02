@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import email
 from backend import *
 
 import PySimpleGUI as sg
@@ -21,8 +22,10 @@ def is_hour(window, input):
             return input
         else:
             window['TABLEDATA'].print('[ERROR] Type a valid value between 1 and 24', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
     except ValueError:
         window['TABLEDATA'].print('[ERROR] Type only numbers', text_color='red', font=('Helvetica', 14))
+        window['Confirm'].update(disabled=True)
 
 
 def is_valid_time(window, input):
@@ -30,35 +33,42 @@ def is_valid_time(window, input):
     try:
         input = datetime.strptime(input, timeformat)
         window['TABLEDATA'].print('[OK] Start Time', text_color='green', font=('Helvetica', 14))
+        window['Confirm'].update(disabled=False)
         return str(input.time())
     except ValueError:
         window['TABLEDATA'].print('[ERROR] Type a valid time format, e.g. 15:30', text_color='red', font=('Helvetica', 14))
+        window['Confirm'].update(disabled=True)
 
 
 def is_email(window, input):
     if re.fullmatch(regex, input):
+        window['Confirm'].update(disabled=False)
         return input
     else:
         window['TABLEDATA'].print('[ERROR] Invalid email address', text_color='red', font=('Helvetica', 14))
+        window['Confirm'].update(disabled=True)
 
 
 def is_float(window, input):
     try:
         input = float(input)
         if input >= 0.05 and input <= 2999.99:
+            window['Confirm'].update(disabled=False)
             return input
         else:
             window['TABLEDATA'].print('[ERROR] Type a valid value between 0.05 and 2999.99', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
     except ValueError:
         window['TABLEDATA'].print('[ERROR] Type only numbers ', text_color='red', font=('Helvetica', 14))
+        window['Confirm'].update(disabled=True)
 
 
 def main():
     sg.theme('Default 1')
 
     left_column = [
-        [sg.Text('BASD', size=(30, 1), font=('Helvetica', 18, 'bold')), sg.Push()],
-        [sg.Push(), sg.Text('Required fields', font=('Helvetica', 12))],
+        [sg.Text('BASD', font=('Helvetica', 18, 'bold')), sg.Push()],
+        [sg.Push(), sg.Text('Required fields', font=('Helvetica', 12, 'italic'))],
         [sg.Text('API Key', font=('Helvetica', 12)), sg.Push(), sg.Input(k='APIKEY', enable_events=True, font=('Helvetica', 12), tooltip='Type or paste your Binance.com API KEY', password_char='*')],
         [sg.Text('API Secret', font=('Helvetica', 12)), sg.Push(), sg.Input(k='APISECRET', enable_events=True, font=('Helvetica', 12), tooltip='Type or paste your Binance.com SECRET KEY', password_char='*')],
         [sg.Text('Timezone Continent', font=('Helvetica', 12)), sg.Push(), sg.Input(k='CONTINENT', enable_events=True, font=('Helvetica', 12), tooltip='Type your CONTINENT (IANA timezone format) e.g. Europe')],
@@ -89,7 +99,7 @@ def main():
         [sg.Text('Output', font=('Helvetica', 12))],
         [sg.MLine(size=(80, 10), autoscroll=True, reroute_stdout=True, write_only=True, reroute_cprint=True, k='TABLEDATA')],
         # BUTTONS
-        [sg.Push(), sg.Button('Confirm'), sg.Button('Quit')],
+        [sg.Push(), sg.Button('Confirm', font=('Helvetica', 12)), sg.Button('Edit', font=('Helvetica', 12)), sg.Button('Quit', font=('Helvetica', 12))],
         # SOFTWARE VERSION
         [sg.Push(), sg.Text('Powered by EScomputers v1.16.1', font=('Helvetica', 9, 'italic'))]
     ]
@@ -105,7 +115,8 @@ def main():
 
     # Create the window
     window = sg.Window('Binance Algorithmic Stop Daemon', layout)
-
+    input_key_list = [key for key, value in window.key_dict.items()
+        if isinstance(value, sg.Input)]
     # Display and interact with the Window using an Event Loop
     while True:
         event, values = window.read()
@@ -163,39 +174,47 @@ def main():
         if api_key:
             if len(api_key) < 64:
                 window['TABLEDATA'].print('[ERROR] Check your API Key, 64 characters minimum, no spaces', text_color='red', font=('Helvetica', 14))
+                window['Confirm'].update(disabled=True)
             else:
                 window['TABLEDATA'].print('[OK] API Key', text_color='green', font=('Helvetica', 14))
+                window['Confirm'].update(disabled=False)
 
         # validate API SECRET KEY
         if api_secret:
             if len(api_secret) < 64:
                 window['TABLEDATA'].print('[ERROR] Check your API Secret Key, 64 characters minimum, no spaces', text_color='red', font=('Helvetica', 14))
+                window['Confirm'].update(disabled=True)
             else:
                 window['TABLEDATA'].print('[OK] API Secret Key', text_color='green', font=('Helvetica', 14))
+                window['Confirm'].update(disabled=False)
 
         # validate API KEYS
         if len(api_key) >= 64 and len(api_secret) >= 64:
             if api_key == api_secret:
                 window['TABLEDATA'].print('[ERROR] API Key and API Secret Key cannot be the same', text_color='red', font=('Helvetica', 14))
+                window['Confirm'].update(disabled=True)
             else:
                 window['TABLEDATA'].print('[OK] API Key and API Secret Key', text_color='green', font=('Helvetica', 14))
+                window['Confirm'].update(disabled=False)
                 backend_args.update({'api_key':api_key, 'api_secret':api_secret})
-                window['APIKEY'].update(background_color='#C4BFBE', text_color='green')
-                window['APISECRET'].update(background_color='#C4BFBE', text_color='green')
 
         # validate TIMEZONE CONTINENT
         if tz_cont:
             if tz_cont.isalpha():
                 window['TABLEDATA'].print('[OK] Timezone Continent format', text_color='green', font=('Helvetica', 14))
+                window['Confirm'].update(disabled=False)
             else:
                 window['TABLEDATA'].print('[ERROR] Type only letters', text_color='red', font=('Helvetica', 14))
+                window['Confirm'].update(disabled=True)
 
         # validate TIMEZONE CITY
         if tz_city:
             if tz_city.isalpha():
                 window['TABLEDATA'].print('[OK] Timezone City format', text_color='green', font=('Helvetica', 14))
+                window['Confirm'].update(disabled=False)
             else:
                 window['TABLEDATA'].print('[ERROR] Type only letters', text_color='red', font=('Helvetica', 14))
+                window['Confirm'].update(disabled=True)
 
         # validate TIMEZONE
         if tz_cont.isalpha() and tz_city.isalpha():
@@ -203,19 +222,20 @@ def main():
             if usr_tz in pytz.all_timezones:
                 backend_args.update({'usr_tz':usr_tz})
                 window['TABLEDATA'].print('[OK] Timezone', text_color='green', font=('Helvetica', 14))
-                window['CONTINENT'].update(tz_cont.capitalize(), background_color='#C4BFBE', text_color='green')
-                window['CITY'].update(tz_city.capitalize(), background_color='#C4BFBE', text_color='green')
+                window['CONTINENT'].update(tz_cont.capitalize())
+                window['CITY'].update(tz_city.capitalize())
+                window['Confirm'].update(disabled=False)
             else:
                 window['TABLEDATA'].print(
                         '[ERROR] Timezone: ' + tz_cont.capitalize() + '/' + tz_city.capitalize() +
                         ' you entered is not valid. \n ', text_color='red', font=('Helvetica', 14)
                     )
+                window['Confirm'].update(disabled=True)
 
         # validate START TIME
         if inp_start_time:
             if is_valid_time(window, inp_start_time):
                 start_time = is_valid_time(window, inp_start_time)
-                # user_start_time = str(start_time)[:-3]  # remove seconds from string
                 user_start_time = datetime.strptime(str(start_time)[:-3], '%H:%M')  # used for calc
                 user_start_time_def = datetime.strptime(str(start_time)[:-3], '%H:%M').time()  # used for backend function
 
@@ -223,7 +243,6 @@ def main():
         if inp_working_ival:
             if is_hour(window, inp_working_ival):
                 working_ival = is_hour(window, inp_working_ival)
-                window['WORKINGINTERVAL'].update(working_ival, background_color='#C4BFBE', text_color='green')
 
         # construct USER END TIME
         try:
@@ -231,7 +250,8 @@ def main():
                 end_time = (user_start_time + timedelta(hours=working_ival)).time()
                 user_end_time = str(end_time)[:-3]  # remove seconds from string
                 user_end_time_def = datetime.strptime(user_end_time, '%H:%M').time()
-                window['ENDTIME'].update(user_end_time, background_color='#C4BFBE', text_color='green')
+                window['ENDTIME'].update(user_end_time)
+                window['Confirm'].update(disabled=False)
                 backend_args.update({'user_start_time_def':user_start_time_def, 'user_end_time_def':user_end_time_def})
         except UnboundLocalError:
             continue
@@ -300,16 +320,26 @@ def main():
                 valid_sender_email = is_email(window, sender_email)
                 if '@gmail.com' in valid_sender_email:
                     window['TABLEDATA'].print('[OK] Valid sender email address', text_color='green', font=('Helvetica', 14))
-                    window['SENDEREMAIL'].update(valid_sender_email, background_color='#C4BFBE', text_color='green')
+                    window['Confirm'].update(disabled=False)
                 else:
                     window['TABLEDATA'].print('[ERROR] Only Gmail account currently supported', text_color='red', font=('Helvetica', 14))
+                    window['Confirm'].update(disabled=True)
+
+        # validate PASSWORD
+        '''
+        if password == '' and valid_sender_email:
+            window['TABLEDATA'].print('[OK] Password is filled', text_color='green', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=False)
+        else:
+            window['TABLEDATA'].print('[ERROR] Password cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Confirm'].update(disabled=True)
+        '''
 
         # validate RECEIVER EMAIL
         if receiver_email:
             if is_email(window, receiver_email):
                 valid_receiver_email = is_email(window, receiver_email)
                 window['TABLEDATA'].print('[OK] Valid receiver email address', text_color='green', font=('Helvetica', 14))
-                window['RECEIVEREMAIL'].update(valid_receiver_email, background_color='#C4BFBE', text_color='green')
                 backend_args.update({'email_choice':email_choice, 'valid_sender_email':valid_sender_email, 'password':password, 'valid_receiver_email':valid_receiver_email})
 
         # validate ORDER inputs
@@ -349,7 +379,28 @@ def main():
                 backend_args.update({'sl_stop_pct':sl_stop_pct, 'sl_lmt_pct':sl_lmt_pct})
 
         if event == 'Confirm':
-            check_time(backend_args)
+            window['APIKEY'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+            window['APISECRET'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+            window['CONTINENT'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+            window['CITY'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+            window['STARTTIME'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+            window['WORKINGINTERVAL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+            window['ENDTIME'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+            if email_choice:
+                window['SENDEREMAIL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                window['PASSWORD'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                window['RECEIVEREMAIL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+            if oco_choice:
+                window['OCOTP'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                window['OCOSL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                window['OCOLL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+            if tp_choice:
+                window['TPSL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                window['TPL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+            if sl_choice:
+                window['SL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+                window['SLL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
+            # check_time(backend_args)
 
         # See if user wants to quit or window was closed
         if event == sg.WINDOW_CLOSED or event == 'Quit':

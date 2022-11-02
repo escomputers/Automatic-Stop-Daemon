@@ -62,7 +62,7 @@ def place_oco_order(symbol, qty, order_pr, last_pr):
     }
 
     client = Client(
-        backend_args['api_key'], backend_args['api_secret'], base_url='https://api.binance.com'
+        api_key, api_secret, base_url='https://api.binance.com'
     )
 
     '''
@@ -84,7 +84,7 @@ def place_oco_order(symbol, qty, order_pr, last_pr):
             error_msg = None
 
         finally:
-            if backend_args['email_choice']:
+            if email_choice:
                 oco_mail_body(
                     error_msg, msg, symbol, qty, profit_pr, oco_profit_pct,
                     sl_lmt_pr_oco, sl_pr_oco, oco_lmt_pct, last_pr
@@ -97,7 +97,7 @@ def place_oco_order(symbol, qty, order_pr, last_pr):
     else:
         error_msg = '[ERROR]Prices relationship for the orders not correct. \n' + \
             'OCO SELL rule = Limit Price > Last Price > Stop Price'
-        if backend_args['email_choice']:
+        if email_choice:
             msg = 'Error! Sell order NOT PLACED'
             oco_mail_body(
                 error_msg, msg, symbol, qty, profit_pr, oco_profit_pct,
@@ -130,7 +130,7 @@ def place_tp_order(symbol, qty, order_pr, last_pr):
     }
 
     client = Client(
-        backend_args['api_key'], backend_args['api_secret'], base_url='https://api.binance.com'
+        api_key, api_secret, base_url='https://api.binance.com'
     )
 
     notional = qty * lmt_profit_pr
@@ -147,7 +147,7 @@ def place_tp_order(symbol, qty, order_pr, last_pr):
             error_msg = None
 
         finally:
-            if backend_args['email_choice']:
+            if email_choice:
                 tp_mail_body(
                     error_msg, msg, symbol, qty,
                     lmt_profit_pr, stop_pr, tp_lmt_pct, last_pr
@@ -184,7 +184,7 @@ def place_sl_order(symbol, qty, order_pr, last_pr):
     }
 
     client = Client(
-        backend_args['api_key'], backend_args['api_secret'], base_url='https://api.binance.com'
+        api_key, api_secret, base_url='https://api.binance.com'
     )
 
     notional = qty * lmt_loss_pr
@@ -201,7 +201,7 @@ def place_sl_order(symbol, qty, order_pr, last_pr):
             error_msg = None
 
         finally:
-            if backend_args['email_choice']:
+            if email_choice:
                 sl_mail_body(
                     error_msg, msg, symbol, qty,
                     lmt_loss_pr, sl_pr, sl_lmt_pct, last_pr
@@ -274,8 +274,8 @@ def sl_mail_body(error_msg, msg, symbol, qty, lmt_loss_pr, sl_pr, sl_lmt_pct, la
 def send_mail(html):
     message = MIMEMultipart('alternative')
     message['Subject'] = '[BASD] Binance Algorithmic Stop Daemon - Notification'
-    message['From'] = backend_args['valid_sender_email']
-    message['To'] = backend_args['valid_receiver_email']
+    message['From'] = sender_email
+    message['To'] = valid_receiver_email
 
     part = MIMEText(html, 'html')
 
@@ -286,16 +286,16 @@ def send_mail(html):
     # Create secure connection with server and send email
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
-        server.login(backend_args['valid_sender_email'], backend_args['password'])
+        server.login(sender_email, password)
         server.sendmail(
-            backend_args['valid_sender_email'], backend_args['valid_receiver_email'], message.as_string()
+            sender_email, valid_receiver_email, message.as_string()
         )
 
 
 # GET LAST PRICE VIA REST API
 def get_last_pr(symbol):
     client = Client(
-        backend_args['api_key'], backend_args['api_secret'], base_url='https://api.binance.com'
+        api_key, api_secret, base_url='https://api.binance.com'
     )
     response = client.ticker_price(symbol)
     last_pr = round((float(response['price'])), 2)
@@ -328,10 +328,10 @@ def listen_to_filled_orders(message):
                 last_pr = get_last_pr(symbol)
 
                 # OCO order
-                if backend_args['oco_choice']:
+                if oco_choice:
                     place_oco_order(symbol, qty, order_pr, last_pr)
                 # TAKE PROFIT order
-                if backend_args['tp_choice']:
+                if tp_choice:
                     place_tp_order(symbol, qty, order_pr, last_pr)
                 # STOP LOSS order
                 else:
@@ -343,7 +343,7 @@ def listen_to_filled_orders(message):
 
 # CONNECT TO BINANCE.COM
 def websocket_connect():
-    client = Client(backend_args['api_key'], base_url='https://api.binance.com')
+    client = Client(api_key, base_url='https://api.binance.com')
     response = client.new_listen_key()
 
     logging.info('Receving listen key : {}'.format(response['listenKey']))
@@ -359,14 +359,25 @@ def websocket_connect():
 
 
 def check_time(backend_args):
-    # define email variables in order to be read properly as function arguments
-    oco_profit_pct = backend_args['oco_profit_pct']
-    oco_sl_pct = backend_args['oco_sl_pct']
-    oco_lmt_pct = backend_args['oco_lmt_pct']
-    tp_lmt_pct = backend_args['tp_lmt_pct']
-    tp_stop_pct = backend_args['tp_stop_pct']
-    sl_lmt_pct = backend_args['sl_lmt_pct']
-    sl_stop_pct = backend_args['sl_stop_pct']
+    try:
+        # define email variables in order to be read properly as function arguments
+        api_key = backend_args['api_key']
+        api_secret = backend_args['api_secret']
+        email_choice = backend_args['email_choice']
+        oco_choice = backend_args['oco_choice']
+        tp_choice = backend_args['tp_choice']
+        sender_email = backend_args['valid_sender_email']
+        password = backend_args['password']
+        receiver_email = backend_args['valid_receiver_email']
+        oco_profit_pct = backend_args['oco_profit_pct']
+        oco_sl_pct = backend_args['oco_sl_pct']
+        oco_lmt_pct = backend_args['oco_lmt_pct']
+        tp_lmt_pct = backend_args['tp_lmt_pct']
+        tp_stop_pct = backend_args['tp_stop_pct']
+        sl_lmt_pct = backend_args['sl_lmt_pct']
+        sl_stop_pct = backend_args['sl_stop_pct']
+    except KeyError:
+        pass
 
     # get time zone of specified location
     tmzone = pytz.timezone(backend_args['usr_tz'])
