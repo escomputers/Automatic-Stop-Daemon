@@ -30,10 +30,6 @@ def websocket_connect(frontend_args):
     # PLACE OCO ORDER
     def place_oco_order(symbol, qty, order_pr, last_pr):
 
-        oco_profit_pct = frontend_args['oco_profit_pct']
-        oco_sl_pct = frontend_args['oco_sl_pct']
-        oco_lmt_pct = frontend_args['oco_lmt_pct']
-
         # TAKE PROFIT price
         profit_pr = round(
             (order_pr + round(((order_pr / 100) * oco_profit_pct), 8)), 2
@@ -114,9 +110,6 @@ def websocket_connect(frontend_args):
     # PLACE TAKE PROFIT ORDER
     def place_tp_order(symbol, qty, order_pr, last_pr):
 
-        tp_lmt_pct = frontend_args['tp_lmt_pct']
-        tp_stop_pct = frontend_args['tp_stop_pct']
-
         # LIMIT PROFIT price
         lmt_profit_pr = round(
             (order_pr + round(((order_pr / 100) * tp_lmt_pct), 8)), 2
@@ -149,12 +142,10 @@ def websocket_connect(frontend_args):
                 client.new_order(**params)
                 msg = 'Success! Sell order PLACED'
                 error_msg = None
-
             except ClientError as error:
                 msg = 'Error! Sell order NOT PLACED'
                 # error_msg = logging.error()
                 error_msg = None
-
             finally:
                 if email_choice:
                     tp_mail_body(
@@ -168,9 +159,6 @@ def websocket_connect(frontend_args):
 
     # STOP LOSS ORDER
     def place_sl_order(symbol, qty, order_pr, last_pr):
-
-        sl_lmt_pct = frontend_args['sl_lmt_pct']
-        sl_stop_pct = frontend_args['sl_stop_pct']
 
         # STOP LOSS LIMIT price
         lmt_loss_pr = round(
@@ -224,8 +212,10 @@ def websocket_connect(frontend_args):
 
     # OCO email body
     def oco_mail_body(error_msg, msg, symbol, qty, profit_pr, oco_profit_pct, sl_lmt_pr_oco, sl_pr_oco, oco_lmt_pct, last_pr):
+
         profit_order_value = round((float(qty * profit_pr)), 2)
         loss_order_value = round((float(qty * sl_lmt_pr_oco)), 2)
+
         html = template.render(
             error_msg=error_msg,
             title=msg,
@@ -241,11 +231,13 @@ def websocket_connect(frontend_args):
             loss_order_value=str(loss_order_value),
             last_pr=str(last_pr)
         )
-        send_mail(html)
+        send_email(html)
 
     # Take Profit email body
     def tp_mail_body(error_msg, msg, symbol, qty, lmt_profit_pr, stop_pr, tp_lmt_pct, last_pr):
+
         order_value = round((float(qty * lmt_profit_pr)), 2)
+
         html = template.render(
             error_msg=error_msg,
             title=msg,
@@ -258,11 +250,13 @@ def websocket_connect(frontend_args):
             order_value=str(order_value),
             last_pr=str(last_pr)
         )
-        send_mail(html)
+        send_email(html)
 
     # Stop Loss email body
     def sl_mail_body(error_msg, msg, symbol, qty, lmt_loss_pr, sl_pr, sl_lmt_pct, last_pr):
+
         order_value = round((float(qty * lmt_loss_pr)), 2)
+
         html = template.render(
             error_msg=error_msg,
             title=msg,
@@ -275,10 +269,11 @@ def websocket_connect(frontend_args):
             order_value=str(order_value),
             last_pr=str(last_pr)
         )
-        send_mail(html)
+        send_email(html)
 
     # SEND MAIL
-    def send_mail(html):
+    def send_email(html):
+
         message = MIMEMultipart('alternative')
         message['Subject'] = '[BASD] Binance Algorithmic Stop Daemon - Notification'
         message['From'] = sender_email
@@ -298,23 +293,9 @@ def websocket_connect(frontend_args):
                 sender_email, receiver_email, message.as_string()
             )
 
-    def select_order_type(symbol, qty, order_pr, last_pr):
-
-        oco_choice = frontend_args['oco_choice']
-        tp_choice = frontend_args['tp_choice']
-
-        # OCO order
-        if oco_choice:
-            place_oco_order(symbol, qty, order_pr, last_pr)
-        # TAKE PROFIT order
-        if tp_choice:
-            place_tp_order(symbol, qty, order_pr, last_pr)
-        # STOP LOSS order
-        else:
-            place_sl_order(symbol, qty, order_pr, last_pr)
-
     # GET LAST PRICE VIA REST API
     def get_last_pr(symbol):
+
         client = Client(api_key, api_secret, base_url='https://api.binance.com')
         response = client.ticker_price(symbol)
         last_pr = round((float(response['price'])), 2)
@@ -345,21 +326,35 @@ def websocket_connect(frontend_args):
                     # get LAST SYMBOL PRICE
                     last_pr = get_last_pr(symbol)
 
-                    select_order_type(symbol, qty, order_pr, last_pr)
-
+                    # OCO order
+                    if 'oco_choice' in frontend_args:
+                        place_oco_order(symbol, qty, order_pr, last_pr)
+                    # TAKE PROFIT order
+                    if 'tp_choice' in frontend_args:
+                        place_tp_order(symbol, qty, order_pr, last_pr)
+                    # STOP LOSS order
+                    else:
+                        place_sl_order(symbol, qty, order_pr, last_pr)
         except KeyError:
             pass
 
-    try:
-        # define email variables in order to be read properly as function arguments
-        api_key = frontend_args['api_key']
-        api_secret = frontend_args['api_secret']
-        email_choice = frontend_args['email_choice']
-        sender_email = frontend_args['valid_sender_email']
-        password = frontend_args['password']
-        receiver_email = frontend_args['valid_receiver_email']
-    except KeyError:
-        pass
+    # define global variables in order to be read properly as function arguments
+    api_key = frontend_args['api_key']
+    api_secret = frontend_args['api_secret']
+    email_choice = frontend_args['email_choice']
+    sender_email = frontend_args['valid_sender_email']
+    password = frontend_args['password']
+    receiver_email = frontend_args['valid_receiver_email']
+    if 'oco_choice' in frontend_args:
+        oco_profit_pct = frontend_args['oco_profit_pct']
+        oco_sl_pct = frontend_args['oco_sl_pct']
+        oco_lmt_pct = frontend_args['oco_lmt_pct']
+    elif 'tp_choice' in frontend_args:
+        tp_stop_pct = frontend_args['tp_stop_pct']
+        tp_lmt_pct = frontend_args['tp_lmt_pct']
+    else:
+        sl_lmt_pct = frontend_args['sl_lmt_pct']
+        sl_stop_pct = frontend_args['sl_stop_pct']
 
     # get time zone of specified location
     tmzone = pytz.timezone(frontend_args['usr_tz'])
