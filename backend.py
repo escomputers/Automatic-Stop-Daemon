@@ -87,7 +87,7 @@ def websocket_connect(frontend_args):
                 error_msg = None
 
             finally:
-                if email_choice:
+                if 'email_choice' in frontend_args:
                     oco_mail_body(
                         error_msg, msg, symbol, qty, profit_pr, oco_profit_pct,
                         sl_lmt_pr_oco, sl_pr_oco, oco_lmt_pct, last_pr
@@ -100,7 +100,7 @@ def websocket_connect(frontend_args):
         else:
             error_msg = '[ERROR]Prices relationship for the orders not correct. \n' + \
                 'OCO SELL rule = Limit Price > Last Price > Stop Price'
-            if email_choice:
+            if 'email_choice' in frontend_args:
                 msg = 'Error! Sell order NOT PLACED'
                 oco_mail_body(
                     error_msg, msg, symbol, qty, profit_pr, oco_profit_pct,
@@ -147,7 +147,7 @@ def websocket_connect(frontend_args):
                 # error_msg = logging.error()
                 error_msg = None
             finally:
-                if email_choice:
+                if 'email_choice' in frontend_args:
                     tp_mail_body(
                         error_msg, msg, symbol, qty,
                         lmt_profit_pr, stop_pr, tp_lmt_pct, last_pr
@@ -200,7 +200,7 @@ def websocket_connect(frontend_args):
                 error_msg = None
 
             finally:
-                if email_choice:
+                if 'email_choice' in frontend_args:
                     sl_mail_body(
                         error_msg, msg, symbol, qty,
                         lmt_loss_pr, sl_pr, sl_lmt_pct, last_pr
@@ -341,10 +341,10 @@ def websocket_connect(frontend_args):
     # define global variables in order to be read properly as function arguments
     api_key = frontend_args['api_key']
     api_secret = frontend_args['api_secret']
-    email_choice = frontend_args['email_choice']
-    sender_email = frontend_args['valid_sender_email']
-    password = frontend_args['password']
-    receiver_email = frontend_args['valid_receiver_email']
+    if 'email_choice' in frontend_args:
+        sender_email = frontend_args['valid_sender_email']
+        password = frontend_args['password']
+        receiver_email = frontend_args['valid_receiver_email']
     if 'oco_choice' in frontend_args:
         oco_profit_pct = frontend_args['oco_profit_pct']
         oco_sl_pct = frontend_args['oco_sl_pct']

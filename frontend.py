@@ -4,6 +4,8 @@ from backend import websocket_connect
 
 import PySimpleGUI as sg
 
+import time as tempo
+
 from datetime import datetime, timedelta
 import pytz
 from curses.ascii import isalpha
@@ -482,6 +484,8 @@ def main():
 
                 # call backend
                 websocket_connect(frontend_args)
+                tempo.sleep(3)
+                break
 
         # See if user wants to quit or window was closed
         if event == sg.WINDOW_CLOSED or event == 'Quit':
