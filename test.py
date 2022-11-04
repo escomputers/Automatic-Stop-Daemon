@@ -3,19 +3,19 @@
 # IMPORTS
 
 import PySimpleGUI as sg
-import sys
 
+import io
 import logging
-import smtplib
-import ssl
 
+# from binance.lib.utils import config_logging
 from binance.websocket.spot.websocket_client import SpotWebsocketClient
-from binance.lib.utils import config_logging
 from binance.spot import Spot as Client
 from binance.error import ClientError
 
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import smtplib
+import ssl
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -23,8 +23,23 @@ from jinja2 import Environment, FileSystemLoader
 env = Environment(loader=FileSystemLoader('templates'))
 template = env.get_template('mail.html')
 
-config_logging(logging, logging.DEBUG)
 
+'''
+# config_logging(logging, logging.DEBUG)
+
+# LOG TO FILE
+logging.getLogger('')
+logging.basicConfig(
+    level=logging.INFO,
+    filename=os.path.basename(__file__) + '.log',
+    format='{asctime} [{levelname:8}] {process} {thread} {module}: {message}',
+    style='{'
+)
+'''
+
+# SET LOGGING
+output = io.StringIO()
+logging.basicConfig(stream=output, level=logging.DEBUG)
 
 # CONNECT TO BINANCE.COM
 def websocket_connect():
@@ -340,32 +355,11 @@ def websocket_connect():
         except KeyError:
             pass
 
-    # GUI INITIALIZATION
-    sg.theme('Default 1')
-
-    layout = [
-            [sg.Text('BASD', font=("Helvetica", 18, 'bold')), sg.Push()],
-            [sg.Text('Output', font=('Helvetica', 12)), sg.Push()],
-            [sg.MLine(size=(80, 10), autoscroll=True, reroute_stdout=True, write_only=True, reroute_cprint=True, k='-TABLEDATA-')],
-            [sg.Button('Quit')],
-            ]
-    # Create the window
-    window = sg.Window('Binance Algorithmic Stop Daemon', layout)
-
-    while True:
-        event, values = window.read()
-        window['TABLEDATA'].print(logging.info, font=('Helvetica', 12))
-
-        if event == sg.WINDOW_CLOSED or event == 'Quit':
-            break
-
-    window.close()
-
     frontend_args = {
-        'api_key': '', 
-        'api_secret': '',
-        'email_choice': True, 'valid_sender_email': '', 'password': '',
-        'valid_receiver_email': '', 'tp_choice': True,
+        'api_key': 'N1OtkEpukiYWDbby5pXAbHRUKyjjp3JAHTz14554PiKPyH5Dp70capa1C0OdKWkY',
+        'api_secret': 'b4R2zf5cm0n1IJSgH95yQMv1QslqQfU5DqXwF0IunRuNroQvbShpqmIEODckIwQg',
+        'email_choice': True, 'valid_sender_email': 'emilianos13@gmail.com', 'password': 'ipxhsmhiembjrynb',
+        'valid_receiver_email': 'emilianos13@gmail.com', 'tp_choice': True,
         'tp_stop_pct': 5.1, 'tp_lmt_pct': 4.9
     }
 
@@ -400,6 +394,33 @@ def websocket_connect():
         id=1,
         callback=listen_to_filled_orders,
     )
+
+    log_response = output.getvalue()
+
+    # GUI INITIALIZATION
+    sg.theme('Default 1')
+
+    layout = [
+            [sg.Text('BASD', font=("Helvetica", 18, 'bold')), sg.Push()],
+            [sg.Text('Output', font=('Helvetica', 12)), sg.Push()],
+            [sg.MLine(size=(80, 10), reroute_stdout=True, autoscroll=True, k='-OUTPUT-')],
+            [sg.Button('Refresh'), sg.Button('Quit')],
+            ]
+
+    # Create the window
+    window = sg.Window('Binance Algorithmic Stop Daemon', layout)
+
+    while True:
+        event, values = window.read()
+
+        if event == sg.WINDOW_CLOSED or event == 'Quit':
+            ws_client.stop()
+            break
+
+        window['-OUTPUT-'].update(log_response, text_color='green', font=('Helvetica', 14))
+        # print(log_response)
+
+    window.close()
 
 
 websocket_connect()

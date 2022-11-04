@@ -5,7 +5,6 @@ from backend import websocket_connect
 import PySimpleGUI as sg
 
 import time as tempo
-
 from datetime import datetime, timedelta
 import pytz
 from curses.ascii import isalpha
