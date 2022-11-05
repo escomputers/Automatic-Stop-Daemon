@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
 # IMPORTS
-
 import PySimpleGUI as sg
 
 import io
 import logging
 
-# from binance.lib.utils import config_logging
 from binance.websocket.spot.websocket_client import SpotWebsocketClient
 from binance.spot import Spot as Client
 from binance.error import ClientError
@@ -23,29 +21,16 @@ from jinja2 import Environment, FileSystemLoader
 env = Environment(loader=FileSystemLoader('templates'))
 template = env.get_template('mail.html')
 
-
-'''
-# config_logging(logging, logging.DEBUG)
-
-# LOG TO FILE
-logging.getLogger('')
-logging.basicConfig(
-    level=logging.INFO,
-    filename=os.path.basename(__file__) + '.log',
-    format='{asctime} [{levelname:8}] {process} {thread} {module}: {message}',
-    style='{'
-)
-'''
-
 # SET LOGGING
 output = io.StringIO()
 logging.basicConfig(stream=output, level=logging.DEBUG)
+
 
 # CONNECT TO BINANCE.COM
 def websocket_connect():
 
     # PLACE OCO ORDER
-    def place_oco_order(symbol, qty, order_pr, last_pr):
+    def place_oco_order(window, symbol, qty, order_pr, last_pr):
 
         # TAKE PROFIT price
         profit_pr = round(
@@ -75,6 +60,7 @@ def websocket_connect():
             'symbol': symbol,
             'side': 'SELL',
             'stopLimitTimeInForce': 'GTC',
+            'recvWindow': 6000,
             'quantity': qty,
             'price': str(profit_pr),
             'stopPrice': str(sl_pr_oco),
@@ -95,37 +81,43 @@ def websocket_connect():
 
             try:
                 client.new_oco_order(**params)
-                msg = 'Success! Sell order PLACED'
-                error_msg = None
-
+                txt = 'Success! OCO sell order PLACED'
+                log_response = output.getvalue()
+                window['-OUTPUT-'].update(log_response, text_color='green', font=('Helvetica', 12))
             except ClientError as error:
-                msg = 'Error! Sell order NOT PLACED'
-                # error_msg = logging.error()
-                error_msg = None
-
+                txt = 'Error! OCO sell order NOT PLACED'
+                window['-OUTPUT-'].update(str(error), text_color='red', font=('Helvetica', 12))
             finally:
                 if 'email_choice' in frontend_args:
                     oco_mail_body(
-                        error_msg, msg, symbol, qty, profit_pr, oco_profit_pct,
+                        txt, symbol, qty, profit_pr, oco_profit_pct,
                         sl_lmt_pr_oco, sl_pr_oco, oco_lmt_pct, last_pr
                     )
                 else:
-                    # log to file
-                    # logging.error()
+                    '''# LOG TO FILE
+                    logging.getLogger('')
+                    logging.basicConfig(
+                        level=logging.DEBUG,
+                        filename=os.path.basename(__file__) + '.log',
+                        format='{asctime} [{levelname:8}] {process} {thread} {module}: {message}',
+                        style='{'
+                    )
+                    '''
                     pass
 
         else:
-            error_msg = '[ERROR]Prices relationship for the orders not correct. \n' + \
+            txt = '[ERROR]Prices relationship for the orders not correct. \n' + \
                 'OCO SELL rule = Limit Price > Last Price > Stop Price'
+            window['-OUTPUT-'].update(txt, text_color='red', font=('Helvetica', 12))
             if 'email_choice' in frontend_args:
-                msg = 'Error! Sell order NOT PLACED'
+                txt = 'Error! OCO sell order NOT PLACED'
                 oco_mail_body(
-                    error_msg, msg, symbol, qty, profit_pr, oco_profit_pct,
+                    txt, symbol, qty, profit_pr, oco_profit_pct,
                     sl_lmt_pr_oco, sl_pr_oco, oco_lmt_pct, last_pr
                 )
 
     # PLACE TAKE PROFIT ORDER
-    def place_tp_order(symbol, qty, order_pr, last_pr):
+    def place_tp_order(window, symbol, qty, order_pr, last_pr):
 
         # LIMIT PROFIT price
         lmt_profit_pr = round(
@@ -143,6 +135,7 @@ def websocket_connect():
             'side': 'SELL',
             'type': 'TAKE_PROFIT_LIMIT',
             'timeInForce': 'GTC',
+            'recvWindow': 6000,
             'quantity': qty,
             'price': str(lmt_profit_pr),
             'stopPrice': str(stop_pr),
@@ -157,25 +150,32 @@ def websocket_connect():
         if stop_pr > last_pr and notional > 11:
             try:
                 client.new_order(**params)
-                msg = 'Success! Sell order PLACED'
-                error_msg = None
+                txt = 'Success! Take Profit sell order PLACED'
+                log_response = output.getvalue()
+                window['-OUTPUT-'].update(log_response, text_color='green', font=('Helvetica', 12))
             except ClientError as error:
-                msg = 'Error! Sell order NOT PLACED'
-                # error_msg = logging.error()
-                error_msg = None
+                txt = 'Error! Take Profit sell order NOT PLACED'
+                window['-OUTPUT-'].update(str(error), text_color='red', font=('Helvetica', 12))
             finally:
                 if 'email_choice' in frontend_args:
                     tp_mail_body(
-                        error_msg, msg, symbol, qty,
+                        txt, symbol, qty,
                         lmt_profit_pr, stop_pr, tp_lmt_pct, last_pr
                     )
                 else:
-                    # log to file
-                    # logging.error()
+                    '''# LOG TO FILE
+                    logging.getLogger('')
+                    logging.basicConfig(
+                        level=logging.DEBUG,
+                        filename=os.path.basename(__file__) + '.log',
+                        format='{asctime} [{levelname:8}] {process} {thread} {module}: {message}',
+                        style='{'
+                    )
+                    '''
                     pass
 
     # STOP LOSS ORDER
-    def place_sl_order(symbol, qty, order_pr, last_pr):
+    def place_sl_order(window, symbol, qty, order_pr, last_pr):
 
         # STOP LOSS LIMIT price
         lmt_loss_pr = round(
@@ -193,6 +193,7 @@ def websocket_connect():
             'side': 'SELL',
             'type': 'STOP_LOSS_LIMIT',
             'timeInForce': 'GTC',
+            'recWindow': 6000,
             'quantity': qty,
             'price': str(lmt_loss_pr),
             'stopPrice': str(sl_pr),
@@ -208,34 +209,38 @@ def websocket_connect():
         if sl_pr < last_pr and notional > 11:
             try:
                 client.new_order(**params)
-                msg = 'Success! Sell order PLACED'
-                error_msg = None
-
+                txt = 'Success! Stop Loss sell order PLACED'
+                log_response = output.getvalue()
+                window['-OUTPUT-'].update(log_response, text_color='green', font=('Helvetica', 12))
             except ClientError as error:
-                msg = 'Error! Sell order NOT PLACED'
-                # error_msg = logging.error()
-                error_msg = None
-
+                txt = 'Error! Stop Loss sell order NOT PLACED'
+                window['-OUTPUT-'].update(str(error), text_color='red', font=('Helvetica', 12))
             finally:
                 if 'email_choice' in frontend_args:
                     sl_mail_body(
-                        error_msg, msg, symbol, qty,
+                        txt, symbol, qty,
                         lmt_loss_pr, sl_pr, sl_lmt_pct, last_pr
                     )
                 else:
-                    # log to file
-                    # logging.error()
+                    '''# LOG TO FILE
+                    logging.getLogger('')
+                    logging.basicConfig(
+                        level=logging.DEBUG,
+                        filename=os.path.basename(__file__) + '.log',
+                        format='{asctime} [{levelname:8}] {process} {thread} {module}: {message}',
+                        style='{'
+                    )
+                    '''
                     pass
 
     # OCO email body
-    def oco_mail_body(error_msg, msg, symbol, qty, profit_pr, oco_profit_pct, sl_lmt_pr_oco, sl_pr_oco, oco_lmt_pct, last_pr):
+    def oco_mail_body(txt, symbol, qty, profit_pr, oco_profit_pct, sl_lmt_pr_oco, sl_pr_oco, oco_lmt_pct, last_pr):
 
         profit_order_value = round((float(qty * profit_pr)), 2)
         loss_order_value = round((float(qty * sl_lmt_pr_oco)), 2)
 
         html = template.render(
-            error_msg=error_msg,
-            title=msg,
+            title=txt,
             order_type='OCO',
             symbol=symbol,
             qty=qty,
@@ -251,13 +256,12 @@ def websocket_connect():
         send_email(html)
 
     # Take Profit email body
-    def tp_mail_body(error_msg, msg, symbol, qty, lmt_profit_pr, stop_pr, tp_lmt_pct, last_pr):
+    def tp_mail_body(txt, symbol, qty, lmt_profit_pr, stop_pr, tp_lmt_pct, last_pr):
 
         order_value = round((float(qty * lmt_profit_pr)), 2)
 
         html = template.render(
-            error_msg=error_msg,
-            title=msg,
+            title=txt,
             order_type='Take Profit',
             symbol=symbol,
             qty=qty,
@@ -270,13 +274,12 @@ def websocket_connect():
         send_email(html)
 
     # Stop Loss email body
-    def sl_mail_body(error_msg, msg, symbol, qty, lmt_loss_pr, sl_pr, sl_lmt_pct, last_pr):
+    def sl_mail_body(txt, symbol, qty, lmt_loss_pr, sl_pr, sl_lmt_pct, last_pr):
 
         order_value = round((float(qty * lmt_loss_pr)), 2)
 
         html = template.render(
-            error_msg=error_msg,
-            title=msg,
+            title=txt,
             order_type='Stop Loss',
             symbol=symbol,
             qty=qty,
@@ -329,9 +332,8 @@ def websocket_connect():
                 order_status = message['X']
                 side = message['S']
 
-                if order_status == 'CANCELED' and side == 'BUY':
+                if order_status == 'CANCELED' and side == 'BUY':             # CHANGE ME!!!!!!!!!!!
                     # get global variables
-
                     # order_pr = float(message['p'])
                     order_pr = 20763
 
@@ -345,13 +347,13 @@ def websocket_connect():
 
                     # OCO order
                     if 'oco_choice' in frontend_args:
-                        place_oco_order(symbol, qty, order_pr, last_pr)
+                        place_oco_order(window, symbol, qty, order_pr, last_pr)
                     # TAKE PROFIT order
                     if 'tp_choice' in frontend_args:
-                        place_tp_order(symbol, qty, order_pr, last_pr)
+                        place_tp_order(window, symbol, qty, order_pr, last_pr)
                     # STOP LOSS order
                     else:
-                        place_sl_order(symbol, qty, order_pr, last_pr)
+                        place_sl_order(window, symbol, qty, order_pr, last_pr)
         except KeyError:
             pass
 
@@ -404,7 +406,8 @@ def websocket_connect():
             [sg.Text('BASD', font=("Helvetica", 18, 'bold')), sg.Push()],
             [sg.Text('Output', font=('Helvetica', 12)), sg.Push()],
             [sg.MLine(size=(80, 10), reroute_stdout=True, autoscroll=True, k='-OUTPUT-')],
-            [sg.Button('Refresh'), sg.Button('Quit')],
+            [sg.Button('Refresh', tooltip='Get latest data from Binance websocket'), 
+            sg.Button('Quit', tooltip='Closing program will stop listening to orders!')],
             ]
 
     # Create the window
@@ -417,8 +420,7 @@ def websocket_connect():
             ws_client.stop()
             break
 
-        window['-OUTPUT-'].update(log_response, text_color='green', font=('Helvetica', 14))
-        # print(log_response)
+        window['-OUTPUT-'].update(log_response, font=('Helvetica', 12))
 
     window.close()
 
