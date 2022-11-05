@@ -44,10 +44,12 @@ def logtofile():
 
 
 # CONNECT TO BINANCE.COM
-def websocket_connect(frontend_args):
+def websocket_connect(usrdata):
 
     # PLACE OCO ORDER
     def place_oco_order(window, symbol, qty, order_pr, last_pr):
+
+        email_choice = usrdata['email_choice']
 
         # TAKE PROFIT price
         profit_pr = round(
@@ -77,6 +79,7 @@ def websocket_connect(frontend_args):
             'symbol': symbol,
             'side': 'SELL',
             'stopLimitTimeInForce': 'GTC',
+            'recvWindow': 6000,
             'quantity': qty,
             'price': str(profit_pr),
             'stopPrice': str(sl_pr_oco),
@@ -99,12 +102,12 @@ def websocket_connect(frontend_args):
                 client.new_oco_order(**params)
                 txt = 'Success! OCO sell order PLACED'
                 log_response = output.getvalue()
-                window['-OUTPUT-'].update(log_response, text_color='green', font=('Helvetica', 12))
+                window['-OUTPUT-'].print(log_response, text_color='green', font=('Helvetica', 12))
             except ClientError as error:
                 txt = 'Error! OCO sell order NOT PLACED'
-                window['-OUTPUT-'].update(str(error), text_color='red', font=('Helvetica', 12))
+                window['-OUTPUT-'].print(str(error), text_color='red', font=('Helvetica', 12))
             finally:
-                if 'email_choice' in frontend_args:
+                if email_choice is True:
                     oco_mail_body(
                         txt, symbol, qty, profit_pr, oco_profit_pct,
                         sl_lmt_pr_oco, sl_pr_oco, oco_lmt_pct, last_pr
@@ -115,10 +118,10 @@ def websocket_connect(frontend_args):
 
         else:
             txt = '[ERROR]Prices relationship for the orders not correct. \n' + \
-                    'OCO SELL rule = Limit Price > Last Price > Stop Price'
-            window['-OUTPUT-'].update(txt, text_color='red', font=('Helvetica', 12))
-            if 'email_choice' in frontend_args:
-                txt = 'Error! Sell order NOT PLACED'
+                'OCO SELL rule = Limit Price > Last Price > Stop Price'
+            window['-OUTPUT-'].print(txt, text_color='red', font=('Helvetica', 12))
+            if email_choice is True:
+                txt = 'Error! OCO sell order NOT PLACED'
                 oco_mail_body(
                     txt, symbol, qty, profit_pr, oco_profit_pct,
                     sl_lmt_pr_oco, sl_pr_oco, oco_lmt_pct, last_pr
@@ -126,6 +129,8 @@ def websocket_connect(frontend_args):
 
     # PLACE TAKE PROFIT ORDER
     def place_tp_order(window, symbol, qty, order_pr, last_pr):
+
+        email_choice = usrdata['email_choice']
 
         # LIMIT PROFIT price
         lmt_profit_pr = round(
@@ -143,6 +148,7 @@ def websocket_connect(frontend_args):
             'side': 'SELL',
             'type': 'TAKE_PROFIT_LIMIT',
             'timeInForce': 'GTC',
+            'recvWindow': 6000,
             'quantity': qty,
             'price': str(lmt_profit_pr),
             'stopPrice': str(stop_pr),
@@ -159,12 +165,12 @@ def websocket_connect(frontend_args):
                 client.new_order(**params)
                 txt = 'Success! Take Profit sell order PLACED'
                 log_response = output.getvalue()
-                window['-OUTPUT-'].update(log_response, text_color='green', font=('Helvetica', 12))
+                window['-OUTPUT-'].print(log_response, text_color='green', font=('Helvetica', 12))
             except ClientError as error:
                 txt = 'Error! Take Profit sell order NOT PLACED'
-                window['-OUTPUT-'].update(str(error), text_color='red', font=('Helvetica', 12))
+                window['-OUTPUT-'].print(str(error), text_color='red', font=('Helvetica', 12))
             finally:
-                if 'email_choice' in frontend_args:
+                if email_choice is True:
                     tp_mail_body(
                         txt, symbol, qty,
                         lmt_profit_pr, stop_pr, tp_lmt_pct, last_pr
@@ -172,8 +178,12 @@ def websocket_connect(frontend_args):
                 else:
                     logtofile()
 
+                pass
+
     # STOP LOSS ORDER
     def place_sl_order(window, symbol, qty, order_pr, last_pr):
+
+        email_choice = usrdata['email_choice']
 
         # STOP LOSS LIMIT price
         lmt_loss_pr = round(
@@ -191,6 +201,7 @@ def websocket_connect(frontend_args):
             'side': 'SELL',
             'type': 'STOP_LOSS_LIMIT',
             'timeInForce': 'GTC',
+            'recWindow': 6000,
             'quantity': qty,
             'price': str(lmt_loss_pr),
             'stopPrice': str(sl_pr),
@@ -208,18 +219,19 @@ def websocket_connect(frontend_args):
                 client.new_order(**params)
                 txt = 'Success! Stop Loss sell order PLACED'
                 log_response = output.getvalue()
-                window['-OUTPUT-'].update(log_response, text_color='green', font=('Helvetica', 12))
+                window['-OUTPUT-'].print(log_response, text_color='green', font=('Helvetica', 12))
             except ClientError as error:
                 txt = 'Error! Stop Loss sell order NOT PLACED'
-                window['-OUTPUT-'].update(str(error), text_color='red', font=('Helvetica', 12))
+                window['-OUTPUT-'].print(str(error), text_color='red', font=('Helvetica', 12))
             finally:
-                if 'email_choice' in frontend_args:
+                if email_choice is True:
                     sl_mail_body(
                         txt, symbol, qty,
                         lmt_loss_pr, sl_pr, sl_lmt_pct, last_pr
                     )
                 else:
                     logtofile()
+                pass
 
     # OCO email body
     def oco_mail_body(txt, symbol, qty, profit_pr, oco_profit_pct, sl_lmt_pr_oco, sl_pr_oco, oco_lmt_pct, last_pr):
@@ -320,9 +332,8 @@ def websocket_connect(frontend_args):
                 order_status = message['X']
                 side = message['S']
 
-                if order_status == 'CANCELED' and side == 'BUY':		# CHANGE ME!!!!!!!!!!!
+                if order_status == 'CANCELED' and side == 'BUY':             # CHANGE ME!!!!!!!!!!!
                     # get global variables
-
                     # order_pr = float(message['p'])
                     order_pr = 20763
 
@@ -335,10 +346,10 @@ def websocket_connect(frontend_args):
                     last_pr = get_last_pr(symbol)
 
                     # OCO order
-                    if 'oco_choice' in frontend_args:
+                    if 'oco_choice' in usrdata:
                         place_oco_order(window, symbol, qty, order_pr, last_pr)
                     # TAKE PROFIT order
-                    if 'tp_choice' in frontend_args:
+                    if 'tp_choice' in usrdata:
                         place_tp_order(window, symbol, qty, order_pr, last_pr)
                     # STOP LOSS order
                     else:
@@ -347,25 +358,28 @@ def websocket_connect(frontend_args):
             pass
 
     # define global variables in order to be read properly as function arguments
-    api_key = frontend_args['api_key']
-    api_secret = frontend_args['api_secret']
-    usr_tz = frontend_args['usr_tz']
-    user_starttime = frontend_args['user_start_time_def']
-    user_endtime = frontend_args['user_end_time_def']
-    if 'email_choice' in frontend_args:
-        sender_email = frontend_args['valid_sender_email']
-        password = frontend_args['password']
-        receiver_email = frontend_args['valid_receiver_email']
-    if 'oco_choice' in frontend_args:
-        oco_profit_pct = frontend_args['oco_profit_pct']
-        oco_sl_pct = frontend_args['oco_sl_pct']
-        oco_lmt_pct = frontend_args['oco_lmt_pct']
-    elif 'tp_choice' in frontend_args:
-        tp_stop_pct = frontend_args['tp_stop_pct']
-        tp_lmt_pct = frontend_args['tp_lmt_pct']
+    api_key = usrdata['api_key']
+    api_secret = usrdata['api_secret']
+    usr_tz = usrdata['usr_tz']
+    user_starttime = usrdata['user_start_time_def']
+    user_endtime = usrdata['user_end_time_def']
+    try:
+        if usrdata['email_choice'] is True:
+            sender_email = usrdata['valid_sender_email']
+            password = usrdata['password']
+            receiver_email = usrdata['valid_receiver_email']
+    except KeyError:
+        pass
+    if 'oco_choice' in usrdata:
+        oco_profit_pct = usrdata['oco_profit_pct']
+        oco_sl_pct = usrdata['oco_sl_pct']
+        oco_lmt_pct = usrdata['oco_lmt_pct']
+    elif 'tp_choice' in usrdata:
+        tp_stop_pct = usrdata['tp_stop_pct']
+        tp_lmt_pct = usrdata['tp_lmt_pct']
     else:
-        sl_lmt_pct = frontend_args['sl_lmt_pct']
-        sl_stop_pct = frontend_args['sl_stop_pct']
+        sl_lmt_pct = usrdata['sl_lmt_pct']
+        sl_stop_pct = usrdata['sl_stop_pct']
 
     # GUI INITIALIZATION
     sg.theme('Default 1')
@@ -385,16 +399,13 @@ def websocket_connect(frontend_args):
         event, values = window.read()
 
         # get time zone of specified location
-        # tmzone = pytz.timezone(usr_tz)
+        tmzone = pytz.timezone(usr_tz)
 
         # change current time accordingly
-        # now = (datetime.now(tmzone))
+        now = (datetime.now(tmzone))
 
         # check if it's time to work or not
-        # if now.time() >= user_starttime and now.time() <= user_endtime:
-        a = 10
-        b = 2
-        if a > b:
+        if now.time() >= user_starttime and now.time() <= user_endtime:
             # yes
             client = Client(api_key, base_url='https://api.binance.com')
             response = client.new_listen_key()
@@ -412,16 +423,22 @@ def websocket_connect(frontend_args):
 
             # grab logging output
             log_response = output.getvalue()
-            window['-OUTPUT-'].update(log_response, font=('Helvetica', 12))
+            window['-OUTPUT-'].print(log_response, font=('Helvetica', 12))
         else:
-            tempo.sleep(3)
-            continue
+            txt1 = 'It\'s not time to work!\nStart time: ' + str(user_starttime)
+            txt2 = '\nEnd time: ' + str(user_endtime)
+            txt3 = '\nTimezone is ' + usr_tz
+            message = txt1 + txt2 + txt3
+            window['-OUTPUT-'].print(message, font=('Helvetica', 12))
+            tempo.sleep(2)
+            pass
 
         if event == sg.WINDOW_CLOSED or event == 'Quit':
             try:
                 ws_client.stop()
-            except KeyError:
-                pass
-            break
+            except UnboundLocalError:
+                break
+            finally:
+                break
 
     window.close()

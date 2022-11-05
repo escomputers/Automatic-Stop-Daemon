@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
-from backend import websocket_connect
+from order import websocket_connect
 
 import PySimpleGUI as sg
 
-import time as tempo
 from datetime import datetime, timedelta
 import pytz
 from curses.ascii import isalpha
@@ -14,7 +13,7 @@ import re
 regex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
 
 # initialize DATA dictionary
-frontend_args = {}
+usrdata = {}
 
 
 # VALIDATION
@@ -37,7 +36,7 @@ def is_valid_time(window, input):
         input = datetime.strptime(input, timeformat)
         window['TABLEDATA'].print('[OK] Start Time', text_color='green', font=('Helvetica', 14))
         window['Confirm'].update(disabled=False)
-        return str(input.time())
+        return input.time()
     except ValueError:
         window['TABLEDATA'].print('[ERROR] Type a valid time format, e.g. 15:30', text_color='red', font=('Helvetica', 14))
         window['Confirm'].update(disabled=True)
@@ -83,7 +82,6 @@ def main():
         [sg.Text('Gmail Sender Address', font=('Helvetica', 12), k='SENDEREMAILTXT'), sg.Push(), sg.Input(k='SENDEREMAIL', enable_events=True, font=('Helvetica', 12), tooltip='Type sender email address (GMAIL only)')],
         [sg.Text('Gmail App Password', font=('Helvetica', 12), k='PASSWORDTXT'), sg.Push(), sg.Input(k='PASSWORD', enable_events=True, font=('Helvetica', 12), tooltip='Type or paste your gmail app password', password_char='*')],
         [sg.Text('Receiver Address', font=('Helvetica', 12), k='RECEIVEREMAILTXT'), sg.Push(), sg.Input(k='RECEIVEREMAIL', enable_events=True, font=('Helvetica', 12), tooltip='Type receiver email address')],
-        # [sg.StatusBar('', size=(0, 1), key='STATUS')],
     ]
 
     right_column = [
@@ -102,7 +100,7 @@ def main():
         [sg.Text('Output', font=('Helvetica', 12))],
         [sg.MLine(size=(80, 10), autoscroll=True, reroute_stdout=True, write_only=True, reroute_cprint=True, k='TABLEDATA')],
         # BUTTONS
-        [sg.Push(), sg.Button('Confirm', font=('Helvetica', 12)), sg.Button('Edit', font=('Helvetica', 12)), sg.Button('Quit', font=('Helvetica', 12))],
+        [sg.Push(), sg.Button('Send order', font=('Helvetica', 12)), sg.Button('Edit', font=('Helvetica', 12))],
         # SOFTWARE VERSION
         [sg.Push(), sg.Text('Powered by EScomputers v1.16.1', font=('Helvetica', 9, 'italic'))]
     ]
@@ -121,7 +119,7 @@ def main():
 
     # Display and interact with the Window using an Event Loop
     while True:
-        event, values = window.read()
+        event, values = window.read(timeout=1000)
 
         # email section visible by default
         window['SENDEREMAILTXT'].update(visible=True)
@@ -205,7 +203,7 @@ def main():
             else:
                 window['TABLEDATA'].print('[OK] API Key and API Secret Key', text_color='green', font=('Helvetica', 14))
                 window['Confirm'].update(disabled=False)
-                frontend_args.update({'api_key': api_key, 'api_secret': api_secret})
+                usrdata.update({'api_key': api_key, 'api_secret': api_secret})
 
         # validate TIMEZONE CONTINENT
         if tz_cont:
@@ -239,7 +237,7 @@ def main():
         if tz_cont.isalpha() and tz_city.isalpha():
             usr_tz = tz_cont.capitalize() + '/' + tz_city.capitalize()
             if usr_tz in pytz.all_timezones:
-                frontend_args.update({'usr_tz': usr_tz})
+                usrdata.update({'usr_tz': usr_tz})
                 window['TABLEDATA'].print('[OK] Timezone', text_color='green', font=('Helvetica', 14))
                 window['CONTINENT'].update(tz_cont.capitalize())
                 window['CITY'].update(tz_city.capitalize())
@@ -255,8 +253,7 @@ def main():
         if inp_start_time:
             if is_valid_time(window, inp_start_time):
                 start_time = is_valid_time(window, inp_start_time)
-                user_start_time = datetime.strptime(str(start_time)[:-3], '%H:%M')  # used for calc
-                user_start_time_def = datetime.strptime(str(start_time)[:-3], '%H:%M').time()  # used for backend function
+                user_start_time = datetime.strptime(str(start_time)[:-3], '%H:%M')  # used for end_time calc
 
         # validate WORKING INTERVAL
         if inp_working_ival:
@@ -278,16 +275,15 @@ def main():
             if user_start_time and working_ival:
                 end_time = (user_start_time + timedelta(hours=working_ival)).time()
                 user_end_time = str(end_time)[:-3]  # remove seconds from string
-                user_end_time_def = datetime.strptime(user_end_time, '%H:%M').time()
                 window['ENDTIME'].update(user_end_time)
                 window['Confirm'].update(disabled=False)
-                frontend_args.update({'user_start_time_def': user_start_time_def, 'user_end_time_def': user_end_time_def})
+                usrdata.update({'user_start_time_def': start_time, 'user_end_time_def': end_time})
         except UnboundLocalError:
             continue
 
         # show order inputs according to radio buttons
         if tp_choice:
-            frontend_args.update({'tp_choice': tp_choice})
+            usrdata.update({'tp_choice': tp_choice})
             window['TPSLTXT'].update(visible=True)
             window['TPSL'].update(visible=True)
             window['TPLTXT'].update(visible=True)
@@ -318,7 +314,7 @@ def main():
             window['OCOLLTXT'].update(visible=False)
             window['OCOLL'].update(visible=False)
         if oco_choice:
-            frontend_args.update({'oco_choice': oco_choice})
+            usrdata.update({'oco_choice': oco_choice})
             window['OCOTPTXT'].update(visible=True)
             window['OCOTP'].update(visible=True)
             window['OCOSLTXT'].update(visible=True)
@@ -372,7 +368,7 @@ def main():
             if is_email(window, receiver_email):
                 valid_receiver_email = is_email(window, receiver_email)
                 window['TABLEDATA'].print('[OK] Valid receiver email address', text_color='green', font=('Helvetica', 14))
-                frontend_args.update({'email_choice': email_choice, 'valid_sender_email': valid_sender_email, 'password': password, 'valid_receiver_email': valid_receiver_email})
+                usrdata.update({'email_choice': email_choice, 'valid_sender_email': valid_sender_email, 'password': password, 'valid_receiver_email': valid_receiver_email})
 
         # validate RECEIVER EMAIL as required
         if sender_email and not receiver_email or password and not receiver_email:
@@ -393,7 +389,7 @@ def main():
             if is_float(window, inp_oco_lmt_pct):
                 oco_lmt_pct = is_float(window, inp_oco_lmt_pct)
                 window['TABLEDATA'].print('[OK] Valid OCO Stop Loss Limit -%', text_color='green', font=('Helvetica', 14))
-                frontend_args.update({'oco_profit_pct': oco_profit_pct, 'oco_sl_pct': oco_sl_pct, 'oco_lmt_pct': oco_lmt_pct})
+                usrdata.update({'oco_profit_pct': oco_profit_pct, 'oco_sl_pct': oco_sl_pct, 'oco_lmt_pct': oco_lmt_pct})
 
         # validate OCO fields ar required
         if oco_choice and not inp_oco_profit_pct or oco_choice and not inp_oco_sl_pct or oco_choice and not inp_oco_lmt_pct:
@@ -418,7 +414,7 @@ def main():
             if is_float(window, inp_tp_lmt_pct):
                 tp_lmt_pct = is_float(window, inp_tp_lmt_pct)
                 window['TABLEDATA'].print('[OK] Valid Take Profit Stop Limit +%', text_color='green', font=('Helvetica', 14))
-                frontend_args.update({'tp_stop_pct': tp_stop_pct, 'tp_lmt_pct': tp_lmt_pct})
+                usrdata.update({'tp_stop_pct': tp_stop_pct, 'tp_lmt_pct': tp_lmt_pct})
 
         # validate TP fields ar required
         if tp_choice and not inp_tp_stop_pct or tp_choice and not inp_tp_lmt_pct:
@@ -440,7 +436,7 @@ def main():
             if is_float(window, inp_sl_lmt_pct):
                 sl_lmt_pct = is_float(window, inp_sl_lmt_pct)
                 window['TABLEDATA'].print('[OK] Valid Stop Loss Limit -%', text_color='green', font=('Helvetica', 14))
-                frontend_args.update({'sl_stop_pct': sl_stop_pct, 'sl_lmt_pct': sl_lmt_pct})
+                usrdata.update({'sl_stop_pct': sl_stop_pct, 'sl_lmt_pct': sl_lmt_pct})
 
         # validate SL fields ar required
         if sl_choice and not inp_sl_stop_pct or sl_choice and not inp_sl_lmt_pct:
@@ -482,9 +478,7 @@ def main():
                     window['SLL'].update(background_color='#C4BFBE', text_color='green', disabled=True)
 
                 # call backend
-                websocket_connect(frontend_args)
-                tempo.sleep(3)
-                break
+                websocket_connect(usrdata)
 
         # See if user wants to quit or window was closed
         if event == sg.WINDOW_CLOSED or event == 'Quit':
