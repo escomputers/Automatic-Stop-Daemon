@@ -3,6 +3,8 @@
 # IMPORTS
 import PySimpleGUI as sg
 
+import uuid
+
 import io
 import logging
 import os
@@ -24,7 +26,7 @@ from jinja2 import Environment, FileSystemLoader
 
 # load jinja2 template
 env = Environment(loader=FileSystemLoader('templates'))
-template = env.get_template('mail.html')
+template = env.get_template('email.html')
 
 
 # SET LOGGING STDOUT TO GUI
@@ -291,8 +293,11 @@ def websocket_connect(usrdata):
         )
         send_email(html)
 
-    # SEND MAIL
+    # SEND EMAIL
     def send_email(html):
+        sender_email = usrdata['valid_sender_email']
+        password = usrdata['password']
+        receiver_email = usrdata['valid_receiver_email']
 
         message = MIMEMultipart('alternative')
         message['Subject'] = '[BASD] Binance Algorithmic Stop Daemon - Notification'
@@ -363,13 +368,6 @@ def websocket_connect(usrdata):
     usr_tz = usrdata['usr_tz']
     user_starttime = usrdata['user_start_time_def']
     user_endtime = usrdata['user_end_time_def']
-    try:
-        if usrdata['email_choice'] is True:
-            sender_email = usrdata['valid_sender_email']
-            password = usrdata['password']
-            receiver_email = usrdata['valid_receiver_email']
-    except KeyError:
-        pass
     if 'oco_choice' in usrdata:
         oco_profit_pct = usrdata['oco_profit_pct']
         oco_sl_pct = usrdata['oco_sl_pct']
@@ -407,6 +405,18 @@ def websocket_connect(usrdata):
         # check if it's time to work or not
         if now.time() >= user_starttime and now.time() <= user_endtime:
             # yes
+
+            if usrdata['email_choice'] is True:
+                html = template.render(
+                    title='Job ' + str(uuid.uuid4()) + 'started at ' + str(now.time()),
+                    # order_type='Stop Loss',
+                    # percentage 1
+                    # percentage 2
+                    # if oco
+                    # percentage 3
+                )
+                send_email(html)
+
             client = Client(api_key, base_url='https://api.binance.com')
             response = client.new_listen_key()
 
