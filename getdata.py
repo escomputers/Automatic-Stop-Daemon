@@ -473,6 +473,10 @@ def main():
                     window['SENDEREMAIL'].update(disabled=True)
                     window['PASSWORD'].update(disabled=True)
                     window['RECEIVEREMAIL'].update(disabled=True)
+                    usrdata.update({'email_choice': email_choice})
+                    usrdata.update({'valid_sender_email': valid_sender_email})
+                    usrdata.update({'password': password})
+                    usrdata.update({'valid_receiver_email': valid_receiver_email})
                 if oco_choice:
                     window['OCOTP'].update(disabled=True)
                     window['OCOSL'].update(disabled=True)
@@ -483,11 +487,6 @@ def main():
                 if sl_choice:
                     window['SL'].update(disabled=True)
                     window['SLL'].update(disabled=True)
-
-                usrdata.update({'email_choice': email_choice})
-                usrdata.update({'valid_sender_email': valid_sender_email})
-                usrdata.update({'password': password})
-                usrdata.update({'valid_receiver_email': valid_receiver_email})
 
                 # call backend
                 websocket_connect(usrdata)

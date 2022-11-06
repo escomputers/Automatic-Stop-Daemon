@@ -369,13 +369,16 @@ def websocket_connect(usrdata):
     user_starttime = usrdata['user_start_time_def']
     user_endtime = usrdata['user_end_time_def']
     if 'oco_choice' in usrdata:
+        order_type = 'OCO'
         oco_profit_pct = usrdata['oco_profit_pct']
         oco_sl_pct = usrdata['oco_sl_pct']
         oco_lmt_pct = usrdata['oco_lmt_pct']
     elif 'tp_choice' in usrdata:
+        order_type = 'Take Profit'
         tp_stop_pct = usrdata['tp_stop_pct']
         tp_lmt_pct = usrdata['tp_lmt_pct']
     else:
+        order_type = 'Stop Loss'
         sl_lmt_pct = usrdata['sl_lmt_pct']
         sl_stop_pct = usrdata['sl_stop_pct']
 
@@ -405,18 +408,6 @@ def websocket_connect(usrdata):
         # check if it's time to work or not
         if now.time() >= user_starttime and now.time() <= user_endtime:
             # yes
-
-            if usrdata['email_choice'] is True:
-                html = template.render(
-                    title='Job ' + str(uuid.uuid4()) + 'started at ' + str(now.time()),
-                    # order_type='Stop Loss',
-                    # percentage 1
-                    # percentage 2
-                    # if oco
-                    # percentage 3
-                )
-                send_email(html)
-
             client = Client(api_key, base_url='https://api.binance.com')
             response = client.new_listen_key()
 
@@ -434,6 +425,19 @@ def websocket_connect(usrdata):
             # grab logging output
             log_response = output.getvalue()
             window['-OUTPUT-'].print(log_response, font=('Helvetica', 12))
+
+            if 'email_choice' in usrdata:
+                nowstrp = str(now.time())[:8]
+                html = template.render(
+                    first_email=True,
+                    title='Job\n' + str(uuid.uuid4()) + '\nstarted at ' + nowstrp,
+                    order_type=order_type,
+                    # percentage 1
+                    # percentage 2
+                    # if oco
+                    # percentage 3
+                )
+                send_email(html)
         else:
             txt1 = 'It\'s not time to work!\nStart time: ' + str(user_starttime)
             txt2 = '\nEnd time: ' + str(user_endtime)
