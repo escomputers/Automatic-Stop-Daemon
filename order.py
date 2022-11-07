@@ -10,7 +10,7 @@ import logging
 import os
 
 import pytz
-from datetime import datetime
+from datetime import datetime, timedelta
 import time as tempo
 
 from binance.websocket.spot.websocket_client import SpotWebsocketClient
@@ -50,8 +50,6 @@ def websocket_connect(usrdata):
 
     # PLACE OCO ORDER
     def place_oco_order(window, symbol, qty, order_pr, last_pr):
-
-        email_choice = usrdata['email_choice']
 
         # TAKE PROFIT price
         profit_pr = round(
@@ -109,7 +107,7 @@ def websocket_connect(usrdata):
                 txt = 'Error! OCO sell order NOT PLACED'
                 window['-OUTPUT-'].print(str(error), text_color='red', font=('Helvetica', 12))
             finally:
-                if email_choice is True:
+                if 'valid_sender_email' in usrdata:
                     oco_mail_body(
                         txt, symbol, qty, profit_pr, oco_profit_pct,
                         sl_lmt_pr_oco, sl_pr_oco, oco_lmt_pct, last_pr
@@ -122,7 +120,7 @@ def websocket_connect(usrdata):
             txt = '[ERROR]Prices relationship for the orders not correct. \n' + \
                 'OCO SELL rule = Limit Price > Last Price > Stop Price'
             window['-OUTPUT-'].print(txt, text_color='red', font=('Helvetica', 12))
-            if email_choice is True:
+            if 'valid_sender_email' in usrdata:
                 txt = 'Error! OCO sell order NOT PLACED'
                 oco_mail_body(
                     txt, symbol, qty, profit_pr, oco_profit_pct,
@@ -131,8 +129,6 @@ def websocket_connect(usrdata):
 
     # PLACE TAKE PROFIT ORDER
     def place_tp_order(window, symbol, qty, order_pr, last_pr):
-
-        email_choice = usrdata['email_choice']
 
         # LIMIT PROFIT price
         lmt_profit_pr = round(
@@ -172,7 +168,7 @@ def websocket_connect(usrdata):
                 txt = 'Error! Take Profit sell order NOT PLACED'
                 window['-OUTPUT-'].print(str(error), text_color='red', font=('Helvetica', 12))
             finally:
-                if email_choice is True:
+                if 'valid_sender_email' in usrdata:
                     tp_mail_body(
                         txt, symbol, qty,
                         lmt_profit_pr, stop_pr, tp_lmt_pct, last_pr
@@ -184,8 +180,6 @@ def websocket_connect(usrdata):
 
     # STOP LOSS ORDER
     def place_sl_order(window, symbol, qty, order_pr, last_pr):
-
-        email_choice = usrdata['email_choice']
 
         # STOP LOSS LIMIT price
         lmt_loss_pr = round(
@@ -226,7 +220,7 @@ def websocket_connect(usrdata):
                 txt = 'Error! Stop Loss sell order NOT PLACED'
                 window['-OUTPUT-'].print(str(error), text_color='red', font=('Helvetica', 12))
             finally:
-                if email_choice is True:
+                if 'valid_sender_email' in usrdata:
                     sl_mail_body(
                         txt, symbol, qty,
                         lmt_loss_pr, sl_pr, sl_lmt_pct, last_pr
@@ -295,6 +289,7 @@ def websocket_connect(usrdata):
 
     # SEND EMAIL
     def send_email(html):
+        send_email.called = True
         sender_email = usrdata['valid_sender_email']
         password = usrdata['password']
         receiver_email = usrdata['valid_receiver_email']
@@ -363,11 +358,12 @@ def websocket_connect(usrdata):
             pass
 
     # define global variables in order to be read properly as function arguments
+    send_email.called = False
     api_key = usrdata['api_key']
     api_secret = usrdata['api_secret']
     usr_tz = usrdata['usr_tz']
-    user_starttime = usrdata['user_start_time_def']
-    user_endtime = usrdata['user_end_time_def']
+    start_time = usrdata['user_start_time_def']
+    working_ival = usrdata['working_ival']
     if 'oco_choice' in usrdata:
         order_type = 'OCO'
         oco_profit_pct = usrdata['oco_profit_pct']
@@ -405,8 +401,24 @@ def websocket_connect(usrdata):
         # change current time accordingly
         now = (datetime.now(tmzone))
 
+        # construct user end time
+        usr_start_time = now.replace(hour=start_time.hour, minute=start_time.minute)
+        usr_end_time = (usr_start_time + timedelta(hours=working_ival))
+
         # check if it's time to work or not
-        if now.time() >= user_starttime and now.time() <= user_endtime:
+        if now >= usr_start_time and now <= usr_end_time:
+            if 'valid_sender_email' in usrdata and not send_email.called:
+                nowstr = str(now.time())[:8]
+                html = template.render(
+                    first_email=True,
+                    title='Job\n' + str(uuid.uuid4()) + '\nstarted at ' + nowstr,
+                    order_type=order_type,
+                    # percentage 1
+                    # percentage 2
+                    # if oco
+                    # percentage 3
+                )
+                send_email(html)
             # yes
             client = Client(api_key, base_url='https://api.binance.com')
             response = client.new_listen_key()
@@ -425,22 +437,9 @@ def websocket_connect(usrdata):
             # grab logging output
             log_response = output.getvalue()
             window['-OUTPUT-'].print(log_response, font=('Helvetica', 12))
-
-            if 'email_choice' in usrdata:
-                nowstrp = str(now.time())[:8]
-                html = template.render(
-                    first_email=True,
-                    title='Job\n' + str(uuid.uuid4()) + '\nstarted at ' + nowstrp,
-                    order_type=order_type,
-                    # percentage 1
-                    # percentage 2
-                    # if oco
-                    # percentage 3
-                )
-                send_email(html)
         else:
-            txt1 = 'It\'s not time to work!\nStart time: ' + str(user_starttime)
-            txt2 = '\nEnd time: ' + str(user_endtime)
+            txt1 = 'It\'s not time to work!\nStart time: ' + (str(usr_start_time))[:16]
+            txt2 = '\nEnd time: ' + (str(usr_end_time))[:16]
             txt3 = '\nTimezone is ' + usr_tz
             message = txt1 + txt2 + txt3
             window['-OUTPUT-'].print(message, font=('Helvetica', 12))
