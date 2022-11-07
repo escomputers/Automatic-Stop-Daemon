@@ -386,6 +386,7 @@ def websocket_connect(usrdata):
             pass
 
     # define global variables in order to be read properly as function arguments
+    html_params = {}
     send_email.called = False
     api_key = usrdata['api_key']
     api_secret = usrdata['api_secret']
@@ -397,14 +398,17 @@ def websocket_connect(usrdata):
         oco_profit_pct = usrdata['oco_profit_pct']
         oco_sl_pct = usrdata['oco_sl_pct']
         oco_lmt_pct = usrdata['oco_lmt_pct']
+        html_params.update({'order_type': order_type, 'oco_tp': oco_profit_pct, 'oco_sl_stop': oco_sl_pct, 'oco_sl_lmt': oco_lmt_pct})
     elif 'tp_choice' in usrdata:
         order_type = 'Take Profit'
         tp_stop_pct = usrdata['tp_stop_pct']
         tp_lmt_pct = usrdata['tp_lmt_pct']
+        html_params.update({'order_type': order_type, 'tp_stop': tp_stop_pct, 'tp_lmt': tp_lmt_pct})
     else:
         order_type = 'Stop Loss'
-        sl_lmt_pct = usrdata['sl_lmt_pct']
         sl_stop_pct = usrdata['sl_stop_pct']
+        sl_lmt_pct = usrdata['sl_lmt_pct']
+        html_params.update({'order_type': order_type, 'sl_stop': sl_stop_pct, 'sl_lmt': sl_lmt_pct})
 
     # GUI INITIALIZATION
     sg.theme('Default 1')
@@ -434,20 +438,15 @@ def websocket_connect(usrdata):
         usr_end_time = (usr_start_time + timedelta(hours=working_ival))
 
         # check if it's time to work or not
-        if now >= usr_start_time and now <= usr_end_time:
+        if now >= usr_start_time and now <= usr_end_time:  # yes
             if 'valid_sender_email' in usrdata and not send_email.called:
                 nowstr = str(now.time())[:8]
-                html = template.render(
-                    first_email=True,
-                    title='Job\n' + str(uuid.uuid4()) + '\nstarted at ' + nowstr,
-                    order_type=order_type,
-                    # percentage 1
-                    # percentage 2
-                    # if oco
-                    # percentage 3
-                )
+                title = 'JOB ' + str(uuid.uuid4()) + '\nstarted at ' + nowstr
+                html_params.update({'first_email': True, 'title': title})
+
+                html = template.render(html_params)
                 send_email(html)
-            # yes
+
             client = Client(api_key, base_url='https://api.binance.com')
             response = client.new_listen_key()
 

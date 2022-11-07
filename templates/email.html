@@ -31,8 +31,6 @@
 
       table {
         border-collapse: separate;
-        mso-table-lspace: 0pt;
-        mso-table-rspace: 0pt;
         width: 100%; }
         table td {
           font-family: sans-serif;
@@ -230,7 +228,6 @@
         max-width: 0;
         opacity: 0;
         overflow: hidden;
-        mso-hide: all;
         visibility: hidden;
         width: 0; 
       }
@@ -372,38 +369,49 @@
 							  </td>
 							</tr>
 
-      {% if first_email %}<!-- JOB STARTING EMAIL-->
+      {% if first_email %} <!-- JOB STARTING EMAIL-->
+          {% if order_type == 'Stop Loss' %} <!-- Stop Loss data-->
               <tr>
 							  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
-							   stop loss: <b>-%</b>
+							   stop loss: <b>-{{ sl_stop }}%</b>
 							  </td>
 							</tr>
               <tr>
 							  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
-                  stop loss limit: <b>-%</b>
+                  stop loss limit: <b>-{{ sl_lmt }}%</b>
+							  </td>
+							</tr>
+          {% endif %}
+          {% if order_type == 'Take Profit' %} <!-- Take Profit data-->
+              <tr>
+							  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
+                  take profit stop: <b>+{{ tp_stop }}%</b>
 							  </td>
 							</tr>
               <tr>
 							  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
-                  take profit stop: <b>+%</b>
+                  take profit limit: <b>+{{ tp_lmt }}%</b>
 							  </td>
 							</tr>
+          {% endif %}
+          {% if order_type == 'OCO' %} <!-- OCO data-->
               <!-- if OCO -->
               <tr>
 							  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
-							   take profit limit: <b>+%</b>
+							   take profit limit: <b>+{{ oco_tp }}%</b>
 							  </td>
 							</tr>
               <tr>
 							  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
-							   stop loss: <b>-%</b>
+							   stop loss: <b>-{{ oco_sl_stop }}%</b>
 							  </td>
 							</tr>
               <tr>
 							  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
-							   stop loss limit: <b>-%</b>
+							   stop loss limit: <b>-{{ oco_sl_lmt }}%</b>
 							  </td>
 							</tr>
+          {% endif %}
 
       {% else %}<!-- ORDER EMAIL -->
 
