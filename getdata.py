@@ -2,7 +2,7 @@
 
 from order import websocket_connect
 
-# import webbrowser
+import webbrowser
 import PySimpleGUI as sg
 
 from datetime import datetime, timedelta
@@ -67,45 +67,51 @@ def is_float(window, input):
 
 
 def main():
+    # set default font
+    font1 = ('Helvetica', 12)
+    links = {
+        "GitHub": "https://github.com/escomputers/BASD",
+    }
+
     sg.theme('Default 1')
 
     left_column = [
         [sg.Text('BASD', font=('Helvetica', 18, 'bold'), expand_x=True), sg.Push()],
         [sg.Push(), sg.Text('Required fields', font=('Helvetica', 12, 'italic'))],
-        [sg.Text('API Key', font=('Helvetica', 12)), sg.Push(), sg.Input(k='APIKEY', enable_events=True, font=('Helvetica', 12), tooltip='Type or paste your Binance.com API KEY', password_char='*')],
-        [sg.Text('API Secret', font=('Helvetica', 12)), sg.Push(), sg.Input(k='APISECRET', enable_events=True, font=('Helvetica', 12), tooltip='Type or paste your Binance.com SECRET KEY', password_char='*')],
-        [sg.Text('Timezone Continent', font=('Helvetica', 12)), sg.Push(), sg.Input(k='CONTINENT', enable_events=True, font=('Helvetica', 12), tooltip='Type your CONTINENT (IANA timezone format) e.g. Europe')],
-        [sg.Text('Timezone City', font=('Helvetica', 12)), sg.Push(), sg.Input(k='CITY', enable_events=True, font=('Helvetica', 12), tooltip='Type your CITY (IANA timezone format) e.g. Rome')],
-        # [sg.Text('Start Day', font=('Helvetica', 12)), sg.Push(), sg.Input(k='STARTDATE', size=(39, 1), format='%Y-%m-%d', font=('Helvetica', 12), tooltip='Select START DAY'), sg.CalendarButton('Pick', font=('Helvetica', 12), begin_at_sunday_plus=1, target='STARTDAY', no_titlebar=False)],
-        [sg.Text('Start Time', font=('Helvetica', 12)), sg.Push(), sg.Input(k='STARTTIME', enable_events=True, font=('Helvetica', 12), tooltip='Type START TIME (1-24h)(0-59m) e.g. 23:45')],
-        [sg.Text('Active Hours', font=('Helvetica', 12)), sg.Push(), sg.Input(k='WORKINGINTERVAL', enable_events=True, font=('Helvetica', 12), tooltip='Type how many working HOURS you want. 24 equals to all day, e.g. 8')],
-        [sg.Text('End Time', font=('Helvetica', 12)), sg.Push(), sg.Input(k='ENDTIME', enable_events=True, font=('Helvetica', 12))],
-        [sg.Checkbox('Email Me', font=('Helvetica', 12), default=True, k='EMAILCHOICE', enable_events=True)],
-        [sg.Text('Gmail Sender Address', font=('Helvetica', 12), k='SENDEREMAILTXT'), sg.Push(), sg.Input(k='SENDEREMAIL', enable_events=True, font=('Helvetica', 12), tooltip='Type sender email address (GMAIL only)')],
-        [sg.Text('Gmail App Password', font=('Helvetica', 12), k='PASSWORDTXT'), sg.Push(), sg.Input(k='PASSWORD', enable_events=True, font=('Helvetica', 12), tooltip='Type or paste your gmail app password', password_char='*')],
-        [sg.Text('Receiver Address', font=('Helvetica', 12), k='RECEIVEREMAILTXT'), sg.Push(), sg.Input(k='RECEIVEREMAIL', enable_events=True, font=('Helvetica', 12), tooltip='Type receiver email address')],
+        [sg.Text('API Key', font=font1), sg.Push(), sg.Input(k='APIKEY', enable_events=True, font=font1, tooltip='Type or paste your Binance.com API KEY', password_char='*')],
+        [sg.Text('API Secret', font=font1), sg.Push(), sg.Input(k='APISECRET', enable_events=True, font=font1, tooltip='Type or paste your Binance.com SECRET KEY', password_char='*')],
+        [sg.Text('Timezone Continent', font=font1), sg.Push(), sg.Input(k='CONTINENT', enable_events=True, font=font1, tooltip='Type your CONTINENT (IANA timezone format) e.g. Europe')],
+        [sg.Text('Timezone City', font=font1), sg.Push(), sg.Input(k='CITY', enable_events=True, font=font1, tooltip='Type your CITY (IANA timezone format) e.g. Rome')],
+        # [sg.Text('Start Day', font=font1), sg.Push(), sg.Input(k='STARTDATE', size=(39, 1), format='%Y-%m-%d', font=font1, tooltip='Select START DAY'), sg.CalendarButton('Pick', font=font1, begin_at_sunday_plus=1, target='STARTDAY', no_titlebar=False)],
+        [sg.Text('Start Time', font=font1), sg.Push(), sg.Input(k='STARTTIME', enable_events=True, font=font1, tooltip='Type START TIME (1-24h)(0-59m) e.g. 23:45')],
+        [sg.Text('Active Hours', font=font1), sg.Push(), sg.Input(k='WORKINGINTERVAL', enable_events=True, font=font1, tooltip='Type how many working HOURS you want. 24 equals to all day, e.g. 8')],
+        [sg.Text('End Time', font=font1), sg.Push(), sg.Input(k='ENDTIME', enable_events=True, font=font1)],
+        [sg.Checkbox('Email Me', font=font1, default=True, k='EMAILCHOICE', enable_events=True)],
+        [sg.Text('Gmail Sender Address', font=font1, k='SENDEREMAILTXT'), sg.Push(), sg.Input(k='SENDEREMAIL', enable_events=True, font=font1, tooltip='Type sender email address (GMAIL only)')],
+        [sg.Text('Gmail App Password', font=font1, k='PASSWORDTXT'), sg.Push(), sg.Input(k='PASSWORD', enable_events=True, font=font1, tooltip='Type or paste your gmail app password', password_char='*')],
+        [sg.Text('Receiver Address', font=font1, k='RECEIVEREMAILTXT'), sg.Push(), sg.Input(k='RECEIVEREMAIL', enable_events=True, font=font1, tooltip='Type receiver email address')],
     ]
 
     right_column = [
-        [sg.Radio('Take Profit', group_id=1, font=('Helvetica', 12), enable_events=True, k='TPCHOICE'), sg.Radio('Stop Loss', group_id=1, font=('Helvetica', 12), enable_events=True, k='SLCHOICE'), sg.Radio('OCO', group_id=1, font=('Helvetica', 12), enable_events=True, k='OCOCHOICE')],
+        [sg.Radio('Take Profit', group_id=1, font=font1, enable_events=True, k='TPCHOICE'), sg.Radio('Stop Loss', group_id=1, font=font1, enable_events=True, k='SLCHOICE'), sg.Radio('OCO', group_id=1, font=font1, enable_events=True, k='OCOCHOICE')],
         # OCO
-        [sg.Text('Take Profit +%', font=('Helvetica', 12), k='OCOTPTXT'), sg.Push(), sg.Input(k='OCOTP', enable_events=True, font=('Helvetica', 12), tooltip='Type OCO Take Profit percentage, e.g. 5.20')],
-        [sg.Text('Stop Loss -%', font=('Helvetica', 12), k='OCOSLTXT'), sg.Push(), sg.Input(k='OCOSL', enable_events=True, font=('Helvetica', 12), tooltip='Type OCO Stop Loss percentage. This should be LOWER than symbol market price WHEN order will be placed, e.g. 1.20')],
-        [sg.Text('Limit Loss -%', font=('Helvetica', 12), k='OCOLLTXT'), sg.Push(), sg.Input(k='OCOLL', enable_events=True, font=('Helvetica', 12), tooltip='Type OCO Stop Loss Limit percentage. This should be HIGHER than symbol market price WHEN order will be placed, e.g. 1.05')],
+        [sg.Text('Take Profit +%', font=font1, k='OCOTPTXT'), sg.Push(), sg.Input(k='OCOTP', enable_events=True, font=font1, tooltip='Type OCO Take Profit percentage, e.g. 5.20')],
+        [sg.Text('Stop Loss -%', font=font1, k='OCOSLTXT'), sg.Push(), sg.Input(k='OCOSL', enable_events=True, font=font1, tooltip='Type OCO Stop Loss percentage. This should be LOWER than symbol market price WHEN order will be placed, e.g. 1.20')],
+        [sg.Text('Limit Loss -%', font=font1, k='OCOLLTXT'), sg.Push(), sg.Input(k='OCOLL', enable_events=True, font=font1, tooltip='Type OCO Stop Loss Limit percentage. This should be HIGHER than symbol market price WHEN order will be placed, e.g. 1.05')],
         # TAKE PROFIT
-        [sg.Text('Stop Profit +%', font=('Helvetica', 12), k='TPSLTXT'), sg.Push(), sg.Input(k='TPSL', enable_events=True, font=('Helvetica', 12), tooltip='Type Take Profit Stop percentage, e.g. 5.25')],
-        [sg.Text('Limit Profit +%', font=('Helvetica', 12), k='TPLTXT'), sg.Push(), sg.Input(k='TPL', enable_events=True, font=('Helvetica', 12), tooltip='Type Take Profit Limit percentage, e.g. 5.20')],
+        [sg.Text('Stop Profit +%', font=font1, k='TPSLTXT'), sg.Push(), sg.Input(k='TPSL', enable_events=True, font=font1, tooltip='Type Take Profit Stop percentage, e.g. 5.25')],
+        [sg.Text('Limit Profit +%', font=font1, k='TPLTXT'), sg.Push(), sg.Input(k='TPL', enable_events=True, font=font1, tooltip='Type Take Profit Limit percentage, e.g. 5.20')],
         # STOP LOSS
-        [sg.Text('Stop Loss -%', font=('Helvetica', 12), k='SLTXT'), sg.Push(), sg.Input(k='SL', enable_events=True, font=('Helvetica', 12), tooltip='Type Stop Loss Stop percentage, e.g. 1.10')],
-        [sg.Text('Limit Loss -``%', font=('Helvetica', 12), k='SLLTXT'), sg.Push(), sg.Input(k='SLL', enable_events=True, font=('Helvetica', 12), tooltip='Type Stop Loss Limit percentage, e.g. 1.15')],
+        [sg.Text('Stop Loss -%', font=font1, k='SLTXT'), sg.Push(), sg.Input(k='SL', enable_events=True, font=font1, tooltip='Type Stop Loss Stop percentage, e.g. 1.10')],
+        [sg.Text('Limit Loss -``%', font=font1, k='SLLTXT'), sg.Push(), sg.Input(k='SLL', enable_events=True, font=font1, tooltip='Type Stop Loss Limit percentage, e.g. 1.15')],
         # TABLEDATA
-        [sg.Text('Output', font=('Helvetica', 12))],
+        [sg.Text('Output', font=font1)],
         [sg.MLine(size=(80, 10), autoscroll=True, reroute_stdout=True, write_only=True, reroute_cprint=True, k='TABLEDATA')],
         # BUTTON
-        [sg.Push(), sg.Button('Send', font=('Helvetica', 12))],
+        [sg.Push(), sg.Button('Send', font=font1)],
         # CREDITS
-        # [sg.Push(), sg.Text('Powered by EScomputers v1.16.1', font=('Helvetica', 9, 'italic'), expand_x=True)]
-        [sg.Push(), sg.Text('Drop me a star on GitHub!', expand_x=True, enable_events=True, k='https://developers.google.com/edu/python/')]
+        [sg.Push()] + [
+            sg.Text('Star/Fork me on GitHub!', font=('Helvetica', 9, 'italic'), expand_x=True, enable_events=True, key=key) for i, key in enumerate(links)]
     ]
 
     # Full layout
@@ -169,6 +175,9 @@ def main():
         inp_tp_lmt_pct = values['TPL']
         inp_sl_stop_pct = values['SL']
         inp_sl_lmt_pct = values['SLL']
+
+        if event in links:
+            webbrowser.open(links[event])
 
         # validate API KEY
         if api_key:
@@ -341,8 +350,6 @@ def main():
             window['PASSWORD'].update(visible=False)
             window['RECEIVEREMAILTXT'].update(visible=False)
             window['RECEIVEREMAIL'].update(visible=False)
-
-
 
         # validate SENDER EMAIL
         if sender_email:
