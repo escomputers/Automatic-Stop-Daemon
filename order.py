@@ -289,6 +289,7 @@ def websocket_connect(usrdata):
 
     # SEND EMAIL
     def send_email(html):
+        send_email.called = True
         sender_email = usrdata['valid_sender_email']
         password = usrdata['password']
         receiver_email = usrdata['valid_receiver_email']
@@ -357,6 +358,7 @@ def websocket_connect(usrdata):
             pass
 
     # define global variables in order to be read properly as function arguments
+    send_email.called = False
     api_key = usrdata['api_key']
     api_secret = usrdata['api_secret']
     usr_tz = usrdata['usr_tz']
@@ -405,7 +407,7 @@ def websocket_connect(usrdata):
 
         # check if it's time to work or not
         if now >= usr_start_time and now <= usr_end_time:
-            if 'valid_sender_email' in usrdata:
+            if 'valid_sender_email' in usrdata and not send_email.called:
                 nowstr = str(now.time())[:8]
                 html = template.render(
                     first_email=True,
