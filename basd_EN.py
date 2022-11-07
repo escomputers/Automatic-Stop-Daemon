@@ -309,17 +309,6 @@ def check_time():
 
 
 # VALIDATION
-def is_working_ival(input):
-    try:
-        input = int(input)
-        if input >= 1 and input <= 24:
-            return input
-        else:
-            print(' [ERROR] Type a valid value between 1 and 24')
-    except ValueError:
-        print(' [ERROR] Type only numbers')
-
-
 def is_mins(input):
     if not input:
         return '00'
@@ -476,6 +465,10 @@ while True:
             print(
                 ' [ERROR] Check your API SECRET KEY, 64 characters minimum, no spaces'
             )
+        elif api_key == api_secret:
+            print(
+                '[ERROR] API Key and API Secret Key cannot be the same'
+            )
         else:
             # initialize tabledata for resume
             tabledata = []
@@ -519,8 +512,8 @@ while True:
                                     'Type how many working HOURS you want. ' +
                                     '24 equals to all day, e.g. 8: '
                                 )
-                                if is_working_ival(inp_working_ival):
-                                    working_ival = is_working_ival(inp_working_ival)
+                                if is_hour(inp_working_ival):
+                                    working_ival = is_hour(inp_working_ival)
 
                                     # get email notification choice
                                     is_email = input(
