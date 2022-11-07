@@ -33,6 +33,8 @@ template = env.get_template('email.html')
 output = io.StringIO()
 logging.basicConfig(stream=output, level=logging.DEBUG)
 
+font1 = ('Helvetica', 12)
+
 
 # OPTIONAL LOGGING STDOUT TO FILE
 def logtofile():
@@ -95,31 +97,42 @@ def websocket_connect(usrdata):
         OCO BUY rule  = Limit Price < Last Price < Stop Price
         '''
 
+        profit_notional = qty * profit_pr
+        loss_notional = qty * sl_lmt_pr_oco
+
         # if stop and limit prices respect OCO rules, place orders
         if last_pr > sl_pr_oco and last_pr < sl_lmt_pr_oco:
 
-            try:
-                client.new_oco_order(**params)
-                txt = 'Success! OCO sell order PLACED'
-                log_response = output.getvalue()
-                window['-OUTPUT-'].print(log_response, text_color='green', font=('Helvetica', 12))
-            except ClientError as error:
-                txt = 'Error! OCO sell order NOT PLACED'
-                window['-OUTPUT-'].print(str(error), text_color='red', font=('Helvetica', 12))
-            finally:
+            if profit_notional > 11 and loss_notional > 11:
+                try:
+                    client.new_oco_order(**params)
+                    txt = 'Success! OCO sell order PLACED'
+                    log_response = output.getvalue()
+                    window['-OUTPUT-'].print(log_response, text_color='green', font=font1)
+                except ClientError as error:
+                    txt = 'Error! OCO sell order NOT PLACED'
+                    window['-OUTPUT-'].print(str(error), text_color='red', font=font1)
+                finally:
+                    if 'valid_sender_email' in usrdata:
+                        oco_mail_body(
+                            txt, symbol, qty, profit_pr, oco_profit_pct,
+                            sl_lmt_pr_oco, sl_pr_oco, oco_lmt_pct, last_pr
+                        )
+                    else:
+                        logtofile()
+            else:
+                txt = '[ERROR] Orders value must be higher than 11USD'
+                window['-OUTPUT-'].print(txt, text_color='red', font=font1)
                 if 'valid_sender_email' in usrdata:
+                    txt = 'Error! OCO sell order NOT PLACED'
                     oco_mail_body(
                         txt, symbol, qty, profit_pr, oco_profit_pct,
                         sl_lmt_pr_oco, sl_pr_oco, oco_lmt_pct, last_pr
                     )
-                else:
-                    logtofile()
-                    pass
-
         else:
-            txt = '[ERROR]Prices relationship for the orders not correct. \n' + \
+            txt = '[ERROR] Prices relationship for the orders not correct. \n' + \
                 'OCO SELL rule = Limit Price > Last Price > Stop Price'
-            window['-OUTPUT-'].print(txt, text_color='red', font=('Helvetica', 12))
+            window['-OUTPUT-'].print(txt, text_color='red', font=font1)
             if 'valid_sender_email' in usrdata:
                 txt = 'Error! OCO sell order NOT PLACED'
                 oco_mail_body(
@@ -163,10 +176,10 @@ def websocket_connect(usrdata):
                 client.new_order(**params)
                 txt = 'Success! Take Profit sell order PLACED'
                 log_response = output.getvalue()
-                window['-OUTPUT-'].print(log_response, text_color='green', font=('Helvetica', 12))
+                window['-OUTPUT-'].print(log_response, text_color='green', font=font1)
             except ClientError as error:
                 txt = 'Error! Take Profit sell order NOT PLACED'
-                window['-OUTPUT-'].print(str(error), text_color='red', font=('Helvetica', 12))
+                window['-OUTPUT-'].print(str(error), text_color='red', font=font1)
             finally:
                 if 'valid_sender_email' in usrdata:
                     tp_mail_body(
@@ -175,8 +188,15 @@ def websocket_connect(usrdata):
                     )
                 else:
                     logtofile()
-
-                pass
+        else:
+            txt = '[ERROR] Order value must be higher than 11USD'
+            window['-OUTPUT-'].print(txt, text_color='red', font=font1)
+            if 'valid_sender_email' in usrdata:
+                txt = 'Error! Take Profit sell order NOT PLACED'
+                tp_mail_body(
+                    txt, symbol, qty,
+                    lmt_profit_pr, stop_pr, tp_lmt_pct, last_pr
+                )
 
     # STOP LOSS ORDER
     def place_sl_order(window, symbol, qty, order_pr, last_pr):
@@ -215,10 +235,10 @@ def websocket_connect(usrdata):
                 client.new_order(**params)
                 txt = 'Success! Stop Loss sell order PLACED'
                 log_response = output.getvalue()
-                window['-OUTPUT-'].print(log_response, text_color='green', font=('Helvetica', 12))
+                window['-OUTPUT-'].print(log_response, text_color='green', font=font1)
             except ClientError as error:
                 txt = 'Error! Stop Loss sell order NOT PLACED'
-                window['-OUTPUT-'].print(str(error), text_color='red', font=('Helvetica', 12))
+                window['-OUTPUT-'].print(str(error), text_color='red', font=font1)
             finally:
                 if 'valid_sender_email' in usrdata:
                     sl_mail_body(
@@ -227,7 +247,15 @@ def websocket_connect(usrdata):
                     )
                 else:
                     logtofile()
-                pass
+        else:
+            txt = '[ERROR] Order value must be higher than 11USD'
+            window['-OUTPUT-'].print(txt, text_color='red', font=font1)
+            if 'valid_sender_email' in usrdata:
+                txt = 'Error! Stop Loss sell order NOT PLACED'
+                sl_mail_body(
+                    txt, symbol, qty,
+                    lmt_loss_pr, sl_pr, sl_lmt_pct, last_pr
+                )
 
     # OCO email body
     def oco_mail_body(txt, symbol, qty, profit_pr, oco_profit_pct, sl_lmt_pr_oco, sl_pr_oco, oco_lmt_pct, last_pr):
@@ -383,7 +411,7 @@ def websocket_connect(usrdata):
 
     layout = [
             [sg.Text('BASD', font=("Helvetica", 18, 'bold')), sg.Push()],
-            [sg.Text('Output', font=('Helvetica', 12)), sg.Push()],
+            [sg.Text('Output', font=font1), sg.Push()],
             [sg.MLine(size=(80, 10), reroute_stdout=True, autoscroll=True, k='-OUTPUT-')],
             [sg.Button('Refresh', tooltip='Get latest data from Binance websocket'),
                 sg.Button('Quit', tooltip='Closing program will stop listening to orders!')],
@@ -436,13 +464,13 @@ def websocket_connect(usrdata):
 
             # grab logging output
             log_response = output.getvalue()
-            window['-OUTPUT-'].print(log_response, font=('Helvetica', 12))
+            window['-OUTPUT-'].print(log_response, font=font1)
         else:
             txt1 = 'It\'s not time to work!\nStart time: ' + (str(usr_start_time))[:16]
             txt2 = '\nEnd time: ' + (str(usr_end_time))[:16]
             txt3 = '\nTimezone is ' + usr_tz
             message = txt1 + txt2 + txt3
-            window['-OUTPUT-'].print(message, font=('Helvetica', 12))
+            window['-OUTPUT-'].print(message, font=font1)
             tempo.sleep(2)
             pass
 
