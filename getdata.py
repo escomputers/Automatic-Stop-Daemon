@@ -76,10 +76,11 @@ def main():
         [sg.Text('API Secret', font=('Helvetica', 12)), sg.Push(), sg.Input(k='APISECRET', enable_events=True, font=('Helvetica', 12), tooltip='Type or paste your Binance.com SECRET KEY', password_char='*')],
         [sg.Text('Timezone Continent', font=('Helvetica', 12)), sg.Push(), sg.Input(k='CONTINENT', enable_events=True, font=('Helvetica', 12), tooltip='Type your CONTINENT (IANA timezone format) e.g. Europe')],
         [sg.Text('Timezone City', font=('Helvetica', 12)), sg.Push(), sg.Input(k='CITY', enable_events=True, font=('Helvetica', 12), tooltip='Type your CITY (IANA timezone format) e.g. Rome')],
+        # [sg.Text('Start Day', font=('Helvetica', 12)), sg.Push(), sg.Input(k='STARTDATE', size=(39, 1), format='%Y-%m-%d', font=('Helvetica', 12), tooltip='Select START DAY'), sg.CalendarButton('Pick', font=('Helvetica', 12), begin_at_sunday_plus=1, target='STARTDAY', no_titlebar=False)],
         [sg.Text('Start Time', font=('Helvetica', 12)), sg.Push(), sg.Input(k='STARTTIME', enable_events=True, font=('Helvetica', 12), tooltip='Type START TIME (1-24h)(0-59m) e.g. 23:45')],
         [sg.Text('Active Hours', font=('Helvetica', 12)), sg.Push(), sg.Input(k='WORKINGINTERVAL', enable_events=True, font=('Helvetica', 12), tooltip='Type how many working HOURS you want. 24 equals to all day, e.g. 8')],
         [sg.Text('End Time', font=('Helvetica', 12)), sg.Push(), sg.Input(k='ENDTIME', enable_events=True, font=('Helvetica', 12))],
-        [sg.Checkbox('Email Notification', font=('Helvetica', 12), default=True, k='EMAILCHOICE', enable_events=True)],
+        [sg.Checkbox('Email Me', font=('Helvetica', 12), default=True, k='EMAILCHOICE', enable_events=True)],
         [sg.Text('Gmail Sender Address', font=('Helvetica', 12), k='SENDEREMAILTXT'), sg.Push(), sg.Input(k='SENDEREMAIL', enable_events=True, font=('Helvetica', 12), tooltip='Type sender email address (GMAIL only)')],
         [sg.Text('Gmail App Password', font=('Helvetica', 12), k='PASSWORDTXT'), sg.Push(), sg.Input(k='PASSWORD', enable_events=True, font=('Helvetica', 12), tooltip='Type or paste your gmail app password', password_char='*')],
         [sg.Text('Receiver Address', font=('Helvetica', 12), k='RECEIVEREMAILTXT'), sg.Push(), sg.Input(k='RECEIVEREMAIL', enable_events=True, font=('Helvetica', 12), tooltip='Type receiver email address')],
@@ -121,7 +122,7 @@ def main():
 
     # Display and interact with the Window using an Event Loop
     while True:
-        event, values = window.read(timeout=1000)
+        event, values = window.read()
 
         # email section visible by default
         window['SENDEREMAILTXT'].update(visible=True)
@@ -257,6 +258,11 @@ def main():
                 start_time = is_valid_time(window, inp_start_time)
                 user_start_time = datetime.strptime(str(start_time)[:-3], '%H:%M')  # used for end_time calc
 
+        # validate START TIME as required
+        if inp_working_ival and not inp_start_time:
+            window['TABLEDATA'].print('[ERROR] Start Time cannot be empty', text_color='red', font=('Helvetica', 14))
+            window['Send'].update(disabled=True)
+
         # validate WORKING INTERVAL
         if inp_working_ival:
             if is_hour(window, inp_working_ival):
@@ -267,19 +273,14 @@ def main():
             window['TABLEDATA'].print('[ERROR] Active Hours cannot be empty', text_color='red', font=('Helvetica', 14))
             window['Send'].update(disabled=True)
 
-        # validate START TIME as required
-        if inp_working_ival and not inp_start_time:
-            window['TABLEDATA'].print('[ERROR] Start Time cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-
         # construct USER END TIME
         try:
             if user_start_time and working_ival:
                 end_time = (user_start_time + timedelta(hours=working_ival)).time()
-                user_end_time = str(end_time)[:-3]  # remove seconds from string
+                user_end_time = str(end_time)[:-3]  # remove seconds from string used only for displaying
                 window['ENDTIME'].update(user_end_time, disabled=True)
                 window['Send'].update(disabled=False)
-                usrdata.update({'user_start_time_def': start_time, 'user_end_time_def': end_time})
+                usrdata.update({'user_start_time_def': start_time, 'working_ival': working_ival})
         except UnboundLocalError:
             continue
 
@@ -473,7 +474,6 @@ def main():
                     window['SENDEREMAIL'].update(disabled=True)
                     window['PASSWORD'].update(disabled=True)
                     window['RECEIVEREMAIL'].update(disabled=True)
-                    usrdata.update({'email_choice': email_choice})
                     usrdata.update({'valid_sender_email': valid_sender_email})
                     usrdata.update({'password': password})
                     usrdata.update({'valid_receiver_email': valid_receiver_email})
