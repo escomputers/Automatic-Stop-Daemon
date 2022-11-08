@@ -19,7 +19,7 @@ usrdata = {}
 # set default fonts
 font12 = ('Helvetica', 12)
 font14 = ('Helvetica', 14)
-
+font_ul = ("Helvetica", 16, "underline")
 
 # VALIDATION
 def is_email(window, input):
@@ -339,13 +339,23 @@ def main():
             else:
                 window['OUT'].print('[ERROR- GENERAL] All fields are required except for Email Alert', text_color='red', font=font14)
 
-        # if link has been clicked open URL
-        if event in links:
-            webbrowser.open(links[event])
+        for key in links:
+            window[key].bind('<Enter>', '<Enter>')
+            window[key].bind('<Leave>', '<Leave>')
+            window[key].set_cursor('hand2')
 
         # if user wants to quit or window was closed
         if event == sg.WINDOW_CLOSED or event == 'Quit':
             break
+        elif event.endswith('<Enter>'):
+            element = window[event.split('<')[0]]
+            element.update(font=font_ul)
+        elif event.endswith('<Leave>'):
+            element = window[event.split('<')[0]]
+            element.update(font=font12)
+        # if link has been clicked open URL
+        if event in links:
+            webbrowser.open(links[event])
 
     # Finish up by removing from the screen
     window.close()
