@@ -17,9 +17,10 @@ regex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{
 usrdata = {}
 
 # set default fonts
-font12 = ('Helvetica', 12)
-font14 = ('Helvetica', 14)
-font_ul = ("Helvetica", 16, "underline")
+font12 = ('Segoe UI', 12)
+font14 = ('Segoe UI', 14)
+font_ul = ("Segoe UI", 16, "underline")
+
 
 # VALIDATION
 def is_email(window, input):
@@ -49,7 +50,7 @@ def main():
     sg.theme('Default 1')
 
     left_column = [
-        [sg.Text('BASD', font=('Helvetica', 18, 'bold'), expand_x=True), sg.Push()],
+        [sg.Text('BASD', font=('Segoe UI', 18, 'bold'), expand_x=True), sg.Push()],
         [sg.Text('API Key', font=font12), sg.Push(), sg.Input(k='APIKEY', enable_events=True, font=font12, tooltip='Type or paste your Binance.com API KEY', password_char='*')],
         [sg.Text('API Secret', font=font12), sg.Push(), sg.Input(k='APISECRET', enable_events=True, font=font12, tooltip='Type or paste your Binance.com SECRET KEY', password_char='*')],
         [sg.Text('Timezone Continent', font=font12), sg.Push(), sg.Input(k='CONTINENT', enable_events=True, font=font12, tooltip='Type your CONTINENT (IANA timezone format) e.g. Europe')],
@@ -57,7 +58,7 @@ def main():
         [sg.Text('Start Time', font=font12), sg.Push(), sg.Input(k='STARTTIME', enable_events=True, font=font12, tooltip='Type START TIME (1-24h)(0-59m) e.g. 23:45')],
         [sg.Text('Active Hours', font=font12), sg.Push(), sg.Input(k='WORKINGINTERVAL', enable_events=True, font=font12, tooltip='Type how many working HOURS you want. 24 equals to all day, e.g. 8')],
         [sg.Text('End Time', font=font12), sg.Push(), sg.Input(k='ENDTIME', disabled=True, enable_events=True, font=font12)],
-        [sg.Checkbox('Email alert', font=font12, default=True, k='EMAILCHOICE', enable_events=True)],
+        [sg.Checkbox('Email Alert', font=font12, default=True, k='EMAILCHOICE', enable_events=True)],
         [sg.Text('Gmail Sender Address', font=font12, k='SENDEREMAILTXT'), sg.Push(), sg.Input(k='SENDEREMAIL', enable_events=True, font=font12, tooltip='Type sender email address (GMAIL only)')],
         [sg.Text('Gmail App Password', font=font12, k='PASSWORDTXT'), sg.Push(), sg.Input(k='PASSWORD', enable_events=True, font=font12, tooltip='Type or paste your gmail app password', password_char='*')],
         [sg.Text('Receiver Address', font=font12, k='RECEIVEREMAILTXT'), sg.Push(), sg.Input(k='RECEIVEREMAIL', enable_events=True, font=font12, tooltip='Type receiver email address')],
@@ -81,7 +82,7 @@ def main():
         [sg.Push(), sg.Button('Start', font=font12)],
         # CREDITS
         [sg.Push()] + [
-            sg.Text('Star/Fork me on GitHub!', font=('Helvetica', 9, 'italic'), expand_x=True, enable_events=True, key=key) for i, key in enumerate(links)]
+            sg.Text('Star/Fork me on GitHub!', font=('Segoe UI', 9, 'italic'), expand_x=True, enable_events=True, key=key) for i, key in enumerate(links)]
     ]
 
     # Full layout
@@ -266,7 +267,7 @@ def main():
                     end_time = (user_start_time + timedelta(hours=inp_working_ival)).time()
                     user_end_time = str(end_time)[:-3]  # remove seconds from string used only for displaying
                     window['ENDTIME'].update(user_end_time)
-                except UnboundLocalError:
+                except TypeError:
                     continue
 
                 # OCO FIELDS

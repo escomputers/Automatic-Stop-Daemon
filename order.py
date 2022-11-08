@@ -33,7 +33,7 @@ template = env.get_template('email.html')
 output = io.StringIO()
 logging.basicConfig(stream=output, level=logging.DEBUG)
 
-font1 = ('Helvetica', 12)
+font1 = ('Segoe UI', 12)
 
 
 # OPTIONAL LOGGING STDOUT TO FILE
@@ -414,7 +414,7 @@ def websocket_connect(usrdata):
     sg.theme('Default 1')
 
     layout = [
-            [sg.Text('BASD', font=("Helvetica", 18, 'bold')), sg.Push()],
+            [sg.Text('BASD', font=("Segoe UI", 18, 'bold')), sg.Push()],
             [sg.Text('Output', font=font1), sg.Push()],
             [sg.MLine(size=(80, 10), reroute_stdout=True, autoscroll=True, k='-OUTPUT-')],
             [sg.Button('Refresh', tooltip='Get latest data from Binance websocket'),
