@@ -16,59 +16,32 @@ regex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{
 # initialize DATA dictionary
 usrdata = {}
 
+# set default fonts
+font12 = ('Helvetica', 12)
+font14 = ('Helvetica', 14)
+
 
 # VALIDATION
-def is_hour(window, input):
-    try:
-        input = int(input)
-        if input >= 1 and input <= 24:
-            return input
-        else:
-            window['TABLEDATA'].print('[ERROR] Type a valid value between 1 and 24', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-    except ValueError:
-        window['TABLEDATA'].print('[ERROR] Type only numbers', text_color='red', font=('Helvetica', 14))
-        window['Send'].update(disabled=True)
-
-
-def is_valid_time(window, input):
-    timeformat = '%H:%M'
-    try:
-        input = datetime.strptime(input, timeformat)
-        window['TABLEDATA'].print('[OK] Start Time', text_color='green', font=('Helvetica', 14))
-        window['Send'].update(disabled=False)
-        return input.time()
-    except ValueError:
-        window['TABLEDATA'].print('[ERROR] Type a valid time format, e.g. 15:30', text_color='red', font=('Helvetica', 14))
-        window['Send'].update(disabled=True)
-
-
 def is_email(window, input):
     if re.fullmatch(regex, input):
-        window['Send'].update(disabled=False)
         return input
     else:
-        window['TABLEDATA'].print('[ERROR] Invalid email address', text_color='red', font=('Helvetica', 14))
-        window['Send'].update(disabled=True)
+        window['OUT'].print('[ERROR] Invalid email address', text_color='red', font=font14)
 
 
 def is_float(window, input):
     try:
         input = float(input)
         if input >= 0.05 and input <= 2999.99:
-            window['Send'].update(disabled=False)
             return input
         else:
-            window['TABLEDATA'].print('[ERROR] Type a valid value between 0.05 and 2999.99', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
+            window['OUT'].print('[ERROR] Type a valid value between 0.05 and 2999.99', text_color='red', font=font14)
     except ValueError:
-        window['TABLEDATA'].print('[ERROR] Type only numbers ', text_color='red', font=('Helvetica', 14))
-        window['Send'].update(disabled=True)
+        window['OUT'].print('[ERROR] Type only numbers ', text_color='red', font=font14)
 
 
 def main():
-    # set default font
-    font1 = ('Helvetica', 12)
+
     links = {
         "GitHub": "https://github.com/escomputers/BASD",
     }
@@ -77,37 +50,35 @@ def main():
 
     left_column = [
         [sg.Text('BASD', font=('Helvetica', 18, 'bold'), expand_x=True), sg.Push()],
-        [sg.Push(), sg.Text('Required fields', font=('Helvetica', 12, 'italic'))],
-        [sg.Text('API Key', font=font1), sg.Push(), sg.Input(k='APIKEY', enable_events=True, font=font1, tooltip='Type or paste your Binance.com API KEY', password_char='*')],
-        [sg.Text('API Secret', font=font1), sg.Push(), sg.Input(k='APISECRET', enable_events=True, font=font1, tooltip='Type or paste your Binance.com SECRET KEY', password_char='*')],
-        [sg.Text('Timezone Continent', font=font1), sg.Push(), sg.Input(k='CONTINENT', enable_events=True, font=font1, tooltip='Type your CONTINENT (IANA timezone format) e.g. Europe')],
-        [sg.Text('Timezone City', font=font1), sg.Push(), sg.Input(k='CITY', enable_events=True, font=font1, tooltip='Type your CITY (IANA timezone format) e.g. Rome')],
-        [sg.Text('Start Time', font=font1), sg.Push(), sg.Input(k='STARTTIME', enable_events=True, font=font1, tooltip='Type START TIME (1-24h)(0-59m) e.g. 23:45')],
-        [sg.Text('Active Hours', font=font1), sg.Push(), sg.Input(k='WORKINGINTERVAL', enable_events=True, font=font1, tooltip='Type how many working HOURS you want. 24 equals to all day, e.g. 8')],
-        [sg.Text('End Time', font=font1), sg.Push(), sg.Input(k='ENDTIME', enable_events=True, font=font1)],
-        [sg.Checkbox('Email Me', font=font1, default=True, k='EMAILCHOICE', enable_events=True)],
-        [sg.Text('Gmail Sender Address', font=font1, k='SENDEREMAILTXT'), sg.Push(), sg.Input(k='SENDEREMAIL', enable_events=True, font=font1, tooltip='Type sender email address (GMAIL only)')],
-        [sg.Text('Gmail App Password', font=font1, k='PASSWORDTXT'), sg.Push(), sg.Input(k='PASSWORD', enable_events=True, font=font1, tooltip='Type or paste your gmail app password', password_char='*')],
-        [sg.Text('Receiver Address', font=font1, k='RECEIVEREMAILTXT'), sg.Push(), sg.Input(k='RECEIVEREMAIL', enable_events=True, font=font1, tooltip='Type receiver email address')],
+        [sg.Text('API Key', font=font12), sg.Push(), sg.Input(k='APIKEY', enable_events=True, font=font12, tooltip='Type or paste your Binance.com API KEY', password_char='*')],
+        [sg.Text('API Secret', font=font12), sg.Push(), sg.Input(k='APISECRET', enable_events=True, font=font12, tooltip='Type or paste your Binance.com SECRET KEY', password_char='*')],
+        [sg.Text('Timezone Continent', font=font12), sg.Push(), sg.Input(k='CONTINENT', enable_events=True, font=font12, tooltip='Type your CONTINENT (IANA timezone format) e.g. Europe')],
+        [sg.Text('Timezone City', font=font12), sg.Push(), sg.Input(k='CITY', enable_events=True, font=font12, tooltip='Type your CITY (IANA timezone format) e.g. Rome')],
+        [sg.Text('Start Time', font=font12), sg.Push(), sg.Input(k='STARTTIME', enable_events=True, font=font12, tooltip='Type START TIME (1-24h)(0-59m) e.g. 23:45')],
+        [sg.Text('Active Hours', font=font12), sg.Push(), sg.Input(k='WORKINGINTERVAL', enable_events=True, font=font12, tooltip='Type how many working HOURS you want. 24 equals to all day, e.g. 8')],
+        [sg.Text('End Time', font=font12), sg.Push(), sg.Input(k='ENDTIME', disabled=True, enable_events=True, font=font12)],
+        [sg.Checkbox('Email alert', font=font12, default=True, k='EMAILCHOICE', enable_events=True)],
+        [sg.Text('Gmail Sender Address', font=font12, k='SENDEREMAILTXT'), sg.Push(), sg.Input(k='SENDEREMAIL', enable_events=True, font=font12, tooltip='Type sender email address (GMAIL only)')],
+        [sg.Text('Gmail App Password', font=font12, k='PASSWORDTXT'), sg.Push(), sg.Input(k='PASSWORD', enable_events=True, font=font12, tooltip='Type or paste your gmail app password', password_char='*')],
+        [sg.Text('Receiver Address', font=font12, k='RECEIVEREMAILTXT'), sg.Push(), sg.Input(k='RECEIVEREMAIL', enable_events=True, font=font12, tooltip='Type receiver email address')],
     ]
 
     right_column = [
-        [sg.Radio('Take Profit', group_id=1, font=font1, enable_events=True, k='TPCHOICE'), sg.Radio('Stop Loss', group_id=1, font=font1, enable_events=True, k='SLCHOICE'), sg.Radio('OCO', group_id=1, font=font1, enable_events=True, k='OCOCHOICE')],
+        [sg.Radio('Take Profit', group_id=1, font=font12, enable_events=True, k='TPCHOICE'), sg.Radio('Stop Loss', group_id=1, font=font12, enable_events=True, k='SLCHOICE'), sg.Radio('OCO', group_id=1, font=font12, enable_events=True, k='OCOCHOICE')],
         # OCO
-        [sg.Text('Take Profit +%', font=font1, k='OCOTPTXT'), sg.Push(), sg.Input(k='OCOTP', enable_events=True, font=font1, tooltip='Type OCO Take Profit percentage, e.g. 5.20')],
-        [sg.Text('Stop Loss -%', font=font1, k='OCOSLTXT'), sg.Push(), sg.Input(k='OCOSL', enable_events=True, font=font1, tooltip='Type OCO Stop Loss percentage. This should be LOWER than symbol market price WHEN order will be placed, e.g. 1.20')],
-        [sg.Text('Limit Loss -%', font=font1, k='OCOLLTXT'), sg.Push(), sg.Input(k='OCOLL', enable_events=True, font=font1, tooltip='Type OCO Stop Loss Limit percentage. This should be HIGHER than symbol market price WHEN order will be placed, e.g. 1.05')],
+        [sg.Text('Take Profit +%', font=font12, k='OCOTPTXT'), sg.Push(), sg.Input(k='OCOTP', enable_events=True, font=font12, tooltip='Type OCO Take Profit percentage, e.g. 5.20')],
+        [sg.Text('Stop Loss -%', font=font12, k='OCOSLTXT'), sg.Push(), sg.Input(k='OCOSL', enable_events=True, font=font12, tooltip='Type OCO Stop Loss percentage. This should be LOWER than symbol market price WHEN order will be placed, e.g. 1.20')],
+        [sg.Text('Limit Loss -%', font=font12, k='OCOLLTXT'), sg.Push(), sg.Input(k='OCOLL', enable_events=True, font=font12, tooltip='Type OCO Stop Loss Limit percentage. This should be HIGHER than symbol market price WHEN order will be placed, e.g. 1.05')],
         # TAKE PROFIT
-        [sg.Text('Stop Profit +%', font=font1, k='TPSLTXT'), sg.Push(), sg.Input(k='TPSL', enable_events=True, font=font1, tooltip='Type Take Profit Stop percentage, e.g. 5.25')],
-        [sg.Text('Limit Profit +%', font=font1, k='TPLTXT'), sg.Push(), sg.Input(k='TPL', enable_events=True, font=font1, tooltip='Type Take Profit Limit percentage, e.g. 5.20')],
+        [sg.Text('Stop Profit +%', font=font12, k='TPSLTXT'), sg.Push(), sg.Input(k='TPSL', enable_events=True, font=font12, tooltip='Type Take Profit Stop percentage, e.g. 5.25')],
+        [sg.Text('Limit Profit +%', font=font12, k='TPLTXT'), sg.Push(), sg.Input(k='TPL', enable_events=True, font=font12, tooltip='Type Take Profit Limit percentage, e.g. 5.20')],
         # STOP LOSS
-        [sg.Text('Stop Loss -%', font=font1, k='SLTXT'), sg.Push(), sg.Input(k='SL', enable_events=True, font=font1, tooltip='Type Stop Loss Stop percentage, e.g. 1.10')],
-        [sg.Text('Limit Loss -``%', font=font1, k='SLLTXT'), sg.Push(), sg.Input(k='SLL', enable_events=True, font=font1, tooltip='Type Stop Loss Limit percentage, e.g. 1.15')],
-        # TABLEDATA
-        [sg.Text('Output', font=font1)],
-        [sg.MLine(size=(80, 10), autoscroll=True, reroute_stdout=True, write_only=True, reroute_cprint=True, k='TABLEDATA')],
+        [sg.Text('Stop Loss -%', font=font12, k='SLTXT'), sg.Push(), sg.Input(k='SL', enable_events=True, font=font12, tooltip='Type Stop Loss Stop percentage, e.g. 1.10')],
+        [sg.Text('Limit Loss -``%', font=font12, k='SLLTXT'), sg.Push(), sg.Input(k='SLL', enable_events=True, font=font12, tooltip='Type Stop Loss Limit percentage, e.g. 1.15')],
+        # OUTPUT
+        [sg.MLine(size=(80, 10), autoscroll=True, reroute_stdout=True, write_only=True, reroute_cprint=True, k='OUT')],
         # BUTTON
-        [sg.Push(), sg.Button('Send', font=font1)],
+        [sg.Push(), sg.Button('Start', font=font12)],
         # CREDITS
         [sg.Push()] + [
             sg.Text('Star/Fork me on GitHub!', font=('Helvetica', 9, 'italic'), expand_x=True, enable_events=True, key=key) for i, key in enumerate(links)]
@@ -127,17 +98,16 @@ def main():
 
     # Display and interact with the Window using an Event Loop
     while True:
-        event, values = window.read()
+        event, values = window.read(timeout=1000)
 
-        # email section visible by default
+        # EMAIL SECTION visible by default
         window['SENDEREMAILTXT'].update(visible=True)
         window['SENDEREMAIL'].update(visible=True)
         window['PASSWORDTXT'].update(visible=True)
         window['PASSWORD'].update(visible=True)
         window['RECEIVEREMAILTXT'].update(visible=True)
         window['RECEIVEREMAIL'].update(visible=True)
-
-        # order section hidden by default
+        # ORDER SECTION hidden by default
         window['OCOTPTXT'].update(visible=False)
         window['OCOTP'].update(visible=False)
         window['OCOSLTXT'].update(visible=False)
@@ -153,7 +123,7 @@ def main():
         window['SLLTXT'].update(visible=False)
         window['SLL'].update(visible=False)
 
-        # define global variables
+        # GLOBAL VARIABLES
         api_key = values['APIKEY']
         api_secret = values['APISECRET']
         tz_cont = values['CONTINENT']
@@ -175,124 +145,7 @@ def main():
         inp_sl_stop_pct = values['SL']
         inp_sl_lmt_pct = values['SLL']
 
-        if event in links:
-            webbrowser.open(links[event])
-
-        # validate API KEY
-        if api_key:
-            if len(api_key) < 64:
-                window['TABLEDATA'].print('[ERROR] Check your API Key, 64 characters minimum, no spaces', text_color='red', font=('Helvetica', 14))
-                window['Send'].update(disabled=True)
-            else:
-                window['TABLEDATA'].print('[OK] API Key', text_color='green', font=('Helvetica', 14))
-                window['Send'].update(disabled=False)
-
-        # validate API SECRET KEY
-        if api_secret:
-            if len(api_secret) < 64:
-                window['TABLEDATA'].print('[ERROR] Check your API Secret Key, 64 characters minimum, no spaces', text_color='red', font=('Helvetica', 14))
-                window['Send'].update(disabled=True)
-            else:
-                window['TABLEDATA'].print('[OK] API Secret Key', text_color='green', font=('Helvetica', 14))
-                window['Send'].update(disabled=False)
-
-        # validate API SECRET KEY as required
-        if api_key and not api_secret:
-            window['TABLEDATA'].print('[ERROR] Api Secret Key cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-
-        # validate API KEY as required
-        if api_secret and not api_key:
-            window['TABLEDATA'].print('[ERROR] Api Key cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-
-        # validate API KEYS
-        if len(api_key) >= 64 and len(api_secret) >= 64:
-            if api_key == api_secret:
-                window['TABLEDATA'].print('[ERROR] API Key and API Secret Key cannot be the same', text_color='red', font=('Helvetica', 14))
-                window['Send'].update(disabled=True)
-            else:
-                window['TABLEDATA'].print('[OK] API Key and API Secret Key', text_color='green', font=('Helvetica', 14))
-                window['Send'].update(disabled=False)
-                usrdata.update({'api_key': api_key, 'api_secret': api_secret})
-
-        # validate TIMEZONE CONTINENT
-        if tz_cont:
-            if tz_cont.isalpha():
-                window['TABLEDATA'].print('[OK] Timezone Continent format', text_color='green', font=('Helvetica', 14))
-                window['Send'].update(disabled=False)
-            else:
-                window['TABLEDATA'].print('[ERROR] Type only letters', text_color='red', font=('Helvetica', 14))
-                window['Send'].update(disabled=True)
-
-        # validate TIMEZONE CITY
-        if tz_city:
-            if tz_city.isalpha():
-                window['TABLEDATA'].print('[OK] Timezone City format', text_color='green', font=('Helvetica', 14))
-                window['Send'].update(disabled=False)
-            else:
-                window['TABLEDATA'].print('[ERROR] Type only letters', text_color='red', font=('Helvetica', 14))
-                window['Send'].update(disabled=True)
-
-        # validate TIMEZONE CONTINENT as required
-        if tz_city and not tz_cont:
-            window['TABLEDATA'].print('[ERROR] Timezone Continent cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-
-        # validate TIMEZONE CITY as required
-        if tz_cont and not tz_city:
-            window['TABLEDATA'].print('[ERROR] Timezone City cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-
-        # validate TIMEZONE
-        if tz_cont.isalpha() and tz_city.isalpha():
-            usr_tz = tz_cont.capitalize() + '/' + tz_city.capitalize()
-            if usr_tz in pytz.all_timezones:
-                usrdata.update({'usr_tz': usr_tz})
-                window['TABLEDATA'].print('[OK] Timezone', text_color='green', font=('Helvetica', 14))
-                window['CONTINENT'].update(tz_cont.capitalize())
-                window['CITY'].update(tz_city.capitalize())
-                window['Send'].update(disabled=False)
-            else:
-                window['TABLEDATA'].print(
-                        '[ERROR] Timezone: ' + tz_cont.capitalize() + '/' + tz_city.capitalize() +
-                        ' you entered is not valid. \n ', text_color='red', font=('Helvetica', 14)
-                    )
-                window['Send'].update(disabled=True)
-
-        # validate START TIME
-        if inp_start_time:
-            if is_valid_time(window, inp_start_time):
-                start_time = is_valid_time(window, inp_start_time)
-                user_start_time = datetime.strptime(str(start_time)[:-3], '%H:%M')  # used for end_time calc
-
-        # validate START TIME as required
-        if inp_working_ival and not inp_start_time:
-            window['TABLEDATA'].print('[ERROR] Start Time cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-
-        # validate WORKING INTERVAL
-        if inp_working_ival:
-            if is_hour(window, inp_working_ival):
-                working_ival = is_hour(window, inp_working_ival)
-
-        # validate WORKING INTERVAL as required
-        if inp_start_time and not inp_working_ival:
-            window['TABLEDATA'].print('[ERROR] Active Hours cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-
-        # construct USER END TIME
-        try:
-            if user_start_time and working_ival:
-                end_time = (user_start_time + timedelta(hours=working_ival)).time()
-                user_end_time = str(end_time)[:-3]  # remove seconds from string used only for displaying
-                window['ENDTIME'].update(user_end_time, disabled=True)
-                window['Send'].update(disabled=False)
-                usrdata.update({'user_start_time_def': start_time, 'working_ival': working_ival})
-        except UnboundLocalError:
-            continue
-
-        # show order inputs according to radio buttons
+        # show order fields according to radio buttons
         if tp_choice:
             usrdata.update({'tp_choice': tp_choice})
             window['TPSLTXT'].update(visible=True)
@@ -342,7 +195,7 @@ def main():
             window['TPLTXT'].update(visible=False)
             window['TPL'].update(visible=False)
 
-        # get EMAIL CHOICE
+        # if not email, hide fields
         if email_choice == False:
             window['SENDEREMAILTXT'].update(visible=False)
             window['SENDEREMAIL'].update(visible=False)
@@ -351,154 +204,146 @@ def main():
             window['RECEIVEREMAILTXT'].update(visible=False)
             window['RECEIVEREMAIL'].update(visible=False)
 
-        # validate SENDER EMAIL
-        if sender_email:
-            if is_email(window, sender_email):
-                valid_sender_email = is_email(window, sender_email)
-                if '@gmail.com' in valid_sender_email:
-                    window['TABLEDATA'].print('[OK] Valid sender email address', text_color='green', font=('Helvetica', 14))
-                    window['Send'].update(disabled=False)
+        if event == 'Start':
+            if api_key and api_secret and tz_cont and tz_city and inp_start_time and inp_working_ival and oco_choice or tp_choice or sl_choice:
+                # API KEY
+                if len(api_key) < 64 or ' ' in api_key:
+                    window['OUT'].print('[ERROR- API KEY] at least 64 characters, no spaces', text_color='red', font=font14)
                 else:
-                    window['TABLEDATA'].print('[ERROR] Only Gmail account currently supported', text_color='red', font=('Helvetica', 14))
-                    window['Send'].update(disabled=True)
+                    window['OUT'].print('[OK- API KEY]', text_color='green', font=font14)
+                # API SECRET
+                if len(api_secret) < 64 or ' ' in api_secret:
+                    window['OUT'].print('[ERROR- API SECRET] at least 64 characters, no spaces', text_color='red', font=font14)
+                else:
+                    window['OUT'].print('[OK- API SECRET]', text_color='green', font=font14)
 
-        # validate PASSWORD
-        if sender_email and not password or receiver_email and not password:
-            window['TABLEDATA'].print('[ERROR] Password cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-        if sender_email and password and receiver_email and password:
-            window['TABLEDATA'].print('[OK] Password not empty', text_color='green', font=('Helvetica', 14))
-            window['Send'].update(disabled=False)
+                # API KEYS
+                if len(api_key) >= 64 and len(api_secret) >= 64:
+                    if api_key == api_secret:
+                        window['OUT'].print('[ERROR- API KEY and API SECRET] cannot be the same', text_color='red', font=font14)
+                    else:
+                        window['OUT'].print('[OK- API KEY and API SECRET]', text_color='green', font=font14)
+                        usrdata.update({'api_key': api_key, 'api_secret': api_secret})
 
-        # validate RECEIVER EMAIL
-        if receiver_email:
-            if is_email(window, receiver_email):
-                valid_receiver_email = is_email(window, receiver_email)
-                window['TABLEDATA'].print('[OK] Valid receiver email address', text_color='green', font=('Helvetica', 14))
+                # TIMEZONE
+                if tz_cont.isalpha() and tz_city.isalpha():
+                    usr_tz = tz_cont.capitalize() + '/' + tz_city.capitalize()
+                    if usr_tz in pytz.all_timezones:
+                        usrdata.update({'usr_tz': usr_tz})
+                        window['OUT'].print('[OK- TIMEZONE valid]', text_color='green', font=font14)
+                        window['CONTINENT'].update(tz_cont.capitalize())
+                        window['CITY'].update(tz_city.capitalize())
+                    else:
+                        window['OUT'].print(
+                                '[ERROR- TIMEZONE] ' + tz_cont.capitalize() + '/' + tz_city.capitalize() +
+                                ' does not exist. \n ', text_color='red', font=font14
+                            )
+                else:
+                    window['OUT'].print('[ERROR- TZ CONTINENT and/or TZ CITY] type only letters, no spaces', text_color='red', font=font14)
 
-        # validate RECEIVER EMAIL as required
-        if sender_email and not receiver_email or password and not receiver_email:
-            window['TABLEDATA'].print('[ERROR] Receiver Email Address cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
+                # START TIME
+                try:
+                    inp_start_time = datetime.strptime(inp_start_time, '%H:%M')
+                    start_time = inp_start_time.time()
+                    user_start_time = datetime.strptime(str(start_time)[:-3], '%H:%M')  # used for end_time calc
+                    usrdata.update({'user_start_time_def': start_time})
+                    window['OUT'].print('[OK- START TIME]', text_color='green', font=font14)
+                except ValueError:
+                    window['OUT'].print('[ERROR- START TIME] no spaces, e.g. 15:30', text_color='red', font=font14)
 
-        # validate ORDER inputs
-        # OCO
-        if inp_oco_profit_pct:
-            if is_float(window, inp_oco_profit_pct):
-                oco_profit_pct = is_float(window, inp_oco_profit_pct)
-                window['TABLEDATA'].print('[OK] Valid OCO Take Profit +%', text_color='green', font=('Helvetica', 14))
-        if inp_oco_sl_pct:
-            if is_float(window, inp_oco_sl_pct):
-                oco_sl_pct = is_float(window, inp_oco_sl_pct)
-                window['TABLEDATA'].print('[OK] Valid OCO Stop Loss -%', text_color='green', font=('Helvetica', 14))
-        if inp_oco_lmt_pct:
-            if is_float(window, inp_oco_lmt_pct):
-                oco_lmt_pct = is_float(window, inp_oco_lmt_pct)
-                window['TABLEDATA'].print('[OK] Valid OCO Stop Loss Limit -%', text_color='green', font=('Helvetica', 14))
-                usrdata.update({'oco_profit_pct': oco_profit_pct, 'oco_sl_pct': oco_sl_pct, 'oco_lmt_pct': oco_lmt_pct})
+                # WORKING INTERVAL
+                try:
+                    inp_working_ival = int(inp_working_ival)
+                    if inp_working_ival >= 1 and inp_working_ival <= 24:
+                        usrdata.update({'working_ival': inp_working_ival})
+                    else:
+                        window['OUT'].print('[ERROR- ACTIVE HOURS] Type a valid value between 1 and 24', text_color='red', font=font14)
+                except ValueError:
+                    window['OUT'].print('[ERROR- ACTIVE HOURS] Type only numbers', text_color='red', font=font14)
 
-        # validate OCO fields ar required
-        if oco_choice and not inp_oco_profit_pct or oco_choice and not inp_oco_sl_pct or oco_choice and not inp_oco_lmt_pct:
-            window['TABLEDATA'].print('[ERROR] OCO fields cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-        if inp_oco_profit_pct and not inp_oco_sl_pct or inp_oco_profit_pct and not inp_oco_lmt_pct:
-            window['TABLEDATA'].print('[ERROR] OCO Take Profit cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-        if inp_oco_sl_pct and not inp_oco_profit_pct or inp_oco_sl_pct and not inp_oco_lmt_pct:
-            window['TABLEDATA'].print('[ERROR] OCO Stop Loss cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-        if inp_oco_lmt_pct and not inp_oco_sl_pct or inp_oco_lmt_pct and not inp_oco_profit_pct:
-            window['TABLEDATA'].print('[ERROR] OCO Stop Loss Limit cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
+                # END TIME
+                try:
+                    end_time = (user_start_time + timedelta(hours=inp_working_ival)).time()
+                    user_end_time = str(end_time)[:-3]  # remove seconds from string used only for displaying
+                    window['ENDTIME'].update(user_end_time)
+                except UnboundLocalError:
+                    continue
 
-        # TP
-        if inp_tp_stop_pct:
-            if is_float(window, inp_tp_stop_pct):
-                tp_stop_pct = is_float(window, inp_tp_stop_pct)
-                window['TABLEDATA'].print('[OK] Valid Take Profit Stop +%', text_color='green', font=('Helvetica', 14))
-        if inp_tp_lmt_pct:
-            if is_float(window, inp_tp_lmt_pct):
-                tp_lmt_pct = is_float(window, inp_tp_lmt_pct)
-                window['TABLEDATA'].print('[OK] Valid Take Profit Stop Limit +%', text_color='green', font=('Helvetica', 14))
-                usrdata.update({'tp_stop_pct': tp_stop_pct, 'tp_lmt_pct': tp_lmt_pct})
-
-        # validate TP fields ar required
-        if tp_choice and not inp_tp_stop_pct or tp_choice and not inp_tp_lmt_pct:
-            window['TABLEDATA'].print('[ERROR] Take Profit fields cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-        if inp_tp_stop_pct and not inp_tp_lmt_pct:
-            window['TABLEDATA'].print('[ERROR] Take Profit Stop cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-        if inp_tp_lmt_pct and not inp_tp_stop_pct:
-            window['TABLEDATA'].print('[ERROR] Take Profit Limit cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-
-        # SL
-        if inp_sl_stop_pct:
-            if is_float(window, inp_sl_stop_pct):
-                sl_stop_pct = is_float(window, inp_sl_stop_pct)
-                window['TABLEDATA'].print('[OK] Valid Stop Loss Stop -%', text_color='green', font=('Helvetica', 14))
-        if inp_sl_lmt_pct:
-            if is_float(window, inp_sl_lmt_pct):
-                sl_lmt_pct = is_float(window, inp_sl_lmt_pct)
-                window['TABLEDATA'].print('[OK] Valid Stop Loss Limit -%', text_color='green', font=('Helvetica', 14))
-                usrdata.update({'sl_stop_pct': sl_stop_pct, 'sl_lmt_pct': sl_lmt_pct})
-
-        # validate SL fields ar required
-        if sl_choice and not inp_sl_stop_pct or sl_choice and not inp_sl_lmt_pct:
-            window['TABLEDATA'].print('[ERROR] Stop Loss fields cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-        if inp_sl_stop_pct and not inp_sl_lmt_pct:
-            window['TABLEDATA'].print('[ERROR] Stop Loss Stop cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-        if inp_sl_lmt_pct and not inp_sl_stop_pct:
-            window['TABLEDATA'].print('[ERROR] Stop Loss Limit cannot be empty', text_color='red', font=('Helvetica', 14))
-            window['Send'].update(disabled=True)
-
-        if event == 'Send':
-            if not api_key or not api_secret or not tz_cont or not tz_city or not start_time or not working_ival or not oco_choice and not tp_choice and not sl_choice:
-                window['TABLEDATA'].print('[ERROR] Some required fields are missing', text_color='red', font=('Helvetica', 14))
-                window['Send'].update(disabled=True)
-            # validate EMAIL fields as required
-            elif email_choice and not sender_email:
-                window['TABLEDATA'].print('[ERROR] Gmail Sender Address cannot be empty', text_color='red', font=('Helvetica', 14))
-                window['Send'].update(disabled=True)
-            elif email_choice and not receiver_email:
-                window['TABLEDATA'].print('[ERROR] Gmail Receiver Address cannot be empty', text_color='red', font=('Helvetica', 14))
-                window['Send'].update(disabled=True)
-            elif email_choice and not password:
-                window['TABLEDATA'].print('[ERROR] Password cannot be empty', text_color='red', font=('Helvetica', 14))
-                window['Send'].update(disabled=True)
-            else:
-                window['Send'].update(disabled=False)
-                window['APIKEY'].update(disabled=True)
-                window['APISECRET'].update(disabled=True)
-                window['CONTINENT'].update(disabled=True)
-                window['CITY'].update(disabled=True)
-                window['STARTTIME'].update(disabled=True)
-                window['WORKINGINTERVAL'].update(disabled=True)
-                if email_choice:
-                    window['SENDEREMAIL'].update(disabled=True)
-                    window['PASSWORD'].update(disabled=True)
-                    window['RECEIVEREMAIL'].update(disabled=True)
-                    usrdata.update({'valid_sender_email': valid_sender_email})
-                    usrdata.update({'password': password})
-                    usrdata.update({'valid_receiver_email': valid_receiver_email})
+                # OCO FIELDS
                 if oco_choice:
-                    window['OCOTP'].update(disabled=True)
-                    window['OCOSL'].update(disabled=True)
-                    window['OCOLL'].update(disabled=True)
-                if tp_choice:
-                    window['TPSL'].update(disabled=True)
-                    window['TPL'].update(disabled=True)
-                if sl_choice:
-                    window['SL'].update(disabled=True)
-                    window['SLL'].update(disabled=True)
+                    if inp_oco_profit_pct and inp_oco_sl_pct and inp_oco_lmt_pct:
+                        if is_float(window, inp_oco_profit_pct) and is_float(window, inp_oco_sl_pct) and is_float(window, inp_oco_lmt_pct):
+                            oco_profit_pct = is_float(window, inp_oco_profit_pct)
+                            oco_sl_pct = is_float(window, inp_oco_sl_pct)
+                            oco_lmt_pct = is_float(window, inp_oco_lmt_pct)
+                            usrdata.update({'oco_profit_pct': oco_profit_pct, 'oco_sl_pct': oco_sl_pct, 'oco_lmt_pct': oco_lmt_pct})
+                            window['OUT'].print('[OK- OCO TAKE PROFIT]', text_color='green', font=font14)
+                            window['OUT'].print('[OK- OCO STOP LOSS]', text_color='green', font=font14)
+                            window['OUT'].print('[OK- OCO STOP LOSS LIMIT]', text_color='green', font=font14)
+                            # start working
+                            websocket_connect(usrdata)
+                    else:
+                        window['OUT'].print('[ERROR- OCO] fill all required fields', text_color='red', font=font14)
 
-                # call backend
-                websocket_connect(usrdata)
+                # TP FIELDS
+                elif tp_choice:
+                    if inp_tp_stop_pct and inp_tp_lmt_pct:
+                        if is_float(window, inp_tp_stop_pct) and is_float(window, inp_tp_lmt_pct):
+                            tp_stop_pct = is_float(window, inp_tp_stop_pct)
+                            tp_lmt_pct = is_float(window, inp_tp_lmt_pct)
+                            usrdata.update({'tp_stop_pct': tp_stop_pct, 'tp_lmt_pct': tp_lmt_pct})
+                            window['OUT'].print('[OK- TAKE PROFIT STOP]', text_color='green', font=font14)
+                            window['OUT'].print('[OK- TAKE PROFIT LIMIT]', text_color='green', font=font14)
+                            # start working
+                            websocket_connect(usrdata)
+                    else:
+                        window['OUT'].print('[ERROR- TAKE PROFIT] fill all required fields', text_color='red', font=font14)
 
-        # See if user wants to quit or window was closed
+                # SL FIELDS
+                else:
+                    if inp_sl_stop_pct and inp_sl_lmt_pct:
+                        if is_float(window, inp_sl_stop_pct) and is_float(window, inp_sl_lmt_pct):
+                            sl_stop_pct = is_float(window, inp_sl_stop_pct)
+                            sl_lmt_pct = is_float(window, inp_sl_lmt_pct)
+                            usrdata.update({'sl_stop_pct': sl_stop_pct, 'sl_lmt_pct': sl_lmt_pct})
+                            window['OUT'].print('[OK- STOP LOSS STOP]', text_color='green', font=font14)
+                            window['OUT'].print('[OK- STOP LOSS LIMIT]', text_color='green', font=font14)
+                            # start working
+                            websocket_connect(usrdata)
+                    else:
+                        window['OUT'].print('[ERROR- STOP LOSS] fill all required fields', text_color='red', font=font14)
+
+                # SENDER EMAIL
+                if sender_email:
+                    if is_email(window, sender_email):
+                        valid_sender_email = is_email(window, sender_email)
+                        if '@gmail.com' in valid_sender_email:
+                            window['OUT'].print('[OK- GMAIL SENDER ADDRESS]', text_color='green', font=font14)
+                        else:
+                            window['OUT'].print('[ERROR- GMAIL SENDER ADDRESS] Only Gmail accounts currently supported', text_color='red', font=font14)
+
+                # RECEIVER EMAIL
+                if receiver_email:
+                    if is_email(window, receiver_email):
+                        valid_receiver_email = is_email(window, receiver_email)
+                        window['OUT'].print('[OK- RECEIVER ADDRESS]', text_color='green', font=font14)
+
+                # EMAIL REQUIRED FIELDS
+                if email_choice and not sender_email:
+                    window['OUT'].print('[ERROR- GMAIL SENDER ADDRESS] cannot be empty', text_color='red', font=font14)
+                if email_choice and not receiver_email:
+                    window['OUT'].print('[ERROR- RECEIVER ADDRESS] cannot be empty', text_color='red', font=font14)
+                if email_choice and not password:
+                    window['OUT'].print('[ERROR- PASSWORD] cannot be empty', text_color='red', font=font14)
+
+            else:
+                window['OUT'].print('[ERROR- GENERAL] All fields are required except for Email Alert', text_color='red', font=font14)
+
+        # if link has been clicked open URL
+        if event in links:
+            webbrowser.open(links[event])
+
+        # if user wants to quit or window was closed
         if event == sg.WINDOW_CLOSED or event == 'Quit':
             break
 
