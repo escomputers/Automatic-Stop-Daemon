@@ -94,7 +94,7 @@ def main():
     ]
 
     # Create the window
-    window = sg.Window('Binance Algorithmic Stop Daemon', layout)
+    window = sg.Window('Binance Algorithmic Stop Daemon', icon='templates/icon.ico').Layout(layout)
 
     # Display and interact with the Window using an Event Loop
     while True:
