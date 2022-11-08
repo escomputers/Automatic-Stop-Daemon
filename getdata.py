@@ -82,7 +82,6 @@ def main():
         [sg.Text('API Secret', font=font1), sg.Push(), sg.Input(k='APISECRET', enable_events=True, font=font1, tooltip='Type or paste your Binance.com SECRET KEY', password_char='*')],
         [sg.Text('Timezone Continent', font=font1), sg.Push(), sg.Input(k='CONTINENT', enable_events=True, font=font1, tooltip='Type your CONTINENT (IANA timezone format) e.g. Europe')],
         [sg.Text('Timezone City', font=font1), sg.Push(), sg.Input(k='CITY', enable_events=True, font=font1, tooltip='Type your CITY (IANA timezone format) e.g. Rome')],
-        # [sg.Text('Start Day', font=font1), sg.Push(), sg.Input(k='STARTDATE', size=(39, 1), format='%Y-%m-%d', font=font1, tooltip='Select START DAY'), sg.CalendarButton('Pick', font=font1, begin_at_sunday_plus=1, target='STARTDAY', no_titlebar=False)],
         [sg.Text('Start Time', font=font1), sg.Push(), sg.Input(k='STARTTIME', enable_events=True, font=font1, tooltip='Type START TIME (1-24h)(0-59m) e.g. 23:45')],
         [sg.Text('Active Hours', font=font1), sg.Push(), sg.Input(k='WORKINGINTERVAL', enable_events=True, font=font1, tooltip='Type how many working HOURS you want. 24 equals to all day, e.g. 8')],
         [sg.Text('End Time', font=font1), sg.Push(), sg.Input(k='ENDTIME', enable_events=True, font=font1)],
@@ -311,6 +310,7 @@ def main():
             window['SLLTXT'].update(visible=False)
             window['SLL'].update(visible=False)
         if sl_choice:
+            usrdata.update({'sl_choice': sl_choice})
             window['SLTXT'].update(visible=True)
             window['SL'].update(visible=True)
             window['SLLTXT'].update(visible=True)

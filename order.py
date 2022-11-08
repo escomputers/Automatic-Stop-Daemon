@@ -385,7 +385,7 @@ def websocket_connect(usrdata):
         except KeyError:
             pass
 
-    # define global variables in order to be read properly as function arguments
+    # SET GLOBAL VARIABLES
     html_params = {}
     send_email.called = False
     api_key = usrdata['api_key']
@@ -399,12 +399,12 @@ def websocket_connect(usrdata):
         oco_sl_pct = usrdata['oco_sl_pct']
         oco_lmt_pct = usrdata['oco_lmt_pct']
         html_params.update({'order_type': order_type, 'oco_tp': oco_profit_pct, 'oco_sl_stop': oco_sl_pct, 'oco_sl_lmt': oco_lmt_pct})
-    elif 'tp_choice' in usrdata:
+    if 'tp_choice' in usrdata:
         order_type = 'Take Profit'
         tp_stop_pct = usrdata['tp_stop_pct']
         tp_lmt_pct = usrdata['tp_lmt_pct']
         html_params.update({'order_type': order_type, 'tp_stop': tp_stop_pct, 'tp_lmt': tp_lmt_pct})
-    else:
+    if 'sl_choice' in usrdata:
         order_type = 'Stop Loss'
         sl_stop_pct = usrdata['sl_stop_pct']
         sl_lmt_pct = usrdata['sl_lmt_pct']
@@ -425,7 +425,7 @@ def websocket_connect(usrdata):
     window = sg.Window('Binance Algorithmic Stop Daemon', layout)
 
     while True:
-        event, values = window.read()
+        event, values = window.read(timeout=3000)
 
         # get time zone of specified location
         tmzone = pytz.timezone(usr_tz)
@@ -439,31 +439,36 @@ def websocket_connect(usrdata):
 
         # check if it's time to work or not
         if now >= usr_start_time and now <= usr_end_time:  # yes
-            if 'valid_sender_email' in usrdata and not send_email.called:
+            try:
+                job = ' JOB ' + str(uuid.uuid4())
                 nowstr = str(now.time())[:8]
-                title = 'JOB ' + str(uuid.uuid4()) + '\nstarted at ' + nowstr
-                html_params.update({'first_email': True, 'title': title})
 
-                html = template.render(html_params)
-                send_email(html)
+                client = Client(api_key, base_url='https://api.binance.com')
+                response = client.new_listen_key()
 
-            client = Client(api_key, base_url='https://api.binance.com')
-            response = client.new_listen_key()
+                logging.info('Receving listen key : {}'.format(response['listenKey']))
 
-            logging.info('Receving listen key : {}'.format(response['listenKey']))
+                ws_client = SpotWebsocketClient(stream_url='wss://stream.binance.com:9443')
+                ws_client.start()
 
-            ws_client = SpotWebsocketClient(stream_url='wss://stream.binance.com:9443')
-            ws_client.start()
+                ws_client.user_data(
+                    listen_key=response['listenKey'],
+                    id=1,
+                    callback=listen_to_filled_orders,
+                )
 
-            ws_client.user_data(
-                listen_key=response['listenKey'],
-                id=1,
-                callback=listen_to_filled_orders,
-            )
-
-            # grab logging output
-            log_response = output.getvalue()
-            window['-OUTPUT-'].print(log_response, font=font1)
+                # grab logging output
+                log_response = output.getvalue()
+                window['-OUTPUT-'].print(log_response, font=font1)
+                title = 'Success! ' + job + '\nstarted at ' + nowstr
+            except ClientError:
+                window['-OUTPUT-'].print('API-keys format invalid, check your keys!', text_color='red', font=font1)
+                title = 'Error! API-keys format invalid, check your keys!' + job + ' NOT started at ' + nowstr
+            finally:
+                if 'valid_sender_email' in usrdata and not send_email.called:
+                    html_params.update({'first_email': True, 'title': title})
+                    html = template.render(html_params)
+                    send_email(html)
         else:
             txt1 = 'It\'s not time to work!\nStart time: ' + (str(usr_start_time))[:16]
             txt2 = '\nEnd time: ' + (str(usr_end_time))[:16]
