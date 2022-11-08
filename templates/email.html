@@ -331,11 +331,6 @@
   </head>
   <body>
     <span class="preheader">
-	  {% if error_msg %}
-	ERROR! SELL ORDER NOT PLACED.
-  {% else %}
-	SUCCESS! SELL ORDER PLACED.
-  {% endif %}
 	</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
       <tr>
@@ -350,12 +345,8 @@
                 <td class="wrapper">
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0">
 					<tr>
-                      <td align="center" style="color:#ffffff; font-family:'Source Sans Pro'; font-size:24px;">
-					  {% if error %}
-                        {{ error_msg }}
-					  {% else %}
+            <td align="center" style="color:#ffffff; font-family:'Source Sans Pro'; font-size:24px;">
 					    {{ title }}
-					  {% endif %}
 						</td>
 				    </tr>
 					
