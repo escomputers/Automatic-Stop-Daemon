@@ -58,7 +58,7 @@ def main():
         [sg.Text('Start Time', font=font12), sg.Push(), sg.Input(k='STARTTIME', enable_events=True, font=font12, tooltip='Type START TIME (1-24h)(0-59m) e.g. 23:45')],
         [sg.Text('Active Hours', font=font12), sg.Push(), sg.Input(k='WORKINGINTERVAL', enable_events=True, font=font12, tooltip='Type how many working HOURS you want. 24 equals to all day, e.g. 8')],
         [sg.Text('End Time', font=font12), sg.Push(), sg.Input(k='ENDTIME', disabled=True, enable_events=True, font=font12)],
-        [sg.Checkbox('Email Alert', font=font12, default=True, k='EMAILCHOICE', enable_events=True)],
+        [sg.Checkbox('Email Alert', font=font12, default=False, k='EMAILCHOICE', enable_events=True)],
         [sg.Text('Gmail Sender Address', font=font12, k='SENDEREMAILTXT'), sg.Push(), sg.Input(k='SENDEREMAIL', enable_events=True, font=font12, tooltip='Type sender email address (GMAIL only)')],
         [sg.Text('Gmail App Password', font=font12, k='PASSWORDTXT'), sg.Push(), sg.Input(k='PASSWORD', enable_events=True, font=font12, tooltip='Type or paste your gmail app password', password_char='*')],
         [sg.Text('Receiver Address', font=font12, k='RECEIVEREMAILTXT'), sg.Push(), sg.Input(k='RECEIVEREMAIL', enable_events=True, font=font12, tooltip='Type receiver email address')],
@@ -101,13 +101,13 @@ def main():
     while True:
         event, values = window.read(timeout=1000)
 
-        # EMAIL SECTION visible by default
-        window['SENDEREMAILTXT'].update(visible=True)
-        window['SENDEREMAIL'].update(visible=True)
-        window['PASSWORDTXT'].update(visible=True)
-        window['PASSWORD'].update(visible=True)
-        window['RECEIVEREMAILTXT'].update(visible=True)
-        window['RECEIVEREMAIL'].update(visible=True)
+        # EMAIL SECTION hidden by default
+        window['SENDEREMAILTXT'].update(visible=False)
+        window['SENDEREMAIL'].update(visible=False)
+        window['PASSWORDTXT'].update(visible=False)
+        window['PASSWORD'].update(visible=False)
+        window['RECEIVEREMAILTXT'].update(visible=False)
+        window['RECEIVEREMAIL'].update(visible=False)
         # ORDER SECTION hidden by default
         window['OCOTPTXT'].update(visible=False)
         window['OCOTP'].update(visible=False)
@@ -196,14 +196,14 @@ def main():
             window['TPLTXT'].update(visible=False)
             window['TPL'].update(visible=False)
 
-        # if not email, hide fields
-        if email_choice == False:
-            window['SENDEREMAILTXT'].update(visible=False)
-            window['SENDEREMAIL'].update(visible=False)
-            window['PASSWORDTXT'].update(visible=False)
-            window['PASSWORD'].update(visible=False)
-            window['RECEIVEREMAILTXT'].update(visible=False)
-            window['RECEIVEREMAIL'].update(visible=False)
+        # if email checked, show fields
+        if email_choice:
+            window['SENDEREMAILTXT'].update(visible=True)
+            window['SENDEREMAIL'].update(visible=True)
+            window['PASSWORDTXT'].update(visible=True)
+            window['PASSWORD'].update(visible=True)
+            window['RECEIVEREMAILTXT'].update(visible=True)
+            window['RECEIVEREMAIL'].update(visible=True)
 
         if event == 'Start':
             if api_key and api_secret and tz_cont and tz_city and inp_start_time and inp_working_ival and oco_choice or tp_choice or sl_choice:
@@ -254,9 +254,9 @@ def main():
 
                 # WORKING INTERVAL
                 try:
-                    inp_working_ival = int(inp_working_ival)
-                    if inp_working_ival >= 1 and inp_working_ival <= 24:
-                        usrdata.update({'working_ival': inp_working_ival})
+                    working_ival = int(inp_working_ival)
+                    if working_ival >= 1 and working_ival <= 24:
+                        usrdata.update({'working_ival': working_ival})
                     else:
                         window['OUT'].print('[ERROR- ACTIVE HOURS] Type a valid value between 1 and 24', text_color='red', font=font14)
                 except ValueError:
@@ -264,11 +264,34 @@ def main():
 
                 # END TIME
                 try:
-                    end_time = (user_start_time + timedelta(hours=inp_working_ival)).time()
-                    user_end_time = str(end_time)[:-3]  # remove seconds from string used only for displaying
-                    window['ENDTIME'].update(user_end_time)
-                except TypeError:
+                    if user_start_time and working_ival:
+                        end_time = (user_start_time + timedelta(hours=working_ival)).time()
+                        user_end_time = str(end_time)[:-3]  # remove seconds from string used only for displaying
+                        window['ENDTIME'].update(user_end_time)
+                except UnboundLocalError:
                     continue
+
+                if email_choice:
+                    # SENDER EMAIL
+                    if is_email(window, sender_email):
+                        valid_sender_email = is_email(window, sender_email)
+                        if '@gmail.com' in valid_sender_email:
+                            window['OUT'].print('[OK- GMAIL SENDER ADDRESS]', text_color='green', font=font14)
+                            usrdata.update({'valid_sender_email': valid_sender_email})
+                        else:
+                            window['OUT'].print('[ERROR- GMAIL SENDER ADDRESS] Only Gmail accounts currently supported', text_color='red', font=font14)
+                    # RECEIVER EMAIL
+                    if is_email(window, receiver_email):
+                        valid_receiver_email = is_email(window, receiver_email)
+                        window['OUT'].print('[OK- RECEIVER ADDRESS]', text_color='green', font=font14)
+                        usrdata.update({'valid_receiver_email': valid_receiver_email})
+                    # PASSWORD
+                    if len(password) >= 8 and ' ' not in password:
+                        valid_password = password
+                        usrdata.update({'password': valid_password})
+                        window['OUT'].print('[OK- PASSWORD]', text_color='green', font=font14)
+                    else:
+                        window['OUT'].print('[ERROR- PASSWORD] at least 8 characters, no spaces', text_color='red', font=font14)
 
                 # OCO FIELDS
                 if oco_choice:
@@ -277,68 +300,86 @@ def main():
                             oco_profit_pct = is_float(window, inp_oco_profit_pct)
                             oco_sl_pct = is_float(window, inp_oco_sl_pct)
                             oco_lmt_pct = is_float(window, inp_oco_lmt_pct)
-                            usrdata.update({'oco_profit_pct': oco_profit_pct, 'oco_sl_pct': oco_sl_pct, 'oco_lmt_pct': oco_lmt_pct})
                             window['OUT'].print('[OK- OCO TAKE PROFIT]', text_color='green', font=font14)
                             window['OUT'].print('[OK- OCO STOP LOSS]', text_color='green', font=font14)
                             window['OUT'].print('[OK- OCO STOP LOSS LIMIT]', text_color='green', font=font14)
-                            # start working
-                            websocket_connect(usrdata)
+
+                            # CLEAN UP DICTIONARY ARGS
+                            try:
+                                garbage = ['sl_choice', 'tp_choice', 'tp_stop_pct', 'tp_lmt_pct', 'sl_stop_pct', 'sl_lmt_pct']
+                                if any(x in usrdata for x in garbage):
+                                    [usrdata.pop(key) for key in garbage]
+                            except KeyError:
+                                usrdata.update({'oco_choice': True, 'oco_profit_pct': oco_profit_pct, 'oco_sl_pct': oco_sl_pct, 'oco_lmt_pct': oco_lmt_pct})
+
+                            # START WORKING
+                            try:
+                                if email_choice and valid_sender_email and valid_receiver_email and valid_password or not email_choice:
+                                    websocket_connect(usrdata)
+                                elif email_choice and not valid_sender_email or not valid_receiver_email or not valid_password:
+                                    window['OUT'].print('[ERROR- EMAIL] fill all required fields', text_color='red', font=font14)
+                            except UnboundLocalError:
+                                pass
                     else:
                         window['OUT'].print('[ERROR- OCO] fill all required fields', text_color='red', font=font14)
 
                 # TP FIELDS
-                elif tp_choice:
+                if tp_choice:
                     if inp_tp_stop_pct and inp_tp_lmt_pct:
                         if is_float(window, inp_tp_stop_pct) and is_float(window, inp_tp_lmt_pct):
                             tp_stop_pct = is_float(window, inp_tp_stop_pct)
                             tp_lmt_pct = is_float(window, inp_tp_lmt_pct)
-                            usrdata.update({'tp_stop_pct': tp_stop_pct, 'tp_lmt_pct': tp_lmt_pct})
                             window['OUT'].print('[OK- TAKE PROFIT STOP]', text_color='green', font=font14)
                             window['OUT'].print('[OK- TAKE PROFIT LIMIT]', text_color='green', font=font14)
-                            # start working
-                            websocket_connect(usrdata)
+
+                            # CLEAN UP DICTIONARY ARGS
+                            try:
+                                garbage = ['sl_choice', 'oco_choice', 'oco_profit_pct', 'oco_sl_pct', 'oco_lmt_pct', 'sl_stop_pct', 'sl_lmt_pct']
+                                if any(x in usrdata for x in garbage):
+                                    [usrdata.pop(key) for key in garbage]
+                            except KeyError:
+                                usrdata.update({'tp_choice': True, 'tp_stop_pct': tp_stop_pct, 'tp_lmt_pct': tp_lmt_pct})
+
+                            # START WORKING
+                            try:
+                                if email_choice and valid_sender_email and valid_receiver_email and valid_password or not email_choice:
+                                    websocket_connect(usrdata)
+                                elif email_choice and not valid_sender_email or not valid_receiver_email or not valid_password:
+                                    window['OUT'].print('[ERROR- EMAIL] fill all required fields', text_color='red', font=font14)
+                            except UnboundLocalError:
+                                pass
                     else:
                         window['OUT'].print('[ERROR- TAKE PROFIT] fill all required fields', text_color='red', font=font14)
 
                 # SL FIELDS
-                else:
+                if sl_choice:
                     if inp_sl_stop_pct and inp_sl_lmt_pct:
                         if is_float(window, inp_sl_stop_pct) and is_float(window, inp_sl_lmt_pct):
                             sl_stop_pct = is_float(window, inp_sl_stop_pct)
                             sl_lmt_pct = is_float(window, inp_sl_lmt_pct)
-                            usrdata.update({'sl_stop_pct': sl_stop_pct, 'sl_lmt_pct': sl_lmt_pct})
                             window['OUT'].print('[OK- STOP LOSS STOP]', text_color='green', font=font14)
                             window['OUT'].print('[OK- STOP LOSS LIMIT]', text_color='green', font=font14)
-                            # start working
-                            websocket_connect(usrdata)
+
+                            # CLEAN UP DICTIONARY ARGS
+                            try:
+                                garbage = ['tp_choice', 'oco_choice', 'oco_profit_pct', 'oco_sl_pct', 'oco_lmt_pct', 'tp_stop_pct', 'tp_lmt_pct']
+                                if any(x in usrdata for x in garbage):
+                                    [usrdata.pop(key) for key in garbage]
+                            except KeyError:
+                                usrdata.update({'sl_choice': True, 'sl_stop_pct': sl_stop_pct, 'sl_lmt_pct': sl_lmt_pct})
+
+                            # START WORKING
+                            try:
+                                if email_choice and valid_sender_email and valid_receiver_email and valid_password or not email_choice:
+                                    websocket_connect(usrdata)
+                                elif email_choice and not valid_sender_email or not valid_receiver_email or not valid_password:
+                                    window['OUT'].print('[ERROR- EMAIL] fill all required fields', text_color='red', font=font14)
+                            except UnboundLocalError:
+                                pass
                     else:
                         window['OUT'].print('[ERROR- STOP LOSS] fill all required fields', text_color='red', font=font14)
-
-                # SENDER EMAIL
-                if sender_email:
-                    if is_email(window, sender_email):
-                        valid_sender_email = is_email(window, sender_email)
-                        if '@gmail.com' in valid_sender_email:
-                            window['OUT'].print('[OK- GMAIL SENDER ADDRESS]', text_color='green', font=font14)
-                        else:
-                            window['OUT'].print('[ERROR- GMAIL SENDER ADDRESS] Only Gmail accounts currently supported', text_color='red', font=font14)
-
-                # RECEIVER EMAIL
-                if receiver_email:
-                    if is_email(window, receiver_email):
-                        valid_receiver_email = is_email(window, receiver_email)
-                        window['OUT'].print('[OK- RECEIVER ADDRESS]', text_color='green', font=font14)
-
-                # EMAIL REQUIRED FIELDS
-                if email_choice and not sender_email:
-                    window['OUT'].print('[ERROR- GMAIL SENDER ADDRESS] cannot be empty', text_color='red', font=font14)
-                if email_choice and not receiver_email:
-                    window['OUT'].print('[ERROR- RECEIVER ADDRESS] cannot be empty', text_color='red', font=font14)
-                if email_choice and not password:
-                    window['OUT'].print('[ERROR- PASSWORD] cannot be empty', text_color='red', font=font14)
-
             else:
-                window['OUT'].print('[ERROR- GENERAL] All fields are required except for Email Alert', text_color='red', font=font14)
+                window['OUT'].print('[ERROR- GENERAL] fill all required fields', text_color='red', font=font14)
 
         for key in links:
             window[key].bind('<Enter>', '<Enter>')
