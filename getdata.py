@@ -294,90 +294,87 @@ def main():
                         window['OUT'].print('[ERROR- PASSWORD] at least 8 characters, no spaces', text_color='red', font=font14)
 
                 # OCO FIELDS
-                if oco_choice:
-                    if inp_oco_profit_pct and inp_oco_sl_pct and inp_oco_lmt_pct:
-                        if is_float(window, inp_oco_profit_pct) and is_float(window, inp_oco_sl_pct) and is_float(window, inp_oco_lmt_pct):
-                            oco_profit_pct = is_float(window, inp_oco_profit_pct)
-                            oco_sl_pct = is_float(window, inp_oco_sl_pct)
-                            oco_lmt_pct = is_float(window, inp_oco_lmt_pct)
-                            window['OUT'].print('[OK- OCO TAKE PROFIT]', text_color='green', font=font14)
-                            window['OUT'].print('[OK- OCO STOP LOSS]', text_color='green', font=font14)
-                            window['OUT'].print('[OK- OCO STOP LOSS LIMIT]', text_color='green', font=font14)
+                if inp_oco_profit_pct and inp_oco_sl_pct and inp_oco_lmt_pct:
+                    if is_float(window, inp_oco_profit_pct) and is_float(window, inp_oco_sl_pct) and is_float(window, inp_oco_lmt_pct):
+                        oco_profit_pct = is_float(window, inp_oco_profit_pct)
+                        oco_sl_pct = is_float(window, inp_oco_sl_pct)
+                        oco_lmt_pct = is_float(window, inp_oco_lmt_pct)
+                        window['OUT'].print('[OK- OCO TAKE PROFIT]', text_color='green', font=font14)
+                        window['OUT'].print('[OK- OCO STOP LOSS]', text_color='green', font=font14)
+                        window['OUT'].print('[OK- OCO STOP LOSS LIMIT]', text_color='green', font=font14)
 
-                            # CLEAN UP DICTIONARY ARGS
-                            try:
-                                garbage = ['sl_choice', 'tp_choice', 'tp_stop_pct', 'tp_lmt_pct', 'sl_stop_pct', 'sl_lmt_pct']
-                                if any(x in usrdata for x in garbage):
-                                    [usrdata.pop(key) for key in garbage]
-                            except KeyError:
-                                usrdata.update({'oco_choice': True, 'oco_profit_pct': oco_profit_pct, 'oco_sl_pct': oco_sl_pct, 'oco_lmt_pct': oco_lmt_pct})
+                        # CLEAN UP DICTIONARY ARGS
+                        try:
+                            garbage = ['sl_choice', 'tp_choice', 'tp_stop_pct', 'tp_lmt_pct', 'sl_stop_pct', 'sl_lmt_pct']
+                            if any(x in usrdata for x in garbage):
+                                [usrdata.pop(key) for key in garbage]
+                        except KeyError:
+                            usrdata.update({'oco_choice': True, 'oco_profit_pct': oco_profit_pct, 'oco_sl_pct': oco_sl_pct, 'oco_lmt_pct': oco_lmt_pct})
 
-                            # START WORKING
-                            try:
-                                if email_choice and valid_sender_email and valid_receiver_email and valid_password or not email_choice:
-                                    websocket_connect(usrdata)
-                                elif email_choice and not valid_sender_email or not valid_receiver_email or not valid_password:
-                                    window['OUT'].print('[ERROR- EMAIL] fill all required fields', text_color='red', font=font14)
-                            except UnboundLocalError:
-                                pass
-                    else:
-                        window['OUT'].print('[ERROR- OCO] fill all required fields', text_color='red', font=font14)
+                        # START WORKING
+                        try:
+                            if email_choice and valid_sender_email and valid_receiver_email and valid_password or not email_choice:
+                                websocket_connect(usrdata)
+                            elif email_choice and not valid_sender_email or not valid_receiver_email or not valid_password:
+                                window['OUT'].print('[ERROR- EMAIL] fill all required fields', text_color='red', font=font14)
+                        except UnboundLocalError:
+                            pass
+                else:
+                    window['OUT'].print('[ERROR- OCO] fill all required fields', text_color='red', font=font14)
 
                 # TP FIELDS
-                if tp_choice:
-                    if inp_tp_stop_pct and inp_tp_lmt_pct:
-                        if is_float(window, inp_tp_stop_pct) and is_float(window, inp_tp_lmt_pct):
-                            tp_stop_pct = is_float(window, inp_tp_stop_pct)
-                            tp_lmt_pct = is_float(window, inp_tp_lmt_pct)
-                            window['OUT'].print('[OK- TAKE PROFIT STOP]', text_color='green', font=font14)
-                            window['OUT'].print('[OK- TAKE PROFIT LIMIT]', text_color='green', font=font14)
+                if inp_tp_stop_pct and inp_tp_lmt_pct:
+                    if is_float(window, inp_tp_stop_pct) and is_float(window, inp_tp_lmt_pct):
+                        tp_stop_pct = is_float(window, inp_tp_stop_pct)
+                        tp_lmt_pct = is_float(window, inp_tp_lmt_pct)
+                        window['OUT'].print('[OK- TAKE PROFIT STOP]', text_color='green', font=font14)
+                        window['OUT'].print('[OK- TAKE PROFIT LIMIT]', text_color='green', font=font14)
 
-                            # CLEAN UP DICTIONARY ARGS
-                            try:
-                                garbage = ['sl_choice', 'oco_choice', 'oco_profit_pct', 'oco_sl_pct', 'oco_lmt_pct', 'sl_stop_pct', 'sl_lmt_pct']
-                                if any(x in usrdata for x in garbage):
-                                    [usrdata.pop(key) for key in garbage]
-                            except KeyError:
-                                usrdata.update({'tp_choice': True, 'tp_stop_pct': tp_stop_pct, 'tp_lmt_pct': tp_lmt_pct})
+                        # CLEAN UP DICTIONARY ARGS
+                        try:
+                            garbage = ['sl_choice', 'oco_choice', 'oco_profit_pct', 'oco_sl_pct', 'oco_lmt_pct', 'sl_stop_pct', 'sl_lmt_pct']
+                            if any(x in usrdata for x in garbage):
+                                [usrdata.pop(key) for key in garbage]
+                        except KeyError:
+                            usrdata.update({'tp_choice': True, 'tp_stop_pct': tp_stop_pct, 'tp_lmt_pct': tp_lmt_pct})
 
-                            # START WORKING
-                            try:
-                                if email_choice and valid_sender_email and valid_receiver_email and valid_password or not email_choice:
-                                    websocket_connect(usrdata)
-                                elif email_choice and not valid_sender_email or not valid_receiver_email or not valid_password:
-                                    window['OUT'].print('[ERROR- EMAIL] fill all required fields', text_color='red', font=font14)
-                            except UnboundLocalError:
-                                pass
-                    else:
-                        window['OUT'].print('[ERROR- TAKE PROFIT] fill all required fields', text_color='red', font=font14)
+                        # START WORKING
+                        try:
+                            if email_choice and valid_sender_email and valid_receiver_email and valid_password or not email_choice:
+                                websocket_connect(usrdata)
+                            elif email_choice and not valid_sender_email or not valid_receiver_email or not valid_password:
+                                window['OUT'].print('[ERROR- EMAIL] fill all required fields', text_color='red', font=font14)
+                        except UnboundLocalError:
+                            pass
+                else:
+                    window['OUT'].print('[ERROR- TAKE PROFIT] fill all required fields', text_color='red', font=font14)
 
                 # SL FIELDS
-                if sl_choice:
-                    if inp_sl_stop_pct and inp_sl_lmt_pct:
-                        if is_float(window, inp_sl_stop_pct) and is_float(window, inp_sl_lmt_pct):
-                            sl_stop_pct = is_float(window, inp_sl_stop_pct)
-                            sl_lmt_pct = is_float(window, inp_sl_lmt_pct)
-                            window['OUT'].print('[OK- STOP LOSS STOP]', text_color='green', font=font14)
-                            window['OUT'].print('[OK- STOP LOSS LIMIT]', text_color='green', font=font14)
+                if inp_sl_stop_pct and inp_sl_lmt_pct:
+                    if is_float(window, inp_sl_stop_pct) and is_float(window, inp_sl_lmt_pct):
+                        sl_stop_pct = is_float(window, inp_sl_stop_pct)
+                        sl_lmt_pct = is_float(window, inp_sl_lmt_pct)
+                        window['OUT'].print('[OK- STOP LOSS STOP]', text_color='green', font=font14)
+                        window['OUT'].print('[OK- STOP LOSS LIMIT]', text_color='green', font=font14)
 
-                            # CLEAN UP DICTIONARY ARGS
-                            try:
-                                garbage = ['tp_choice', 'oco_choice', 'oco_profit_pct', 'oco_sl_pct', 'oco_lmt_pct', 'tp_stop_pct', 'tp_lmt_pct']
-                                if any(x in usrdata for x in garbage):
-                                    [usrdata.pop(key) for key in garbage]
-                            except KeyError:
-                                usrdata.update({'sl_choice': True, 'sl_stop_pct': sl_stop_pct, 'sl_lmt_pct': sl_lmt_pct})
+                        # CLEAN UP DICTIONARY ARGS
+                        try:
+                            garbage = ['tp_choice', 'oco_choice', 'oco_profit_pct', 'oco_sl_pct', 'oco_lmt_pct', 'tp_stop_pct', 'tp_lmt_pct']
+                            if any(x in usrdata for x in garbage):
+                                [usrdata.pop(key) for key in garbage]
+                        except KeyError:
+                            usrdata.update({'sl_choice': True, 'sl_stop_pct': sl_stop_pct, 'sl_lmt_pct': sl_lmt_pct})
 
-                            # START WORKING
-                            try:
-                                if email_choice and valid_sender_email and valid_receiver_email and valid_password or not email_choice:
-                                    websocket_connect(usrdata)
-                                elif email_choice and not valid_sender_email or not valid_receiver_email or not valid_password:
-                                    window['OUT'].print('[ERROR- EMAIL] fill all required fields', text_color='red', font=font14)
-                            except UnboundLocalError:
-                                pass
-                    else:
-                        window['OUT'].print('[ERROR- STOP LOSS] fill all required fields', text_color='red', font=font14)
+                        # START WORKING
+                        try:
+                            if email_choice and valid_sender_email and valid_receiver_email and valid_password or not email_choice:
+                                websocket_connect(usrdata)
+                            elif email_choice and not valid_sender_email or not valid_receiver_email or not valid_password:
+                                window['OUT'].print('[ERROR- EMAIL] fill all required fields', text_color='red', font=font14)
+                        except UnboundLocalError:
+                            pass
+                else:
+                    window['OUT'].print('[ERROR- STOP LOSS] fill all required fields', text_color='red', font=font14)
             else:
                 window['OUT'].print('[ERROR- GENERAL] fill all required fields', text_color='red', font=font14)
 
