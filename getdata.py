@@ -38,7 +38,7 @@ def is_float(window, input):
         else:
             window['OUT'].print('[ERROR] Type a valid value between 0.05 and 2999.99', text_color='red', font=font14)
     except ValueError:
-        window['OUT'].print('[ERROR] Type only numbers ', text_color='red', font=font14)
+        window['OUT'].print('[ERROR] Type only numbers, e.g. 2.55', text_color='red', font=font14)
 
 
 def main():
@@ -51,35 +51,35 @@ def main():
 
     left_column = [
         [sg.Text('BASD', font=('Segoe UI', 18, 'bold'), expand_x=True), sg.Push()],
-        [sg.Text('API Key', font=font12), sg.Push(), sg.Input(k='APIKEY', enable_events=True, font=font12, tooltip='Type or paste your Binance.com API KEY', password_char='*')],
-        [sg.Text('API Secret', font=font12), sg.Push(), sg.Input(k='APISECRET', enable_events=True, font=font12, tooltip='Type or paste your Binance.com SECRET KEY', password_char='*')],
-        [sg.Text('Timezone Continent', font=font12), sg.Push(), sg.Input(k='CONTINENT', enable_events=True, font=font12, tooltip='Type your CONTINENT (IANA timezone format) e.g. Europe')],
-        [sg.Text('Timezone City', font=font12), sg.Push(), sg.Input(k='CITY', enable_events=True, font=font12, tooltip='Type your CITY (IANA timezone format) e.g. Rome')],
-        [sg.Text('Start Time', font=font12), sg.Push(), sg.Input(k='STARTTIME', enable_events=True, font=font12, tooltip='Type START TIME (1-24h)(0-59m) e.g. 23:45')],
-        [sg.Text('Active Hours', font=font12), sg.Push(), sg.Input(k='WORKINGINTERVAL', enable_events=True, font=font12, tooltip='Type how many working HOURS you want. 24 equals to all day, e.g. 8')],
+        [sg.Text('API Key', font=font12), sg.Push(), sg.Input(k='APIKEY', enable_events=True, font=font12, tooltip='your Binance.com API KEY', password_char='*')],
+        [sg.Text('API Secret', font=font12), sg.Push(), sg.Input(k='APISECRET', enable_events=True, font=font12, tooltip='your Binance.com API SECRET KEY', password_char='*')],
+        [sg.Text('Timezone Continent', font=font12), sg.Push(), sg.Input(k='CONTINENT', enable_events=True, font=font12, tooltip='e.g. Europe')],
+        [sg.Text('Timezone City', font=font12), sg.Push(), sg.Input(k='CITY', enable_events=True, font=font12, tooltip='e.g. Rome')],
+        [sg.Text('Start Time', font=font12), sg.Push(), sg.Input(k='STARTTIME', enable_events=True, font=font12, tooltip='e.g. 23:45')],
+        [sg.Text('Active Hours', font=font12), sg.Push(), sg.Input(k='WORKINGINTERVAL', enable_events=True, font=font12, tooltip='How many working HOURS you want. 24 equals to all day, e.g. 8')],
         [sg.Text('End Time', font=font12), sg.Push(), sg.Input(k='ENDTIME', disabled=True, enable_events=True, font=font12)],
         [sg.Checkbox('Email Alert', font=font12, default=False, k='EMAILCHOICE', enable_events=True)],
-        [sg.Text('Gmail Sender Address', font=font12, k='SENDEREMAILTXT'), sg.Push(), sg.Input(k='SENDEREMAIL', enable_events=True, font=font12, tooltip='Type sender email address (GMAIL only)')],
-        [sg.Text('Gmail App Password', font=font12, k='PASSWORDTXT'), sg.Push(), sg.Input(k='PASSWORD', enable_events=True, font=font12, tooltip='Type or paste your gmail app password', password_char='*')],
-        [sg.Text('Receiver Address', font=font12, k='RECEIVEREMAILTXT'), sg.Push(), sg.Input(k='RECEIVEREMAIL', enable_events=True, font=font12, tooltip='Type receiver email address')],
+        [sg.Text('Gmail Sender Address', font=font12, k='SENDEREMAILTXT'), sg.Push(), sg.Input(k='SENDEREMAIL', enable_events=True, font=font12, tooltip='sender email address (GMAIL only)')],
+        [sg.Text('Gmail App Password', font=font12, k='PASSWORDTXT'), sg.Push(), sg.Input(k='PASSWORD', enable_events=True, font=font12, tooltip='gmail app password', password_char='*')],
+        [sg.Text('Receiver Address', font=font12, k='RECEIVEREMAILTXT'), sg.Push(), sg.Input(k='RECEIVEREMAIL', enable_events=True, font=font12, tooltip='receiver email address')],
     ]
 
     right_column = [
         [sg.Radio('Take Profit', group_id=1, font=font12, enable_events=True, k='TPCHOICE'), sg.Radio('Stop Loss', group_id=1, font=font12, enable_events=True, k='SLCHOICE'), sg.Radio('OCO', group_id=1, font=font12, enable_events=True, k='OCOCHOICE')],
         # OCO
-        [sg.Text('Take Profit +%', font=font12, k='OCOTPTXT'), sg.Push(), sg.Input(k='OCOTP', enable_events=True, font=font12, tooltip='Type OCO Take Profit percentage, e.g. 5.20')],
-        [sg.Text('Stop Loss -%', font=font12, k='OCOSLTXT'), sg.Push(), sg.Input(k='OCOSL', enable_events=True, font=font12, tooltip='Type OCO Stop Loss percentage. This should be LOWER than symbol market price WHEN order will be placed, e.g. 1.20')],
-        [sg.Text('Limit Loss -%', font=font12, k='OCOLLTXT'), sg.Push(), sg.Input(k='OCOLL', enable_events=True, font=font12, tooltip='Type OCO Stop Loss Limit percentage. This should be HIGHER than symbol market price WHEN order will be placed, e.g. 1.05')],
+        [sg.Text('Take Profit +%', font=font12, k='OCOTPTXT'), sg.Push(), sg.Input(k='OCOTP', enable_events=True, font=font12, tooltip='OCO Take Profit percentage, e.g. 5.20')],
+        [sg.Text('Stop Loss -%', font=font12, k='OCOSLTXT'), sg.Push(), sg.Input(k='OCOSL', enable_events=True, font=font12, tooltip='should be LOWER than market price WHEN order will be placed, e.g. 1.20')],
+        [sg.Text('Limit Loss -%', font=font12, k='OCOLLTXT'), sg.Push(), sg.Input(k='OCOLL', enable_events=True, font=font12, tooltip='should be HIGHER than market price WHEN order will be placed, e.g. 1.05')],
         # TAKE PROFIT
-        [sg.Text('Stop Profit +%', font=font12, k='TPSLTXT'), sg.Push(), sg.Input(k='TPSL', enable_events=True, font=font12, tooltip='Type Take Profit Stop percentage, e.g. 5.25')],
-        [sg.Text('Limit Profit +%', font=font12, k='TPLTXT'), sg.Push(), sg.Input(k='TPL', enable_events=True, font=font12, tooltip='Type Take Profit Limit percentage, e.g. 5.20')],
+        [sg.Text('Stop Profit +%', font=font12, k='TPSLTXT'), sg.Push(), sg.Input(k='TPSL', enable_events=True, font=font12, tooltip='Take Profit Stop percentage, e.g. 5.25')],
+        [sg.Text('Limit Profit +%', font=font12, k='TPLTXT'), sg.Push(), sg.Input(k='TPL', enable_events=True, font=font12, tooltip='Take Profit Limit percentage, e.g. 5.20')],
         # STOP LOSS
-        [sg.Text('Stop Loss -%', font=font12, k='SLTXT'), sg.Push(), sg.Input(k='SL', enable_events=True, font=font12, tooltip='Type Stop Loss Stop percentage, e.g. 1.10')],
-        [sg.Text('Limit Loss -``%', font=font12, k='SLLTXT'), sg.Push(), sg.Input(k='SLL', enable_events=True, font=font12, tooltip='Type Stop Loss Limit percentage, e.g. 1.15')],
+        [sg.Text('Stop Loss -%', font=font12, k='SLTXT'), sg.Push(), sg.Input(k='SL', enable_events=True, font=font12, tooltip='Stop Loss Stop percentage, e.g. 1.10')],
+        [sg.Text('Limit Loss -``%', font=font12, k='SLLTXT'), sg.Push(), sg.Input(k='SLL', enable_events=True, font=font12, tooltip='Stop Loss Limit percentage, e.g. 1.15')],
         # OUTPUT
         [sg.MLine(size=(80, 10), autoscroll=True, reroute_stdout=True, write_only=True, reroute_cprint=True, k='OUT')],
         # BUTTON
-        [sg.Push(), sg.Button('Start', font=font12)],
+        [sg.Push(), sg.Button('Validate', font=font12)],
         # CREDITS
         [sg.Push()] + [
             sg.Text('Star/Fork me on GitHub!', font=('Segoe UI', 9, 'italic'), expand_x=True, enable_events=True, key=key) for i, key in enumerate(links)]
@@ -95,7 +95,7 @@ def main():
     ]
 
     # Create the window
-    window = sg.Window('Binance Algorithmic Stop Daemon', icon='templates/icon.ico').Layout(layout)
+    window = sg.Window('Binance Algorithmic Stop Daemon [INPUT]', icon='templates/icon.ico').Layout(layout)
 
     # Display and interact with the Window using an Event Loop
     while True:
@@ -205,7 +205,7 @@ def main():
             window['RECEIVEREMAILTXT'].update(visible=True)
             window['RECEIVEREMAIL'].update(visible=True)
 
-        if event == 'Start':
+        if event == 'Validate':
             if api_key and api_secret and tz_cont and tz_city and inp_start_time and inp_working_ival and oco_choice or tp_choice or sl_choice:
                 # API KEY
                 if len(api_key) < 64 or ' ' in api_key:
@@ -294,11 +294,11 @@ def main():
                         window['OUT'].print('[ERROR- PASSWORD] at least 8 characters, no spaces', text_color='red', font=font14)
 
                 # OCO FIELDS
-                if inp_oco_profit_pct and inp_oco_sl_pct and inp_oco_lmt_pct:
+                if oco_choice:
                     if is_float(window, inp_oco_profit_pct) and is_float(window, inp_oco_sl_pct) and is_float(window, inp_oco_lmt_pct):
-                        oco_profit_pct = is_float(window, inp_oco_profit_pct)
-                        oco_sl_pct = is_float(window, inp_oco_sl_pct)
-                        oco_lmt_pct = is_float(window, inp_oco_lmt_pct)
+                        oco_profit_pct = round((is_float(window, inp_oco_profit_pct)), 2)
+                        oco_sl_pct = round((is_float(window, inp_oco_sl_pct)), 2)
+                        oco_lmt_pct = round((is_float(window, inp_oco_lmt_pct)), 2)
                         window['OUT'].print('[OK- OCO TAKE PROFIT]', text_color='green', font=font14)
                         window['OUT'].print('[OK- OCO STOP LOSS]', text_color='green', font=font14)
                         window['OUT'].print('[OK- OCO STOP LOSS LIMIT]', text_color='green', font=font14)
@@ -309,24 +309,23 @@ def main():
                             if any(x in usrdata for x in garbage):
                                 [usrdata.pop(key) for key in garbage]
                         except KeyError:
-                            usrdata.update({'oco_choice': True, 'oco_profit_pct': oco_profit_pct, 'oco_sl_pct': oco_sl_pct, 'oco_lmt_pct': oco_lmt_pct})
+                            pass
 
                         # START WORKING
                         try:
                             if email_choice and valid_sender_email and valid_receiver_email and valid_password or not email_choice:
+                                usrdata.update({'oco_choice': True, 'oco_profit_pct': oco_profit_pct, 'oco_sl_pct': oco_sl_pct, 'oco_lmt_pct': oco_lmt_pct})
                                 websocket_connect(usrdata)
                             elif email_choice and not valid_sender_email or not valid_receiver_email or not valid_password:
                                 window['OUT'].print('[ERROR- EMAIL] fill all required fields', text_color='red', font=font14)
                         except UnboundLocalError:
                             pass
-                else:
-                    window['OUT'].print('[ERROR- OCO] fill all required fields', text_color='red', font=font14)
 
                 # TP FIELDS
-                if inp_tp_stop_pct and inp_tp_lmt_pct:
+                if tp_choice:
                     if is_float(window, inp_tp_stop_pct) and is_float(window, inp_tp_lmt_pct):
-                        tp_stop_pct = is_float(window, inp_tp_stop_pct)
-                        tp_lmt_pct = is_float(window, inp_tp_lmt_pct)
+                        tp_stop_pct = round((is_float(window, inp_tp_stop_pct)), 2)
+                        tp_lmt_pct = round((is_float(window, inp_tp_lmt_pct)), 2)
                         window['OUT'].print('[OK- TAKE PROFIT STOP]', text_color='green', font=font14)
                         window['OUT'].print('[OK- TAKE PROFIT LIMIT]', text_color='green', font=font14)
 
@@ -336,24 +335,23 @@ def main():
                             if any(x in usrdata for x in garbage):
                                 [usrdata.pop(key) for key in garbage]
                         except KeyError:
-                            usrdata.update({'tp_choice': True, 'tp_stop_pct': tp_stop_pct, 'tp_lmt_pct': tp_lmt_pct})
+                            pass
 
                         # START WORKING
                         try:
                             if email_choice and valid_sender_email and valid_receiver_email and valid_password or not email_choice:
+                                usrdata.update({'tp_choice': True, 'tp_stop_pct': tp_stop_pct, 'tp_lmt_pct': tp_lmt_pct})
                                 websocket_connect(usrdata)
                             elif email_choice and not valid_sender_email or not valid_receiver_email or not valid_password:
                                 window['OUT'].print('[ERROR- EMAIL] fill all required fields', text_color='red', font=font14)
                         except UnboundLocalError:
                             pass
-                else:
-                    window['OUT'].print('[ERROR- TAKE PROFIT] fill all required fields', text_color='red', font=font14)
 
                 # SL FIELDS
-                if inp_sl_stop_pct and inp_sl_lmt_pct:
+                if sl_choice:
                     if is_float(window, inp_sl_stop_pct) and is_float(window, inp_sl_lmt_pct):
-                        sl_stop_pct = is_float(window, inp_sl_stop_pct)
-                        sl_lmt_pct = is_float(window, inp_sl_lmt_pct)
+                        sl_stop_pct = round((is_float(window, inp_sl_stop_pct)), 2)
+                        sl_lmt_pct = round((is_float(window, inp_sl_lmt_pct)), 2)
                         window['OUT'].print('[OK- STOP LOSS STOP]', text_color='green', font=font14)
                         window['OUT'].print('[OK- STOP LOSS LIMIT]', text_color='green', font=font14)
 
@@ -363,18 +361,17 @@ def main():
                             if any(x in usrdata for x in garbage):
                                 [usrdata.pop(key) for key in garbage]
                         except KeyError:
-                            usrdata.update({'sl_choice': True, 'sl_stop_pct': sl_stop_pct, 'sl_lmt_pct': sl_lmt_pct})
+                            pass
 
                         # START WORKING
                         try:
                             if email_choice and valid_sender_email and valid_receiver_email and valid_password or not email_choice:
+                                usrdata.update({'sl_choice': True, 'sl_stop_pct': sl_stop_pct, 'sl_lmt_pct': sl_lmt_pct})
                                 websocket_connect(usrdata)
                             elif email_choice and not valid_sender_email or not valid_receiver_email or not valid_password:
                                 window['OUT'].print('[ERROR- EMAIL] fill all required fields', text_color='red', font=font14)
                         except UnboundLocalError:
                             pass
-                else:
-                    window['OUT'].print('[ERROR- STOP LOSS] fill all required fields', text_color='red', font=font14)
             else:
                 window['OUT'].print('[ERROR- GENERAL] fill all required fields', text_color='red', font=font14)
 

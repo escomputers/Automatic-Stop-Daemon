@@ -417,15 +417,15 @@ def websocket_connect(usrdata):
             [sg.Text('BASD', font=("Segoe UI", 18, 'bold')), sg.Push()],
             [sg.Text('Output', font=font1), sg.Push()],
             [sg.MLine(size=(80, 10), reroute_stdout=True, autoscroll=True, k='-OUTPUT-')],
-            [sg.Button('Refresh', tooltip='Get latest data from Binance websocket'),
+            [sg.Button('Start', tooltip='Start working'),
                 sg.Button('Quit', tooltip='Closing program will stop listening to orders!')],
             ]
 
     # Create the window
-    window = sg.Window('Binance Algorithmic Stop Daemon', layout)
+    window = sg.Window('Binance Algorithmic Stop Daemon [OUTPUT]', icon='templates/icon.ico').Layout(layout)
 
     while True:
-        event, values = window.read(timeout=3000)
+        event, values = window.read()
 
         # get time zone of specified location
         tmzone = pytz.timezone(usr_tz)
