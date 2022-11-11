@@ -25,35 +25,6 @@
   </p>
 </div>
 
-
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-  </ol>
-</details>
-
-
-
 <!-- WHY BASD -->
 ## Why BASD?
 Binance is unquestionably the world greatest and most secure cryptocurrency exchange and many of us trade there.
@@ -64,33 +35,42 @@ Expecially if an order is being filled during nightime, how can we place a Stop 
 
 BASD solves the problem by constantly and securely listening to Binance account and if a condition is being triggered it will automatically place a Stop Loss, Take Profit or OCO order basing on your choice.
 
-<!-- HOW TO USE-->
-## How to use BASD
 
-
-
-<!--
-### Built With
-* [![Python][Python]][Python-url]
-* [![HTML][HTML]][HTML-url]
--->
+<!-- Prerequisites -->
+### Prerequisites
+BASD requires <b>Binance.com API key and API secret key</b>. If you don't know how to create API keys, follow these [instructions](https://www.binance.com/en/support/faq/how-to-create-api-360002502072). note that Binance.us is not currently supported.
 
 <!-- GETTING STARTED -->
-## Getting Started
+## Getting started
+Just download last stable binary file from [releases](https://github.com/escomputers/BASD/releases) page and run it.
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+<!-- USAGE -->
+## Usage
+When program starts you will asked for these <u>required</u> parameters:
+* Timezone continent + city <sup>1</sup>
+* Start time <sup>2</sup>
+* Number of active hours <sup>3</sup>
+* Order type <sup>4</sup>
+* Sell percentage <sup>5</sup>
 
-### Prerequisites
+<sup>1</sup> [Here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List) you can find a complete list of all supported timezones, <b>e.g. Europe/Berlin</b>
 
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
+<sup>2</sup> When you want program starts working, <b>e.g. 23:55</b>
 
+<sup>3</sup> Number of active hours, used for end time calculation, <b>e.g. 8</b>
+
+<sup>4</sup> Supported order types are <u>only for sell</u> side: [Take Profit](https://academy.binance.com/en/articles/what-is-a-stop-limit-order) - [Stop Loss](https://academy.binance.com/en/articles/what-is-a-stop-limit-order) - [OCO](https://academy.binance.com/en/articles/what-is-an-oco-order)
+
+<sup>5</sup> BASD will calculate order sell price with your desired percentage, <b>e.g. 2.45</b>
+
+
+### Supported OS
+* ![Linux][Linux]
+* ![MacOS][MacOS]
+* ![Windows][Windows]
+
+<!--
 ### Installation
-
 1. Get a free API Key at [https://example.com](https://example.com)
 2. Clone the repo
    ```sh
@@ -104,83 +84,22 @@ This is an example of how to list things you need to use the software and how to
    ```js
    const API_KEY = 'ENTER YOUR API';
    ```
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- USAGE EXAMPLES -->
-## Usage
-
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- ROADMAP -->
-## Roadmap
-
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
-
-See the [open issues](https://github.com/escomputers/BASD/issues) for a full list of proposed features (and known issues).
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
+-->
 
 <!-- CONTRIBUTING -->
 ## Contributing
-
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
 If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
+### If BASD was useful don't forget to give the project a star!
 
 
 <!-- LICENSE -->
 ## License
-
-Distributed under the MIT License. See `LICENSE.txt` for more information.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- CONTACT -->
-## Contact
-
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
-
-Project Link: [https://github.com/escomputers/BASD](https://github.com/escomputers/BASD)
+Distributed under the Apache 2.0 License. See [license](https://github.com/escomputers/BASD/blob/GUI/LICENSE) for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-* []()
-* []()
-* []()
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
@@ -201,6 +120,9 @@ Project Link: [https://github.com/escomputers/BASD](https://github.com/escompute
 [Python-url]: https://www.python.org/
 [HTML]: https://img.shields.io/badge/HTML-239120?style=for-the-badge&logo=html5&logoColor=white
 [HTML-url]: https://html.com/
+[Linux]: https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black
+[MacOS]: https://img.shields.io/badge/mac%20os-000000?style=for-the-badge&logo=macos&logoColor=F0F0F0
+[Windows]: https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white
 [Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
 [Next-url]: https://nextjs.org/
 [React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
@@ -216,4 +138,4 @@ Project Link: [https://github.com/escomputers/BASD](https://github.com/escompute
 [Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
 [Bootstrap-url]: https://getbootstrap.com
 [JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
-[JQuery-url]: https://jquery.com 
+[JQuery-url]: https://jquery.com
