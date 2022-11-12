@@ -360,7 +360,7 @@ def websocket_connect(usrdata):
                 order_status = message['X']
                 side = message['S']
 
-                if order_status == 'CANCELED' and side == 'BUY':             # CHANGE ME!!!!!!!!!!!
+                if order_status == 'FILLED' and side == 'BUY':
                     # get global variables
                     # order_pr = float(message['p'])
                     order_pr = 20763
