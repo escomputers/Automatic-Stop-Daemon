@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from order import websocket_connect
+from module.order import websocket_connect
 
 import webbrowser
 import PySimpleGUI as sg
