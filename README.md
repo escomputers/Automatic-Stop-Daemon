@@ -33,7 +33,7 @@ BASD solves the problem by constantly and securely listening to Binance account 
 
 <!-- Prerequisites -->
 ### Prerequisites
-BASD requires <b>Binance.com API key and API secret key</b>. If you don't know how to create API keys, follow these [instructions](https://www.binance.com/en/support/faq/how-to-create-api-360002502072). note that Binance.us is not currently supported.ins
+BASD requires <b>Binance.com API key and API secret key</b>. If you don't know how to create API keys, follow these [instructions](https://www.binance.com/en/support/faq/how-to-create-api-360002502072). Note that Binance.us is not currently supported.
 
 <!-- GETTING STARTED -->
 ## Getting started
