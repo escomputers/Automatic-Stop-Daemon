@@ -323,7 +323,7 @@ def websocket_connect(usrdata):
         receiver_email = usrdata['valid_receiver_email']
 
         message = MIMEMultipart('alternative')
-        message['Subject'] = '[BASD] Binance Algorithmic Stop Daemon - Notification'
+        message['Subject'] = '[BASD] Binance Automatic Stop Daemon - Notification'
         message['From'] = sender_email
         message['To'] = receiver_email
 
@@ -422,7 +422,7 @@ def websocket_connect(usrdata):
             ]
 
     # Create the window
-    window = sg.Window('Binance Algorithmic Stop Daemon [OUTPUT]', icon='templates/icon.ico').Layout(layout)
+    window = sg.Window('Binance Automatic Stop Daemon [OUTPUT]', icon='templates/icon.ico').Layout(layout)
 
     while True:
         event, values = window.read()
