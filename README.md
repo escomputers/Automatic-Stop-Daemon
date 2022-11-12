@@ -43,7 +43,8 @@ BASD requires <b>Binance.com API key and API secret key</b>. If you don't know h
 ## Getting started
 Just download last stable binary file from [releases](https://github.com/escomputers/BASD/releases) page.
 Extract zip archive and run BASD.exe.
-Do not move or delete templates directory, otherwise it won't work!
+
+Do not move or delete ```templates``` directory, otherwise it won't work!
 
 <!-- USAGE -->
 ## Usage
