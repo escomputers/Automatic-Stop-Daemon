@@ -44,7 +44,7 @@ def is_float(window, input):
 def main():
 
     links = {
-        "GitHub": "https://github.com/escomputers/BASD",
+        "GitHub": "https://github.com/escomputers/BASD/stargazers",
     }
 
     sg.theme('Default 1')
