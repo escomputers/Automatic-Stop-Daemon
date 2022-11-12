@@ -69,6 +69,7 @@ You can optionally be notified whenever a job is started or order is placed. If 
 
 Note that only Gmail accounts are currently supported. Follow these [instructions](https://support.google.com/mail/answer/185833?hl=en), if you don't know how to create a Gmail application password.
 
+After you fill all required fields, another window will popup, just click ```Start``` and you're done, then first window can be safely closed.
 
 * Tested on ![Windows][Windows]
 
