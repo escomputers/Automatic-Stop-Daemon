@@ -1,18 +1,14 @@
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![License][license-shield]][license-url]
-
 <!-- PROJECT LOGO -->
+<!-- 
 <br />
 <div align="center">
   <a href="https://github.com/escomputers/BASD">
-   <!-- <img src="templates/icon.ico" alt="Logo" width="80" height="80">-->
+   <img src="templates/icon.ico" alt="Logo" width="80" height="80">
   </a>
+-->
 
 <h3 align="center">BASD</h3>
-
+ <h6 align="center">acronym for</h6>
   <p align="center">
     Binance Automatic Stop Daemon
     <br />
@@ -93,16 +89,6 @@ Distributed under the Apache 2.0 License. See [license](https://github.com/escom
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/escomputers/BASD.svg?style=for-the-badge
-[contributors-url]: https://github.com/escomputers/BASD/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/escomputers/BASD.svg?style=for-the-badge
-[forks-url]: https://github.com/escomputers/BASD/network/members
-[stars-shield]: https://img.shields.io/github/stars/escomputers/BASD.svg?style=for-the-badge
-[stars-url]: https://github.com/escomputers/BASD/stargazers
-[issues-shield]: https://img.shields.io/github/issues/escomputers/BASD.svg?style=for-the-badge
-[issues-url]: https://github.com/escomputers/BASD/issues
-[license-shield]: https://img.shields.io/github/license/escomputers/BASD.svg?style=for-the-badge
-[license-url]: https://github.com/escomputers/BASD/blob/GUI/LICENSE
 [Python]: https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white
 [Python-url]: https://www.python.org/
 [HTML]: https://img.shields.io/badge/HTML-239120?style=for-the-badge&logo=html5&logoColor=white
