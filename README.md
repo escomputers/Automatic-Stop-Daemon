@@ -41,7 +41,9 @@ BASD requires <b>Binance.com API key and API secret key</b>. If you don't know h
 
 <!-- GETTING STARTED -->
 ## Getting started
-Just download last stable binary file from [releases](https://github.com/escomputers/BASD/releases) page and run it.
+Just download last stable binary file from [releases](https://github.com/escomputers/BASD/releases) page.
+Extract zip archive and run BASD.exe.
+Do not move or delete templates directory, otherwise it won't work!
 
 <!-- USAGE -->
 ## Usage
@@ -70,27 +72,9 @@ You can optionally be notified whenever a job is started or order is placed. If 
 
 Note that only Gmail accounts are currently supported. Follow these [instructions](https://support.google.com/mail/answer/185833?hl=en), if you don't know how to create a Gmail application password.
 
-### Supported OS
-* ![Linux][Linux]
-* ![MacOS][MacOS]
-* ![Windows][Windows]
 
-<!--
-### Installation
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-   ```sh
-   git clone https://github.com/escomputers/BASD.git
-   ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
--->
+* Tested on ![Windows][Windows]
+
 
 <!-- CONTRIBUTING -->
 ## Contributing
