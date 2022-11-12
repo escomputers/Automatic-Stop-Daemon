@@ -30,14 +30,14 @@ Binance is unquestionably the world greatest and most secure cryptocurrency exch
 For those like me that open and close positions within the same day or few hours, it's extremely important to carefully watch graphs to monitor price movements.
 
 Sometimes (very often in my case) we cannot monitor price during a trade.
-Expecially if an order is being filled during nightime, how can we place a Stop Loss, Take Profit or OCO order if we're sleeping, trekking or just working?
+Expecially if an order is being filled during nightime, how can we place an order if we're sleeping, trekking or just working?
 
 BASD solves the problem by constantly and securely listening to Binance account and if a condition is being triggered it will automatically place a Stop Loss, Take Profit or OCO order basing on your choice.
 
 
 <!-- Prerequisites -->
 ### Prerequisites
-BASD requires <b>Binance.com API key and API secret key</b>. If you don't know how to create API keys, follow these [instructions](https://www.binance.com/en/support/faq/how-to-create-api-360002502072). note that Binance.us is not currently supported.
+BASD requires <b>Binance.com API key and API secret key</b>. If you don't know how to create API keys, follow these [instructions](https://www.binance.com/en/support/faq/how-to-create-api-360002502072). note that Binance.us is not currently supported.ins
 
 <!-- GETTING STARTED -->
 ## Getting started
@@ -45,7 +45,7 @@ Just download last stable binary file from [releases](https://github.com/escompu
 
 <!-- USAGE -->
 ## Usage
-When program starts you will asked for these <u>required</u> parameters:
+When program starts you will asked for these <ins>required</ins> parameters:
 * Timezone continent + city <sup>1</sup>
 * Start time <sup>2</sup>
 * Number of active hours <sup>3</sup>
@@ -58,10 +58,17 @@ When program starts you will asked for these <u>required</u> parameters:
 
 <sup>3</sup> Number of active hours, used for end time calculation, <b>e.g. 8</b>
 
-<sup>4</sup> Supported order types are <u>only for sell</u> side: [Take Profit](https://academy.binance.com/en/articles/what-is-a-stop-limit-order) - [Stop Loss](https://academy.binance.com/en/articles/what-is-a-stop-limit-order) - [OCO](https://academy.binance.com/en/articles/what-is-an-oco-order)
+<sup>4</sup> Supported order types are <ins>only for sell</ins> side: [Take Profit](https://academy.binance.com/en/articles/what-is-a-stop-limit-order) - [Stop Loss](https://academy.binance.com/en/articles/what-is-a-stop-limit-order) - [OCO](https://academy.binance.com/en/articles/what-is-an-oco-order)
 
 <sup>5</sup> BASD will calculate order sell price with your desired percentage, <b>e.g. 2.45</b>
 
+
+You can optionally be notified whenever a job is started or order is placed. If you select "Email Alert", you will asked for:
+- Sender Gmail address
+- Gmail app password (<ins><b>not</b></ins> your Gmail password)
+- Receiver email address
+
+Note that only Gmail accounts are currently supported. Follow these [instructions](https://support.google.com/mail/answer/185833?hl=en), if you don't know how to create a Gmail application password.
 
 ### Supported OS
 * ![Linux][Linux]

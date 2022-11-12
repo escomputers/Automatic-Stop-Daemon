@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from module.order import websocket_connect
+from modules.order import websocket_connect
 
 import webbrowser
 import PySimpleGUI as sg
@@ -95,7 +95,7 @@ def main():
     ]
 
     # Create the window
-    window = sg.Window('Binance Algorithmic Stop Daemon [INPUT]', icon='templates/icon.ico').Layout(layout)
+    window = sg.Window('Binance Automatic Stop Daemon [INPUT]', icon='templates/icon.ico').Layout(layout)
 
     # Display and interact with the Window using an Event Loop
     while True:
