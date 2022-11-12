@@ -28,7 +28,7 @@ For those like me that open and close positions within the same day or few hours
 Sometimes (very often in my case) we cannot monitor price during a trade.
 Expecially if an order is being filled during nightime, how can we place an order if we're sleeping, trekking or just working?
 
-BASD solves the problem by constantly and securely listening to Binance account and if a condition is being triggered it will automatically place a Stop Loss, Take Profit or OCO order basing on your choice.
+BASD solves the problem by constantly and securely listening to Binance account and if a BUY order is FILLED, it will automatically place a Stop Loss, Take Profit or OCO order basing on your choice.
 
 
 <!-- Prerequisites -->
