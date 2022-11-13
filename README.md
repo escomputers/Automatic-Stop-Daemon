@@ -69,6 +69,10 @@ You can optionally be notified whenever a job is started or order is placed. If 
 
 Note that only Gmail accounts are currently supported. Follow these [instructions](https://support.google.com/mail/answer/185833?hl=en), if you don't know how to create a Gmail application password.
 
+When placing orders always <ins><b>REMEMBER</ins></b> these trading rules:
+1. Binance will not accept any buy or sell order whose values is less than 11 USD
+2. For OCO sell order, you must have the following price schema: Limit Price > Last Price > Stop Price. Last price <ins><b>is not</ins></b> symbol price when buy order is filled but it's symbol last price when sell order will be placed!
+
 After you fill all required fields, another window will popup, just click ```Start``` and you're done, then first window can be safely closed.
 
 * Tested on ![Windows][Windows]
