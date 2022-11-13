@@ -125,26 +125,29 @@ def main():
         window['SLL'].update(visible=False)
 
         # GLOBAL VARIABLES
-        api_key = values['APIKEY']
-        api_secret = values['APISECRET']
-        tz_cont = values['CONTINENT']
-        tz_city = values['CITY']
-        inp_start_time = values['STARTTIME']
-        inp_working_ival = values['WORKINGINTERVAL']
-        tp_choice = values['TPCHOICE']
-        sl_choice = values['SLCHOICE']
-        oco_choice = values['OCOCHOICE']
-        email_choice = values['EMAILCHOICE']
-        sender_email = values['SENDEREMAIL']
-        password = values['PASSWORD']
-        receiver_email = values['RECEIVEREMAIL']
-        inp_oco_profit_pct = values['OCOTP']
-        inp_oco_sl_pct = values['OCOSL']
-        inp_oco_lmt_pct = values['OCOLL']
-        inp_tp_stop_pct = values['TPSL']
-        inp_tp_lmt_pct = values['TPL']
-        inp_sl_stop_pct = values['SL']
-        inp_sl_lmt_pct = values['SLL']
+        try:
+            api_key = values['APIKEY']
+            api_secret = values['APISECRET']
+            tz_cont = values['CONTINENT']
+            tz_city = values['CITY']
+            inp_start_time = values['STARTTIME']
+            inp_working_ival = values['WORKINGINTERVAL']
+            tp_choice = values['TPCHOICE']
+            sl_choice = values['SLCHOICE']
+            oco_choice = values['OCOCHOICE']
+            email_choice = values['EMAILCHOICE']
+            sender_email = values['SENDEREMAIL']
+            password = values['PASSWORD']
+            receiver_email = values['RECEIVEREMAIL']
+            inp_oco_profit_pct = values['OCOTP']
+            inp_oco_sl_pct = values['OCOSL']
+            inp_oco_lmt_pct = values['OCOLL']
+            inp_tp_stop_pct = values['TPSL']
+            inp_tp_lmt_pct = values['TPL']
+            inp_sl_stop_pct = values['SL']
+            inp_sl_lmt_pct = values['SLL']
+        except TypeError:
+            pass
 
         # show order fields according to radio buttons
         if tp_choice:
