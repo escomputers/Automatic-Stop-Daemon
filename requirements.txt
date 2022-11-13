@@ -1,4 +1,5 @@
 windows-curses
+certifi
 PySimpleGUI
 binance-connector
 tabulate
