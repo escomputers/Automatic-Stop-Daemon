@@ -4,7 +4,7 @@
 import PySimpleGUI as sg
 
 import uuid
-
+import certifi
 import io
 import logging
 import os
@@ -23,6 +23,9 @@ import smtplib
 import ssl
 
 from jinja2 import Environment, FileSystemLoader
+
+# create Mozilla root certificates
+os.environ['SSL_CERT_FILE'] = certifi.where()
 
 # load jinja2 template
 env = Environment(loader=FileSystemLoader('templates'))
