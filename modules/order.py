@@ -365,13 +365,13 @@ def websocket_connect(usrdata):
 
                 if order_status == 'FILLED' and side == 'BUY':
                     # get global variables
-                    # order_pr = float(message['p'])
-                    order_pr = 20763
+                    order_pr = float(message['p'])
+                    # order_pr = 20763
 
                     symbol = message['s']
 
-                    # qty = flot(message['q'])
-                    qty = 0.00052
+                    qty = flot(message['q'])
+                    # qty = 0.00052
 
                     # get LAST SYMBOL PRICE
                     last_pr = get_last_pr(symbol)
