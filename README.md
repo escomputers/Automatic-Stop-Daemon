@@ -30,6 +30,9 @@ Expecially if an order is being filled during nightime, how can we place an orde
 
 BASD solves the problem by constantly and securely listening to Binance account and if a BUY order is FILLED, it will automatically place a Stop Loss, Take Profit or OCO order basing on your choice.
 
+BASD <ins><b>DOES NOT</ins></b> store or save or get your API keys. 
+Keys are temporarily saved into your device RAM and after you close BASD, everything get deleted and you have to insert them again.
+If you read source code line by line, there's no hidden treat.
 
 <!-- Prerequisites -->
 ### Prerequisites
