@@ -78,8 +78,11 @@ When placing orders always <ins><b>REMEMBER</ins></b> these trading rules:
 
 After you fill all required fields, another window will popup, just click ```Start``` and you're done, then first window can be safely closed.
 
+<!-- Supported OS-->
+## Supported OS
 * Tested on ![Windows][Windows]
-
+* Tested on ![Ubuntu][Ubuntu]
+* MacOS users can install [Parallels](https://www.parallels.com/it/) and then run BASD within it.
 
 <!-- CONTRIBUTING -->
 ## Contributing
@@ -104,3 +107,4 @@ Distributed under the Apache 2.0 License. See [license](https://github.com/escom
 [Linux]: https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black
 [MacOS]: https://img.shields.io/badge/mac%20os-000000?style=for-the-badge&logo=macos&logoColor=F0F0F0
 [Windows]: https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white
+[Ubuntu]: https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white
