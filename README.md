@@ -34,6 +34,11 @@ BASD <ins><b>DOES NOT</ins></b> store or save or get your API keys.
 Keys are temporarily saved into your device RAM and after you close BASD, everything get deleted and you have to insert them again.
 If you read source code line by line, there's no hidden treat.
 
+<!-- Threat Intelligence Portal Analysis -->
+#### Threat Intelligence Portal Analysis powered by ![Kaspersky][Kaspersky]
+* [Ubuntu binary](https://opentip.kaspersky.com/8FC311547747145D046C3D31682049493510F8A3C183B481008011B03A82866F/results)
+* [Windows binary](https://opentip.kaspersky.com/CA288B869C313BB67B295934C7373144FB84566A6F3A3E2F2C36939CE051DB5F/results)
+
 <!-- Prerequisites -->
 ### Prerequisites
 BASD requires <b>Binance.com API key and API secret key</b>. If you don't know how to create API keys, follow these [instructions](https://www.binance.com/en/support/faq/how-to-create-api-360002502072). Note that Binance.us is not currently supported.
@@ -108,3 +113,4 @@ Distributed under the Apache 2.0 License. See [license](https://github.com/escom
 [MacOS]: https://img.shields.io/badge/mac%20os-000000?style=for-the-badge&logo=macos&logoColor=F0F0F0
 [Windows]: https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white
 [Ubuntu]: https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white
+[Kaspersky]: https://camo.githubusercontent.com/a8908b2f9c27f5d9f81f8bfa1d41dcefcb4e75046eaf21e0dcda2c59d4273380/68747470733a2f2f696d672e736869656c64732e696f2f7374617469632f76313f7374796c653d666f722d7468652d6261646765266d6573736167653d4b6173706572736b7926636f6c6f723d303036443543266c6f676f3d4b6173706572736b79266c6f676f436f6c6f723d464646464646266c6162656c3d
