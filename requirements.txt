@@ -1,6 +1,4 @@
-windows-curses
+django==3.2.16
 certifi
-PySimpleGUI
 binance-connector
-tabulate
 jinja2
