@@ -45,10 +45,15 @@ BASD requires <b>Binance.com API key and API secret key</b>. If you don't know h
 
 <!-- GETTING STARTED -->
 ## Getting started
-Just download last stable binary file from [releases](https://github.com/escomputers/BASD/releases) page.
-Extract zip archive and run BASD.exe.
 
+For Windows and Ubuntu/Debian just download last stable binary file from [releases](https://github.com/escomputers/BASD/releases) page.
+Extract zip archive and run BASD
+
+<!-- Supported OS-->
 Do not move or delete ```templates``` directory, otherwise it won't work!
+* Tested on ![Windows][Windows]
+* Tested on ![Ubuntu][Ubuntu]
+* MacOS users can install [Parallels](https://www.parallels.com/it/) and then run BASD within it.
 
 <!-- USAGE -->
 ## Usage
@@ -82,12 +87,6 @@ When placing orders always <ins><b>REMEMBER</ins></b> these trading rules:
 2. For OCO sell order, you must have the following price schema: Limit Price > Last Price > Stop Price. Last price <ins><b>is not</ins></b> symbol price when buy order is filled but it's symbol last price when sell order will be placed!
 
 After you fill all required fields, another window will popup, just click ```Start``` and you're done, then first window can be safely closed.
-
-<!-- Supported OS-->
-## Supported OS
-* Tested on ![Windows][Windows]
-* Tested on ![Ubuntu][Ubuntu]
-* MacOS users can install [Parallels](https://www.parallels.com/it/) and then run BASD within it.
 
 <!-- CONTRIBUTING -->
 ## Contributing
