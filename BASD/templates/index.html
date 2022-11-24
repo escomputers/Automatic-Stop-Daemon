@@ -29,12 +29,8 @@
     <!-- Font Awesome -->
 	  <script src="https://kit.fontawesome.com/cde9b9d9b2.js" crossorigin="anonymous"></script>
 
-    <!-- bootstrap toggle -->
-	  <script src="{% static 'plugins/bootstrap-toggle/js/bootstrap-toggle.min.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'plugins/bootstrap-toggle/css/bootstrap-toggle.min.css' %}">
-
     <!-- timezones -->
-    <script src="{% static 'plugins/timezones/timezones.full.min.js' %}"></script>
+    <script src="{% static 'plugins/easy-tz-picker/timezones.full.js' %}"></script>
 
     <!-- github buttons -->
     <script src="{% static 'plugins/github/buttons.min.js' %}"></script>
@@ -106,7 +102,7 @@
             </div><!-- end first row -->
 
             <div class="row"><!-- second row -->
-              <div class="col-sm-1">
+              <div class="col-sm-2">
                 <div class="form-group">
                   <label for="tz"><i class='fa fa-sort'></i> Order type</label> 
                   <select id="order_type" name="order_type" class="form-control" style="width: 100%;" placeholder="Select order type">
@@ -139,34 +135,34 @@
                 </div>
               </div>
 
-              <div class="col-sm-3">
-                <div class="form-group">
-                  <input type="checkbox" name="email_alert" id="email_alert" data-toggle="toggle" data-on="<i class='fa fa-envelope'></i> Email Alert ON" data-off="<i class='fa fa-envelope'></i> Email Alert OFF" data-onstyle="success" data-offstyle="danger" data-width="200">
+              <div class="btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-light active">
+                  <input type="checkbox" id="email_alert"><i class='fa fa-envelope'></i> Email alert
+                </label>
+              </div>
 
-                  <div id="email_fields">
+              <div id="email_fields">
+                <div class="col-sm">
+                  <div class="form-group">
                     <input type="email" class="form-control pull-right" id="sender_email" name="sender_email" data-toggle="tooltip" title="sender email address (Gmail only)" placeholder="Gmail sender address">
                     <input type="password" class="form-control pull-right" id="password" name="password" data-toggle="tooltip" title="Gmail app password" placeholder="Gmail app password">
                     <input type="email" class="form-control pull-right" id="receiver_email" name="receiver_email" data-toggle="tooltip" title="receiver email address" placeholder="Receiver email address">
                   </div>
-
                 </div>
               </div>
 
-            </div><!-- end second row -->
-
-            <div class="row">
-              <div class="col-sm-4">
-              </div>
-              <div class="col-sm-4">
+              <div class="col-sm">
                 <a class="github-button" href="https://github.com/escomputers/BASD" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star escomputers/BASD on GitHub">Star</a>
                 <a class="github-button" href="https://github.com/escomputers/BASD/fork" data-icon="octicon-repo-forked" data-size="large" data-show-count="true" aria-label="Fork escomputers/BASD on GitHub">Fork</a>
                 <a class="github-button" href="https://github.com/escomputers/BASD/issues" data-icon="octicon-issue-opened" data-size="large" data-show-count="true" aria-label="Issue escomputers/BASD on GitHub">Issue</a>
-                <a class="github-button" href="https://github.com/escomputers/BASD/subscription" data-icon="octicon-eye" data-size="large" data-show-count="true" aria-label="Watch escomputers/BASD on GitHub">Watch</a>
                 <a class="github-button" href="https://github.com/escomputers/BASD/discussions" data-icon="octicon-comment-discussion" data-size="large" aria-label="Discuss escomputers/BASD on GitHub">Discuss</a>
               </div>
-              <div class="col-sm-4">
-              </div>
-            </div>
+            </div><!-- end second row -->
+
+            <div class="col-sm">
+              <div class="form-group">
+                </div>
+            </div><!-- empty row -->
 
             <div class="row">
               <input class="submit btn btn-primary btn-block" type="submit" value="Validate">
@@ -262,10 +258,10 @@
       }
 		});
 
-    // show email fields basing on toggle
+    // show email fields basing on checkbox
     $("#email_alert").change(function() {
-      toggle_status = $("#email_alert").prop("checked")
-      if (toggle_status === true) {
+      checkbox_status = $("#email_alert").prop("checked")
+      if (checkbox_status === true) {
         $("#email_fields").show();
         $("#sender_email, #password, #receiver_email").prop("required", true).addClass("form-control pull-right alert-danger");
       } else {
