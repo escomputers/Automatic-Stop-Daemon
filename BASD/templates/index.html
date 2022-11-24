@@ -62,8 +62,8 @@
     
   <div class="container-fluid">
 
-  <form id="Form" action="">
-
+  <form id="Form" action="" method="post">
+    {% csrf_token %}
       <div class="card card-outline card-primary">
           <div class="card-body">
 
@@ -150,13 +150,6 @@
                   </div>
                 </div>
               </div>
-
-              <div class="col-sm">
-                <a class="github-button" href="https://github.com/escomputers/BASD" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star escomputers/BASD on GitHub">Star</a>
-                <a class="github-button" href="https://github.com/escomputers/BASD/fork" data-icon="octicon-repo-forked" data-size="large" data-show-count="true" aria-label="Fork escomputers/BASD on GitHub">Fork</a>
-                <a class="github-button" href="https://github.com/escomputers/BASD/issues" data-icon="octicon-issue-opened" data-size="large" data-show-count="true" aria-label="Issue escomputers/BASD on GitHub">Issue</a>
-                <a class="github-button" href="https://github.com/escomputers/BASD/discussions" data-icon="octicon-comment-discussion" data-size="large" aria-label="Discuss escomputers/BASD on GitHub">Discuss</a>
-              </div>
             </div><!-- end second row -->
 
             <div class="col-sm">
@@ -164,8 +157,30 @@
                 </div>
             </div><!-- empty row -->
 
-            <div class="row">
-              <input class="submit btn btn-primary btn-block" type="submit" value="Validate">
+            <div id="btn_validate">
+              <div class="row">
+                <input class="submit btn btn-primary btn-block" type="submit" value="Validate">
+              </div>
+            </div>
+
+            <div id="loading">
+              <div class="d-flex justify-content-center">
+                <div class="spinner-border" role="status">
+                  <span class="sr-only">Loading...</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-sm">
+              <div class="form-group">
+                </div>
+            </div><!-- empty row -->
+
+            <div class="d-flex justify-content-center">
+              <a class="github-button" href="https://github.com/escomputers/BASD" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star escomputers/BASD on GitHub">Star</a>
+              <a class="github-button" href="https://github.com/escomputers/BASD/fork" data-icon="octicon-repo-forked" data-size="large" data-show-count="true" aria-label="Fork escomputers/BASD on GitHub">Fork</a>
+              <a class="github-button" href="https://github.com/escomputers/BASD/issues" data-icon="octicon-issue-opened" data-size="large" data-show-count="true" aria-label="Issue escomputers/BASD on GitHub">Issue</a>
+              <a class="github-button" href="https://github.com/escomputers/BASD/discussions" data-icon="octicon-comment-discussion" data-size="large" aria-label="Discuss escomputers/BASD on GitHub">Discuss</a>
             </div>
 
           </div><!-- end card-body -->
@@ -177,12 +192,59 @@
 	$().ready(function() {
 
     // hide email and order fields on page load
-    $("#email_fields, #OCO, #SL").hide();
+    $("#loading, #email_fields, #OCO, #SL").hide();
+
+    // show order fields basing on selected value
+    $("#order_type").change(function() {
+      selected_value = $("#order_type").val()
+      if (selected_value === 'sl') {
+        $("#OCO, #TP").hide();
+        $("#SL").show();
+      } else if (selected_value === 'oco') {
+        $("#SL, #TP").hide();
+        $("#OCO").show();
+      } else {
+        $("#SL, #OCO").hide();
+        $("#TP").show();
+      }
+    });
+
+    // show email fields basing on checkbox
+    $("#email_alert").change(function() {
+      checkbox_status = $("#email_alert").prop("checked")
+      if (checkbox_status === true) {
+        $("#email_fields").show();
+      } else {
+        $("#email_fields").hide();
+      }
+    });
+
+    // default action when all fields are valid
+    $.validator.setDefaults({
+		  submitHandler: function() {
+			  // alert("submitted!");
+        fetchInput()
+		  }
+	  });
 
     // add method for checking spaces
     jQuery.validator.addMethod("noSpace", function(value, element) { 
       return value.indexOf(" ") < 0 && value != ""; 
       }, "No spaces"
+    );
+
+    // add method for Gmail sender address
+    jQuery.validator.addMethod("Gmail", function(value, element) { 
+      let stringCheck = "@gmail.com";
+      return (value.lastIndexOf(stringCheck) === value.length - stringCheck.length) > 0 && value != "";
+      }, "Invalid Gmail address"
+    );
+
+    // add method for receiver email address
+    jQuery.validator.addMethod("my_email", function(value, element) { 
+      let filter = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+      return filter.test(value) && value != "";
+      }, "Invalid email address"
     );
 
     // rule grouping for order percentages
@@ -191,12 +253,10 @@
         number: true,
         range: [0.5, 200]
     };
-
-		// validate signup form on keyup and submit
+  	// validate signup form on keyup and submit
 		$("#Form").validate({
       validClass: "font-weight-bold alert-success",
       errorClass: "font-weight-bold alert-danger",
-      ignore: "#sender_email, #receiver_email",
 			rules: {
 				api_key: {
 					required: true,
@@ -229,6 +289,14 @@
         oco_sl_l: ruleSetPercentage,
         sl_s: ruleSetPercentage,
         sl_l: ruleSetPercentage,
+        sender_email: {
+          required: true,
+          Gmail: true
+        },
+        receiver_email: {
+          required: true,
+          my_email: true
+        },
 				password: {
 					required: true,
 					minlength: 8,
@@ -256,77 +324,54 @@
       unhighlight: function (element, errorClass, validClass) {
         $(element).removeClass(errorClass).addClass("font-weight-bold alert-success");
       }
+
 		});
 
-    // show email fields basing on checkbox
-    $("#email_alert").change(function() {
-      checkbox_status = $("#email_alert").prop("checked")
-      if (checkbox_status === true) {
-        $("#email_fields").show();
-        $("#sender_email, #password, #receiver_email").prop("required", true).addClass("form-control pull-right alert-danger");
-      } else {
-        $("#email_fields").hide();
-      }
-    });
+    // get all valid input fields and make a dictionary
+    function fetchInput() {
+      let usr_data = {};
+      $(":input").each(function() {
+        usr_data[$(this).attr("name")] = $(this).val();
+      });
 
-  // validate sender Gmail address
-  $("#sender_email").keyup(function() {
-    let input = this.value;
-    let stringCheck = "@gmail.com";
-    let validation = (input.lastIndexOf(stringCheck) === input.length - stringCheck.length) > 0;
-    if (validation === false) {
-      $("#sender_email-error").remove();
-      $("#sender_email").removeClass();
-      $("#sender_email").addClass("form-control pull-right font-weight-bold alert-danger");
-      $("#sender_email").after("<label id='sender_email-error' class='alert-danger font-weight-bold' for='sender_email'>Not a valid Gmail address</label>")
-    } else {
-      $("#sender_email").removeClass();
-      $("#sender_email-error").remove();
-      $("#sender_email").addClass("form-control pull-right font-weight-bold alert-success");
+      // call backend
+      ajax_call(usr_data)
     }
-  });
 
-  // validate receiver email address
-  function emailValidate(input) {
-    let filter = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-    if (filter.test(input)) {
-      return true;
-    } else {
-      return false;
+    // ajax call
+    function ajax_call(usr_data) {
+      $.ajax({
+        url: "{% url 'getData' %}",
+        dataType: "text",
+        method: "POST",
+        data : {
+        csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+        data: JSON.stringify(usr_data),
+        },
+        success: function(data, status, xhr){
+        },
+        error: function(xhr, status, error){
+        }
+      })
+
+      redirect()
     }
-  }
 
-  // get user input for receiver email address e check it
-  $("#receiver_email").keyup(function() {
-    let input = this.value;
-    emailValidate(input)
-    if (emailValidate(input) === false) {
-      $("#receiver_email-error").remove();
-      $("#receiver_email").removeClass();
-      $("#receiver_email").addClass("form-control pull-right font-weight-bold alert-danger");
-      $("#receiver_email").after("<label id='receiver_email-error' class='alert-danger font-weight-bold' for='receiver_email'>Not a valid email address</label>")
-    } else {
-      $("#receiver_email").removeClass();
-      $("#receiver_email-error").remove();
-      $("#receiver_email").addClass("form-control pull-right font-weight-bold alert-success");
+    // redirect after successful form submission
+    function redirect() {
+      $('#btn_validate').hide();
+
+      // show loading div for 2 secs
+      setTimeout(function() {
+        $('#loading').show();
+      }, 2000);
+
+      // then redirect
+      setTimeout(function() {
+        window.location.href = "/";
+      }, 2000);
     }
-  });
 
-  // show order fields basing on selected value
-  $("#order_type").change(function() {
-	  selected_value = $("#order_type").val()
-    if (selected_value === 'sl') {
-	    $("#OCO, #TP").hide();
-      $("#SL").show();
-    } else if (selected_value === 'oco') {
-      $("#SL, #TP").hide();
-      $("#OCO").show();
-	  } else {
-      $("#SL, #OCO").hide();
-      $("#TP").show();
-    }
-  });
-
-}); // end $().ready(function()
+}); // end main $().ready(function()
 </script>
 </html>
