@@ -8,14 +8,17 @@ import time as tempo
 from binance.websocket.spot.websocket_client import SpotWebsocketClient
 from binance.spot import Spot as Client
 from binance.error import ClientError
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import smtplib
+import ssl
 
 
 def getData(request):
     # get ajax dict
-    ajax_response_dict = json.loads(request.POST['data'])
-    print(ajax_response_dict)
+    usrdata = json.loads(request.POST['data'])
+    print(usrdata)
 
-    '''
     # PLACE OCO ORDER
     def place_oco_order(symbol, qty, order_pr, last_pr):
 
@@ -74,14 +77,14 @@ def getData(request):
                 except ClientError as error:
                     txt = 'Error! OCO sell order NOT PLACED'
                 finally:
-                    if 'valid_sender_email' in usrdata:
+                    if sender_email_def:
                         oco_mail_body(
                             txt, symbol, qty, profit_pr, oco_profit_pct,
                             sl_lmt_pr_oco, sl_pr_oco, oco_lmt_pct, last_pr
                         )
             else:
                 txt = '[ERROR] Orders value must be higher than 11USD'
-                if 'valid_sender_email' in usrdata:
+                if sender_email_def:
                     txt = 'Error! OCO sell order NOT PLACED'
                     oco_mail_body(
                         txt, symbol, qty, profit_pr, oco_profit_pct,
@@ -90,7 +93,7 @@ def getData(request):
         else:
             txt = '[ERROR] Prices relationship for the orders not correct. \n' + \
                 'OCO SELL rule = Limit Price > Last Price > Stop Price'
-            if 'valid_sender_email' in usrdata:
+            if sender_email_def:
                 txt = 'Error! OCO sell order NOT PLACED'
                 oco_mail_body(
                     txt, symbol, qty, profit_pr, oco_profit_pct,
@@ -135,14 +138,14 @@ def getData(request):
             except ClientError as error:
                 txt = 'Error! Take Profit sell order NOT PLACED'
             finally:
-                if 'valid_sender_email' in usrdata:
+                if sender_email_def:
                     tp_mail_body(
                         txt, symbol, qty,
                         lmt_profit_pr, stop_pr, tp_lmt_pct, last_pr
                     )
         else:
             txt = '[ERROR] Order value must be higher than 11USD'
-            if 'valid_sender_email' in usrdata:
+            if sender_email_def:
                 txt = 'Error! Take Profit sell order NOT PLACED'
                 tp_mail_body(
                     txt, symbol, qty,
@@ -188,14 +191,14 @@ def getData(request):
             except ClientError as error:
                 txt = 'Error! Stop Loss sell order NOT PLACED'
             finally:
-                if 'valid_sender_email' in usrdata:
+                if sender_email_def:
                     sl_mail_body(
                         txt, symbol, qty,
                         lmt_loss_pr, sl_pr, sl_lmt_pct, last_pr
                     )
         else:
             txt = '[ERROR] Order value must be higher than 11USD'
-            if 'valid_sender_email' in usrdata:
+            if sender_email_def:
                 txt = 'Error! Stop Loss sell order NOT PLACED'
                 sl_mail_body(
                     txt, symbol, qty,
@@ -208,7 +211,8 @@ def getData(request):
         profit_order_value = round((float(qty * profit_pr)), 2)
         loss_order_value = round((float(qty * sl_lmt_pr_oco)), 2)
 
-        html = template.render(
+        '''
+        html = (
             title=txt,
             order_type='OCO',
             symbol=symbol,
@@ -223,13 +227,15 @@ def getData(request):
             last_pr=str(last_pr)
         )
         send_email(html)
+        '''
 
     # Take Profit email body
     def tp_mail_body(txt, symbol, qty, lmt_profit_pr, stop_pr, tp_lmt_pct, last_pr):
 
         order_value = round((float(qty * lmt_profit_pr)), 2)
 
-        html = template.render(
+        '''
+        html = (
             title=txt,
             order_type='Take Profit',
             symbol=symbol,
@@ -241,13 +247,16 @@ def getData(request):
             last_pr=str(last_pr)
         )
         send_email(html)
+        '''
 
     # Stop Loss email body
     def sl_mail_body(txt, symbol, qty, lmt_loss_pr, sl_pr, sl_lmt_pct, last_pr):
 
         order_value = round((float(qty * lmt_loss_pr)), 2)
 
-        html = template.render(
+        '''
+
+        html = (
             title=txt,
             order_type='Stop Loss',
             symbol=symbol,
@@ -255,17 +264,28 @@ def getData(request):
             stop_Limit_Price=str(lmt_loss_pr),
             stop_Price=str(sl_pr),
             sl_lmt_pct=str(sl_lmt_pct),
-            order_value=str(order_value),
+            order_value=str(order_value),sender
             last_pr=str(last_pr)
         )
         send_email(html)
+        '''
 
     # SEND EMAIL
     def send_email(html):
         send_email.called = True
-        sender_email = usrdata['valid_sender_email']
-        password = usrdata['password']
-        receiver_email = usrdata['valid_receiver_email']
+        part = MIMEText(html, 'html')
+
+        # Add HTML/plain-text parts to MIMEMultipart message
+        # The email client will try to render the last part first
+        message.attach(part)
+
+        # Create secure connection with server and send email
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
+            server.login(sender_email_def, password_def)
+            server.sendmail(
+                sender_email_def, receiver_email_def, message.as_string()
+            )
 
     # GET LAST PRICE VIA REST API
     def get_last_pr(symbol):
@@ -288,22 +308,22 @@ def getData(request):
 
                 if order_status == 'FILLED' and side == 'BUY':
                     # get global variables
-                    #order_pr = float(message['p'])
+                    # order_pr = float(message['p'])
                     order_pr = 20763
 
                     symbol = message['s']
 
-                    #qty = float(message['q'])
+                    # qty = float(message['q'])
                     qty = 0.00052
 
                     # get LAST SYMBOL PRICE
                     last_pr = get_last_pr(symbol)
 
                     # OCO order
-                    if 'oco_choice' in usrdata:
+                    if order_type == 'OCO':
                         place_oco_order(symbol, qty, order_pr, last_pr)
                     # TAKE PROFIT order
-                    if 'tp_choice' in usrdata:
+                    if order_type == 'tp':
                         place_tp_order(symbol, qty, order_pr, last_pr)
                     # STOP LOSS order
                     else:
@@ -316,25 +336,31 @@ def getData(request):
     send_email.called = False
     api_key = usrdata['api_key']
     api_secret = usrdata['api_secret']
-    usr_tz = usrdata['usr_tz']
-    start_time = usrdata['user_start_time_def']
-    working_ival = usrdata['working_ival']
-    if 'oco_choice' in usrdata:
-        order_type = 'OCO'
-        oco_profit_pct = usrdata['oco_profit_pct']
-        oco_sl_pct = usrdata['oco_sl_pct']
-        oco_lmt_pct = usrdata['oco_lmt_pct']
-        html_params.update({'order_type': order_type, 'oco_tp': oco_profit_pct, 'oco_sl_stop': oco_sl_pct, 'oco_sl_lmt': oco_lmt_pct})
-    if 'tp_choice' in usrdata:
-        order_type = 'Take Profit'
-        tp_stop_pct = usrdata['tp_stop_pct']
-        tp_lmt_pct = usrdata['tp_lmt_pct']
-        html_params.update({'order_type': order_type, 'tp_stop': tp_stop_pct, 'tp_lmt': tp_lmt_pct})
-    if 'sl_choice' in usrdata:
-        order_type = 'Stop Loss'
-        sl_stop_pct = usrdata['sl_stop_pct']
-        sl_lmt_pct = usrdata['sl_lmt_pct']
-        html_params.update({'order_type': order_type, 'sl_stop': sl_stop_pct, 'sl_lmt': sl_lmt_pct})
+    usr_tz = usrdata['tz']
+    start_time = usrdata['start_time']
+    working_ival = usrdata['active_hours']
+    order_type = usrdata['order_type']
+    sender_email = dict((k, usrdata[k]) for k in ['sender_email'] if k in usrdata)
+    sender_email_def = ' '.join(map(str, sender_email.values()))
+    password = dict((k, usrdata[k]) for k in ['password'] if k in usrdata)
+    password_def = ' '.join(map(str, password.values()))
+    receiver_email = dict((k, usrdata[k]) for k in ['receiver_email'] if k in usrdata)
+    receiver_email_def = ' '.join(map(str, receiver_email.values()))
+    if order_type == 'oco':
+        oco_profit_pct = usrdata['oco_tp']
+        oco_sl_pct = usrdata['oco_sl_s']
+        oco_lmt_pct = usrdata['oco_sl_l']
+        html_params.update({'order_type': 'OCO', 'oco_tp': oco_profit_pct, 'oco_sl_stop': oco_sl_pct, 'oco_sl_lmt': oco_lmt_pct})
+    if order_type == 'tp':
+        tp_stop_pct = usrdata['tp_s']
+        tp_lmt_pct = usrdata['tp_l']
+        html_params.update({'order_type': 'Take Profit', 'tp_stop': tp_stop_pct, 'tp_lmt': tp_lmt_pct})
+    if order_type == 'sl':
+        sl_stop_pct = usrdata['sl_s']
+        sl_lmt_pct = usrdata['sl_l']
+        html_params.update({'order_type': 'Stop Loss', 'sl_stop': sl_stop_pct, 'sl_lmt': sl_lmt_pct})
+
+    # print(api_key, api_secret, usr_tz, start_time, working_ival, order_type, tp_stop_pct, tp_lmt_pct, sender_email_def, password_def, receiver_email_def)
 
     # get time zone of specified location
     tmzone = pytz.timezone(usr_tz)
@@ -343,7 +369,8 @@ def getData(request):
     now = (datetime.now(tmzone))
 
     # construct user end time
-    usr_start_time = now.replace(hour=start_time.hour, minute=start_time.minute)
+    converted_start_time = datetime.strptime(start_time, '%H:%M')
+    usr_start_time = now.replace(hour=converted_start_time.hour, minute=converted_start_time.minute)
     usr_end_time = (usr_start_time + timedelta(hours=working_ival))
 
     # check if it's time to work or not
@@ -370,10 +397,9 @@ def getData(request):
         except ClientError:
             title = 'Error! API-keys format invalid, check your keys!' + job + ' NOT started at ' + nowstr
         finally:
-            if 'valid_sender_email' in usrdata and not send_email.called:
+            if sender_email_def and not send_email.called:
                 html_params.update({'first_email': True, 'title': title})
-                html = template.render(html_params)
-                send_email(html)
+                # send_email(html)
     else:
         txt1 = 'It\'s not time to work!\nStart time: ' + (str(usr_start_time))[:16]
         txt2 = '\nEnd time: ' + (str(usr_end_time))[:16]
@@ -383,6 +409,5 @@ def getData(request):
         pass
 
     # ws_client.stop()
-    '''
 
     return render(request, 'index.html')
