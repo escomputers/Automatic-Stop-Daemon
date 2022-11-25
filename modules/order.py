@@ -370,7 +370,7 @@ def websocket_connect(usrdata):
 
                     symbol = message['s']
 
-                    qty = flot(message['q'])
+                    qty = float(message['q'])
                     # qty = 0.00052
 
                     # get LAST SYMBOL PRICE
