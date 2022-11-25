@@ -1,0 +1,4 @@
+certifi
+PySimpleGUI
+binance-connector
+jinja2
