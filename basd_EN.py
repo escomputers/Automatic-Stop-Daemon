@@ -246,16 +246,16 @@ def listen_to_filled_orders(message):
             order_status = message['X']
             side = message['S']
 
-            if order_status == 'CANCELED' and side == 'BUY':
+            if order_status == 'FILLED' and side == 'BUY':
                 # get global variables
 
-                # order_pr = float(message['p'])
-                order_pr = 20763
+                order_pr = float(message['p'])
+                # order_pr = 20763
 
                 symbol = message['s']
 
-                # qty = flot(message['q'])
-                qty = 0.00052
+                qty = float(message['q'])
+                # qty = 0.00052
 
                 # get LAST SYMBOL PRICE
                 last_pr = get_last_pr(symbol)
