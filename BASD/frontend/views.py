@@ -1,23 +1,25 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpRequest
+from django.template.loader import get_template, render_to_string
+from django.core.mail import send_mail
 import json
 import uuid
 import pytz
+import os
+import certifi
 from datetime import datetime, timedelta
 import time as tempo
 from binance.websocket.spot.websocket_client import SpotWebsocketClient
 from binance.spot import Spot as Client
 from binance.error import ClientError
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-import smtplib
-import ssl
+
+# create Mozilla root certificates
+os.environ['SSL_CERT_FILE'] = certifi.where()
 
 
 def getData(request):
     # get ajax dict
     usrdata = json.loads(request.POST['data'])
-    print(usrdata)
 
     # PLACE OCO ORDER
     def place_oco_order(symbol, qty, order_pr, last_pr):
@@ -211,81 +213,68 @@ def getData(request):
         profit_order_value = round((float(qty * profit_pr)), 2)
         loss_order_value = round((float(qty * sl_lmt_pr_oco)), 2)
 
-        '''
-        html = (
-            title=txt,
-            order_type='OCO',
-            symbol=symbol,
-            qty=qty,
-            price=str(profit_pr),
-            stop_Limit_Price=str(sl_lmt_pr_oco),
-            stop_Price=str(sl_pr_oco),
-            oco_profit_pct=str(oco_profit_pct),
-            oco_lmt_pct=str(oco_lmt_pct),
-            profit_order_value=str(profit_order_value),
-            loss_order_value=str(loss_order_value),
-            last_pr=str(last_pr)
-        )
-        send_email(html)
-        '''
+        context = {
+            'title': txt,
+            'order_type': 'OCO',
+            'symbol': symbol,
+            'qty': qty,
+            'price': str(profit_pr),
+            'stop_Limit_Price': str(sl_lmt_pr_oco),
+            'stop_Price': str(sl_pr_oco),
+            'oco_profit_pct': str(oco_profit_pct),
+            'oco_lmt_pct': str(oco_lmt_pct),
+            'profit_order_value': str(profit_order_value),
+            'loss_order_value': str(loss_order_value),
+            'last_pr': str(last_pr)
+        }
+
+        send_email(context)
 
     # Take Profit email body
     def tp_mail_body(txt, symbol, qty, lmt_profit_pr, stop_pr, tp_lmt_pct, last_pr):
 
         order_value = round((float(qty * lmt_profit_pr)), 2)
 
-        '''
-        html = (
-            title=txt,
-            order_type='Take Profit',
-            symbol=symbol,
-            qty=qty,
-            stop_Limit_Price=str(lmt_profit_pr),
-            stop_Price=str(stop_pr),
-            tp_lmt_pct=str(tp_lmt_pct),
-            order_value=str(order_value),
-            last_pr=str(last_pr)
-        )
-        send_email(html)
-        '''
+        context = {
+            'title': txt,
+            'order_type': 'Take Profit',
+            'symbol': symbol,
+            'qty': qty,
+            'stop_Limit_Price': str(lmt_profit_pr),
+            'stop_Price': str(stop_pr),
+            'tp_lmt_pct': str(tp_lmt_pct),
+            'order_value': str(order_value),
+            'last_pr': str(last_pr)
+        }
+
+        send_email(context)
 
     # Stop Loss email body
     def sl_mail_body(txt, symbol, qty, lmt_loss_pr, sl_pr, sl_lmt_pct, last_pr):
 
         order_value = round((float(qty * lmt_loss_pr)), 2)
 
-        '''
+        context = {
+            'title': txt,
+            'order_type': 'Stop Loss',
+            'symbol': symbol,
+            'qty': qty,
+            'stop_Limit_Price': str(lmt_loss_pr),
+            'stop_Price': str(sl_pr),
+            'sl_lmt_pct': str(sl_lmt_pct),
+            'order_value': str(order_value),
+            'last_pr': str(last_pr)
+        }
 
-        html = (
-            title=txt,
-            order_type='Stop Loss',
-            symbol=symbol,
-            qty=qty,
-            stop_Limit_Price=str(lmt_loss_pr),
-            stop_Price=str(sl_pr),
-            sl_lmt_pct=str(sl_lmt_pct),
-            order_value=str(order_value),sender
-            last_pr=str(last_pr)
-        )
-        send_email(html)
-        '''
+        send_email(context)
 
     # SEND EMAIL
-    def send_email(html):
+    def send_email(context):
+        email_content = render_to_string('email.html', context)
         send_email.called = True
-        part = MIMEText(html, 'html')
-
-        # Add HTML/plain-text parts to MIMEMultipart message
-        # The email client will try to render the last part first
-        message.attach(part)
-
-        # Create secure connection with server and send email
-        context = ssl.create_default_context()
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
-            server.login(sender_email_def, password_def)
-            server.sendmail(
-                sender_email_def, receiver_email_def, message.as_string()
-            )
+        subject = '[BASD] Binance Automatic Stop Daemon - Notification'
+        # schedule('django.core.mail.send_mail', subject, msg, from_email, [currentuser.email], fail_silently=False, html_message=html_content, evento_calendar=eventID, schedule_type=Schedule.ONCE, next_run=delta, cluster='DjangORMcalendar')
+        send_mail(subject, email_content, sender_email_def, [receiver_email_def], fail_silently=False)
 
     # GET LAST PRICE VIA REST API
     def get_last_pr(symbol):
@@ -305,15 +294,15 @@ def getData(request):
             if order_type == 'executionReport':
                 order_status = message['X']
                 side = message['S']
-
-                if order_status == 'FILLED' and side == 'BUY':
+# #########################################################################################################
+                if order_status == 'CANCELED' and side == 'BUY':  # CHANGE MEEEEEEEEEEEEEEEEEEEEEEEEE TO FILLED
                     # get global variables
-                    # order_pr = float(message['p'])
+                    # order_pr = float(message['p']) # #########################################################################################################
                     order_pr = 20763
 
                     symbol = message['s']
 
-                    # qty = float(message['q'])
+                    # qty = float(message['q']) # #########################################################################################################
                     qty = 0.00052
 
                     # get LAST SYMBOL PRICE
@@ -332,13 +321,13 @@ def getData(request):
             pass
 
     # SET GLOBAL VARIABLES
-    html_params = {}
+    context = {}
     send_email.called = False
     api_key = usrdata['api_key']
     api_secret = usrdata['api_secret']
     usr_tz = usrdata['tz']
     start_time = usrdata['start_time']
-    working_ival = usrdata['active_hours']
+    working_ival = int(usrdata['active_hours'])
     order_type = usrdata['order_type']
     sender_email = dict((k, usrdata[k]) for k in ['sender_email'] if k in usrdata)
     sender_email_def = ' '.join(map(str, sender_email.values()))
@@ -347,20 +336,18 @@ def getData(request):
     receiver_email = dict((k, usrdata[k]) for k in ['receiver_email'] if k in usrdata)
     receiver_email_def = ' '.join(map(str, receiver_email.values()))
     if order_type == 'oco':
-        oco_profit_pct = usrdata['oco_tp']
-        oco_sl_pct = usrdata['oco_sl_s']
-        oco_lmt_pct = usrdata['oco_sl_l']
-        html_params.update({'order_type': 'OCO', 'oco_tp': oco_profit_pct, 'oco_sl_stop': oco_sl_pct, 'oco_sl_lmt': oco_lmt_pct})
+        oco_profit_pct = float(usrdata['oco_tp'])
+        oco_sl_pct = float(usrdata['oco_sl_s'])
+        oco_lmt_pct = float(usrdata['oco_sl_l'])
+        context.update({'order_type': 'OCO', 'oco_tp': oco_profit_pct, 'oco_sl_stop': oco_sl_pct, 'oco_sl_lmt': oco_lmt_pct})
     if order_type == 'tp':
-        tp_stop_pct = usrdata['tp_s']
-        tp_lmt_pct = usrdata['tp_l']
-        html_params.update({'order_type': 'Take Profit', 'tp_stop': tp_stop_pct, 'tp_lmt': tp_lmt_pct})
+        tp_stop_pct = float(usrdata['tp_s'])
+        tp_lmt_pct = float(usrdata['tp_l'])
+        context.update({'order_type': 'Take Profit', 'tp_stop': tp_stop_pct, 'tp_lmt': tp_lmt_pct})
     if order_type == 'sl':
-        sl_stop_pct = usrdata['sl_s']
-        sl_lmt_pct = usrdata['sl_l']
-        html_params.update({'order_type': 'Stop Loss', 'sl_stop': sl_stop_pct, 'sl_lmt': sl_lmt_pct})
-
-    # print(api_key, api_secret, usr_tz, start_time, working_ival, order_type, tp_stop_pct, tp_lmt_pct, sender_email_def, password_def, receiver_email_def)
+        sl_stop_pct = float(usrdata['sl_s'])
+        sl_lmt_pct = float(usrdata['sl_l'])
+        context.update({'order_type': 'Stop Loss', 'sl_stop': sl_stop_pct, 'sl_lmt': sl_lmt_pct})
 
     # get time zone of specified location
     tmzone = pytz.timezone(usr_tz)
@@ -394,17 +381,20 @@ def getData(request):
             )
 
             title = 'Success! ' + job + '\nstarted at ' + nowstr
+            print(title)
         except ClientError:
             title = 'Error! API-keys format invalid, check your keys!' + job + ' NOT started at ' + nowstr
+            print(title)
         finally:
             if sender_email_def and not send_email.called:
-                html_params.update({'first_email': True, 'title': title})
-                # send_email(html)
+                context.update({'first_email': True, 'title': title})
+                send_email(context)
     else:
         txt1 = 'It\'s not time to work!\nStart time: ' + (str(usr_start_time))[:16]
         txt2 = '\nEnd time: ' + (str(usr_end_time))[:16]
         txt3 = '\nTimezone is ' + usr_tz
         message = txt1 + txt2 + txt3
+        print(message)
         tempo.sleep(2)
         pass
 
