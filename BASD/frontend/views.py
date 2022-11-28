@@ -1,14 +1,13 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpRequest
 from django.template.loader import get_template, render_to_string
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 import json
 import uuid
 import pytz
 import os
 import certifi
 from datetime import datetime, timedelta
-import time as tempo
 from binance.websocket.spot.websocket_client import SpotWebsocketClient
 from binance.spot import Spot as Client
 from binance.error import ClientError
@@ -270,11 +269,13 @@ def getData(request):
 
     # SEND EMAIL
     def send_email(context):
-        email_content = render_to_string('email.html', context)
+        html_content = render_to_string('email.html', context)
         send_email.called = True
         subject = '[BASD] Binance Automatic Stop Daemon - Notification'
         # schedule('django.core.mail.send_mail', subject, msg, from_email, [currentuser.email], fail_silently=False, html_message=html_content, evento_calendar=eventID, schedule_type=Schedule.ONCE, next_run=delta, cluster='DjangORMcalendar')
-        send_mail(subject, email_content, sender_email_def, [receiver_email_def], fail_silently=False)
+        msg = EmailMultiAlternatives(subject, html_content, sender_email_def, [receiver_email_def])
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
 
     # GET LAST PRICE VIA REST API
     def get_last_pr(symbol):
@@ -309,10 +310,10 @@ def getData(request):
                     last_pr = get_last_pr(symbol)
 
                     # OCO order
-                    if order_type == 'OCO':
+                    if orderType == 'OCO':
                         place_oco_order(symbol, qty, order_pr, last_pr)
                     # TAKE PROFIT order
-                    if order_type == 'tp':
+                    if orderType == 'tp':
                         place_tp_order(symbol, qty, order_pr, last_pr)
                     # STOP LOSS order
                     else:
@@ -328,23 +329,23 @@ def getData(request):
     usr_tz = usrdata['tz']
     start_time = usrdata['start_time']
     working_ival = int(usrdata['active_hours'])
-    order_type = usrdata['order_type']
+    orderType = usrdata['order_type']
     sender_email = dict((k, usrdata[k]) for k in ['sender_email'] if k in usrdata)
     sender_email_def = ' '.join(map(str, sender_email.values()))
     password = dict((k, usrdata[k]) for k in ['password'] if k in usrdata)
     password_def = ' '.join(map(str, password.values()))
     receiver_email = dict((k, usrdata[k]) for k in ['receiver_email'] if k in usrdata)
     receiver_email_def = ' '.join(map(str, receiver_email.values()))
-    if order_type == 'oco':
+    if orderType == 'oco':
         oco_profit_pct = float(usrdata['oco_tp'])
         oco_sl_pct = float(usrdata['oco_sl_s'])
         oco_lmt_pct = float(usrdata['oco_sl_l'])
         context.update({'order_type': 'OCO', 'oco_tp': oco_profit_pct, 'oco_sl_stop': oco_sl_pct, 'oco_sl_lmt': oco_lmt_pct})
-    if order_type == 'tp':
+    if orderType == 'tp':
         tp_stop_pct = float(usrdata['tp_s'])
         tp_lmt_pct = float(usrdata['tp_l'])
         context.update({'order_type': 'Take Profit', 'tp_stop': tp_stop_pct, 'tp_lmt': tp_lmt_pct})
-    if order_type == 'sl':
+    if orderType == 'sl':
         sl_stop_pct = float(usrdata['sl_s'])
         sl_lmt_pct = float(usrdata['sl_l'])
         context.update({'order_type': 'Stop Loss', 'sl_stop': sl_stop_pct, 'sl_lmt': sl_lmt_pct})
@@ -381,10 +382,8 @@ def getData(request):
             )
 
             title = 'Success! ' + job + '\nstarted at ' + nowstr
-            print(title)
         except ClientError:
             title = 'Error! API-keys format invalid, check your keys!' + job + ' NOT started at ' + nowstr
-            print(title)
         finally:
             if sender_email_def and not send_email.called:
                 context.update({'first_email': True, 'title': title})
@@ -393,9 +392,12 @@ def getData(request):
         txt1 = 'It\'s not time to work!\nStart time: ' + (str(usr_start_time))[:16]
         txt2 = '\nEnd time: ' + (str(usr_end_time))[:16]
         txt3 = '\nTimezone is ' + usr_tz
-        message = txt1 + txt2 + txt3
-        print(message)
-        tempo.sleep(2)
+        title = txt1 + txt2 + txt3
+        if sender_email_def and not send_email.called:
+            context.update({'first_email': True, 'title': title})
+            send_email(context)
+            pass
+
         pass
 
     # ws_client.stop()
