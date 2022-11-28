@@ -1,7 +1,6 @@
 from django.shortcuts import render
-from django.http import HttpResponse, HttpRequest
-from django.template.loader import get_template, render_to_string
-from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.core.mail import send_mail
 import json
 import uuid
 import pytz
@@ -68,7 +67,7 @@ def getData(request):
         profit_notional = qty * profit_pr
         loss_notional = qty * sl_lmt_pr_oco
 
-        # if stop and limit prices respect OCO rules, place orders
+        # check if stop and limit prices respect OCO rules, place orders
         if last_pr > sl_pr_oco and last_pr < sl_lmt_pr_oco:
 
             if profit_notional > 11 and loss_notional > 11:
@@ -120,7 +119,6 @@ def getData(request):
             'side': 'SELL',
             'type': 'TAKE_PROFIT_LIMIT',
             'timeInForce': 'GTC',
-            'recvWindow': 6000,
             'quantity': qty,
             'price': str(lmt_profit_pr),
             'stopPrice': str(stop_pr),
@@ -138,6 +136,7 @@ def getData(request):
                 txt = 'Success! Take Profit sell order PLACED'
             except ClientError as error:
                 txt = 'Error! Take Profit sell order NOT PLACED'
+                print(error)
             finally:
                 if sender_email_def:
                     tp_mail_body(
@@ -147,7 +146,6 @@ def getData(request):
         else:
             txt = '[ERROR] Order value must be higher than 11USD'
             if sender_email_def:
-                txt = 'Error! Take Profit sell order NOT PLACED'
                 tp_mail_body(
                     txt, symbol, qty,
                     lmt_profit_pr, stop_pr, tp_lmt_pct, last_pr
@@ -271,11 +269,9 @@ def getData(request):
     def send_email(context):
         html_content = render_to_string('email.html', context)
         send_email.called = True
-        subject = '[BASD] Binance Automatic Stop Daemon - Notification'
-        # schedule('django.core.mail.send_mail', subject, msg, from_email, [currentuser.email], fail_silently=False, html_message=html_content, evento_calendar=eventID, schedule_type=Schedule.ONCE, next_run=delta, cluster='DjangORMcalendar')
-        msg = EmailMultiAlternatives(subject, html_content, sender_email_def, [receiver_email_def])
-        msg.attach_alternative(html_content, "text/html")
-        msg.send()
+        email_subject = '[BASD] Binance Automatic Stop Daemon - Notification'
+        msg = ''
+        send_mail(subject=email_subject, message=msg, from_email=sender_email_def, recipient_list=[receiver_email_def], fail_silently=False, html_message=html_content, auth_user=sender_email_def, auth_password=password_def)
 
     # GET LAST PRICE VIA REST API
     def get_last_pr(symbol):
@@ -370,7 +366,7 @@ def getData(request):
             client = Client(api_key, base_url='https://api.binance.com')
             response = client.new_listen_key()
 
-            # logging.info('Receving listen key : {}'.format(response['listenKey']))
+            # print('Receving listen key : {}'.format(response['listenKey']))
 
             ws_client = SpotWebsocketClient(stream_url='wss://stream.binance.com:9443')
             ws_client.start()
