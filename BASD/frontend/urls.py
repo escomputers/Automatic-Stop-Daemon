@@ -8,4 +8,5 @@ from . import views
 urlpatterns = [
     path('', TemplateView.as_view(template_name='index.html'), name="index"),
     path("getData/", views.getData, name="getData"),
+    path("success/", views.success, name="success"),
 ]

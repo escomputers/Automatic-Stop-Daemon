@@ -381,6 +381,7 @@ def getData(request):
         except ClientError:
             title = 'Error! API-keys format invalid, check your keys!' + job + ' NOT started at ' + nowstr
         finally:
+            # success(request)
             if sender_email_def and not send_email.called:
                 context.update({'first_email': True, 'title': title})
                 send_email(context)
@@ -399,3 +400,7 @@ def getData(request):
     # ws_client.stop()
 
     return render(request, 'index.html')
+
+
+def success(request):
+    return render(request, 'success.html')
