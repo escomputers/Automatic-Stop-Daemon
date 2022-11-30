@@ -1,11 +1,10 @@
 {% load static %}
 
-{% block content %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>BASD - job resume</title>
+    <title>BASD - job details</title>
         <!-- favicon -->
         <link rel="shortcut icon" href="{% static 'images/icon.ico' %}"/>
 
@@ -15,74 +14,71 @@
         <!-- bootstrap -->
         <link rel="stylesheet" href="{% static 'plugins/bootstrap/css/bootstrap.min.css' %}" >
         <script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+        <!-- moment -->
+        <script src="{% static 'plugins/moment/moment-with-locales.min.js' %}"></script>
+        <script src="{% static 'plugins/moment/moment-timezone-with-data-10-year-range.min.js' %}"></script>
     
         <!-- Font Awesome -->
         <script src="https://kit.fontawesome.com/cde9b9d9b2.js" crossorigin="anonymous"></script>
     
         <!-- github buttons -->
         <script src="{% static 'plugins/github/buttons.min.js' %}"></script>
+
   </head>
   <body>
 
-    <h3>
+  <div class="container-fluid">
+    <h3 class="display-4">
       Binance Automatic Stop Daemon
-      <small class="text-muted">- job resume</small>
+      <small class="text-muted">- job details</small>
     </h3>
+  </div>
 
   <div class="container-fluid">
 
-      <div class="card card-outline card-primary">
-          <div class="card-body">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col"><i class="fa fa-circle"></i> Status</th>
+            <th scope="col"><i class="fa fa-id-card"></i> ID</th>
+            <th scope="col"><i class="fa fa-envelope"></i> Alert</th>
+            <th scope="col"><i class="fa fa-map-location"></i> Timezone</th>
+            <th scope="col"><i class='fa fa-clock'></i> Start time</th>
+            <th scope="col"><i class='fa fa-clock'></i> End time</th>
+            <th scope="col"><i class='fa fa-money-bill-1-wave'></i> Order type</th>
+            <th scope="col"><i class='fa fa-percent'></i> Stop</th>
+            <th scope="col"><i class='fa fa-percent'></i> Limit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><button type="button" class="btn btn-success">Working</button></td>
+            <td><button type="button" id="id" class="btn btn-outline-primary"></button></td>
+            <td id="alert"></td>
+            <td><button type="button" id="tz" class="btn btn-outline-primary"></button></td>
+            <td><button type="button" id="start_time" class="btn btn-outline-primary"></button></td>
+            <td><button type="button" id="end_time" class="btn btn-outline-primary"></button></td>
+            <td id="order_type"></td>
+            <td id="pct1">4.12</td>
+            <td id="pct2">4.03</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-            <div class="row"><!-- first row -->
-                  <div class="col-sm">
-                    <div class="form-group">
-                      <label for="tz"><i class="fa fa-map-location"></i> Timezone</label> 
-                      {% for key, value in context.items %}
-                      <input type="text" class="form-control pull-right" id="tz" name="tz" value="{{ value }}" disabled>
-                      {% endfor %}
-                    </div>
-                  </div>
-                  <div class="col-sm">
-                  <div class="form-group">
-                    <label for="start_time"><i class='fa fa-clock'></i> Start time</label> 
-                    <input type="text" class="form-control pull-right" id="start_time" name="start_time">
-                  </div>
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong>Warning:</strong> If you close this page, job will be canceled!
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+            <div class="col-sm">
+              <div class="form-group">
                 </div>
-                <div class="col-sm">
-                  <div class="form-group">
-                    <label for="end_time"><i class='fa fa-clock'></i> End Time</label> 
-                    <input type="text" class="form-control pull-right" name="end_time">
-                  </div>
-                </div>
-            </div><!-- end first row -->
-
-            <div class="row"><!-- second row -->
-
-              <div id="TP">
-                <div class="col-sm">
-                  <input type="text" class="form-control pull-right" name="tp_s" data-toggle="tooltip" title="Take Profit Stop percentage" placeholder="Take Profit Stop +%">
-                  <input type="text" class="form-control pull-right" name="tp_l" data-toggle="tooltip" title="Take Profit Limit percentage" placeholder="Take Profit Limit +%">
-                </div>
-              </div>
-
-              <div id="OCO">
-                <div class="col-sm">
-                  <input type="text" class="form-control pull-right" name="oco_tp" data-toggle="tooltip" title="OCO Take Profit percentage" placeholder="OCO Take Profit +%">
-                  <input type="text" class="form-control pull-right" name="oco_sl_s" data-toggle="tooltip" title="OCO Stop Loss Stop percentage, must be LOWER than market price WHEN order will be placed" placeholder="OCO Stop Loss Stop -%">
-                  <input type="text" class="form-control pull-right" name="oco_sl_l" data-toggle="tooltip" title="OCO Stol Loss Limit percentage, must be HIGHER than market price WHEN order will be placed" placeholder="OCO Stop Loss Limit -%">
-                </div>
-              </div>
-
-              <div id="SL">
-                <div class="col-sm">
-                  <input type="text" class="form-control pull-right" name="sl_s" data-toggle="tooltip" title="Stop Loss Stop percentage" placeholder="Stop Loss Stop -%">
-                  <input type="text" class="form-control pull-right" name="sl_l" data-toggle="tooltip" title="Stop Loss Limit percentage" placeholder="Stop Loss Limit -%">
-                </div>
-              </div>
-
-            </div><!-- end second row -->
-
+            </div><!-- empty row -->
 
             <div class="d-flex justify-content-center">
               <a class="github-button" href="https://github.com/escomputers/BASD" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star escomputers/BASD on GitHub">Star</a>
@@ -94,6 +90,42 @@
           </div><!-- end card-body -->
       </div><!-- end ard card-outline card-primary  -->
 </div>
+<script>
+  // get variables from previous page stored in Session
+  const data = sessionStorage.getItem("data");
+  const jsondata = JSON.parse(data);
+
+  console.log(jsondata)
+  // fill table with values
+  document.getElementById("tz").innerHTML = jsondata.tz; // timezone
+  document.getElementById("start_time").innerHTML = jsondata.start_time; // start time
+  document.getElementById("id").innerHTML = jsondata.id; // id
+
+  if (jsondata.receiver_email) {
+    document.getElementById("alert").innerHTML = jsondata.receiver_email;
+  } else {
+    $("#alert").replaceWith("<td id='alert'><button type='button' class='btn btn-danger'>Not set</button></td>");
+  }
+
+  // calc end time from starting time and active hours
+  const startTime = moment(jsondata.start_time,"H:mm");
+  const currentDate = moment.tz(jsondata.tz);
+  const startDateTime = currentDate.set({hour:startTime.hour(),minute:startTime.minutes()})//.format("DD-MM-YYYY H:mm")
+  const endTime = startDateTime.add(jsondata.active_hours, "hours").format("H:mm")
+  document.getElementById("end_time").innerHTML = endTime;
+
+  // order type
+  let orderType = '';
+  if (jsondata.order_type === 'tp') {
+    $("#order_type").replaceWith("<td id='order_type'><button type='button' class='btn btn-success'>Take Profit</button></td>");
+  }
+  if (jsondata.order_type === 'sl') {
+    $("#order_type").replaceWith("<td id='order_type'><button type='button' class='btn btn-danger'>Stop Loss</button></td>");
+  }
+  if (jsondata.order_type === 'oco') {
+    $("#order_type").replaceWith("<td id='order_type'><button type='button' class='btn btn-warning'>OCO</button></td>");
+  }
+  //document.getElementById("order_type").innerHTML = orderType;
+</script>
 </body>
 </html>
-{% endblock %}

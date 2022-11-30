@@ -2,7 +2,6 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 import json
-import uuid
 import pytz
 import os
 import certifi
@@ -323,6 +322,7 @@ def getData(request):
     send_email.called = False
     api_key = usrdata['api_key']
     api_secret = usrdata['api_secret']
+    id = usrdata['id']
     usr_tz = usrdata['tz']
     start_time = usrdata['start_time']
     working_ival = int(usrdata['active_hours'])
@@ -361,7 +361,7 @@ def getData(request):
     # check if it's time to work or not
     if now >= usr_start_time and now <= usr_end_time:  # yes
         try:
-            job = ' JOB ' + str(uuid.uuid4())
+            job = ' JOB ' + id
             nowstr = str(now.time())[:8]
 
             client = Client(api_key, base_url='https://api.binance.com')
@@ -402,6 +402,8 @@ def getData(request):
     return render(request, 'index.html')
 
 
+'''
 def success(request):
     context = request.session['context']
     return render(request, 'success.html', context)
+'''

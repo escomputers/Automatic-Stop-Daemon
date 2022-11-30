@@ -157,7 +157,7 @@
 
             <div id="btn_validate">
               <div class="row">
-                <button class="submit btn btn-primary btn-block" type="submit">Validate</button>
+                <button class="submit btn btn-primary btn-block" type="submit">Start</button>
               </div>
             </div>
 
@@ -200,6 +200,8 @@
 </body>
 <script>
 	$().ready(function() {
+    // define global scope variable
+    let usr_data = {};
 
     // hide email and order fields on page load
     $("#email_fields, #OCO, #SL").hide();
@@ -335,17 +337,26 @@
 
     // get all valid input fields and make a dictionary
     function fetchInput() {
-      let usr_data = {};
       $(":input").each(function() {
         usr_data[$(this).attr("name")] = $(this).val();
       });
 
       // call backend
-      ajax_call(usr_data)
+      ajax_call()
     }
 
+    // generate uuid for the job
+    function uuidv4() {
+      return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+      );
+    }
+
+    // add value to kv object
+    usr_data.id = uuidv4();
+
     // ajax call
-    function ajax_call(usr_data) {
+    function ajax_call() {
       $.ajax({
         url: "{% url 'getData' %}",
         dataType: "text",
@@ -368,11 +379,13 @@
       $('#btn_validate').hide()
       $('#staticBackdrop').modal('show')
       // show loading div for 4 secs
-      setTimeout(redirect, 4000);
+      setTimeout(redirect(), 4000);
     }
 
     // then redirect after successful form submission
     function redirect() {
+      const data = JSON.stringify(usr_data)
+      sessionStorage.setItem("data", data)
       window.location.href = "/success/";
     }
 
