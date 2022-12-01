@@ -70,13 +70,13 @@
                 <div class="col-sm">
                     <div class="form-group">
                       <label for="api_key"><i class='fa fa-key'></i> API Key</label> 
-                      <input type="password" class="form-control pull-right" name="api_key" data-toggle="tooltip" title="your Binance.com API Key" placeholder="your Binance.com API Key">
+                      <input type="password" class="form-control pull-right" id="api_key" name="api_key" data-toggle="tooltip" title="your Binance.com API Key" placeholder="your Binance.com API Key">
                     </div>
                   </div>
                   <div class="col-sm">
                     <div class="form-group">
                       <label for="api_secret"><i class='fa fa-key'></i> API Secret Key</label> 
-                      <input type="password" class="form-control pull-right" name="api_secret" data-toggle="tooltip" title="your Binance.com API Secret Key" placeholder="your Binance.com API Secret Key">
+                      <input type="password" class="form-control pull-right" id="api_secret" name="api_secret" data-toggle="tooltip" title="your Binance.com API Secret Key" placeholder="your Binance.com API Secret Key">
                     </div>
                   </div>
                   <div class="col-sm">
@@ -202,6 +202,7 @@
 	$().ready(function() {
     // define global scope variable
     let usr_data = {};
+    let id = {};
 
     // hide email and order fields on page load
     $("#email_fields, #OCO, #SL").hide();
@@ -239,23 +240,29 @@
 	  });
 
     // add method for checking spaces
-    jQuery.validator.addMethod("noSpace", function(value, element) { 
+    $.validator.addMethod("noSpace", function(value, element) { 
       return value.indexOf(" ") < 0 && value != ""; 
       }, "No spaces"
     );
 
     // add method for Gmail sender address
-    jQuery.validator.addMethod("Gmail", function(value, element) { 
+    $.validator.addMethod("Gmail", function(value, element) { 
       let stringCheck = "@gmail.com";
       return (value.lastIndexOf(stringCheck) === value.length - stringCheck.length) > 0 && value != "";
       }, "Invalid Gmail address"
     );
 
     // add method for receiver email address
-    jQuery.validator.addMethod("my_email", function(value, element) { 
+    $.validator.addMethod("my_email", function(value, element) { 
       let filter = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
       return filter.test(value) && value != "";
       }, "Invalid email address"
+    );
+
+    // add method for api key not equal to api secret
+    $.validator.addMethod("notEqualTo", function(value, element, param) {
+      return this.optional(element) || value != param;
+    }, "API fields cannot be the same"
     );
 
     // rule grouping for order percentages
@@ -272,12 +279,14 @@
 				api_key: {
 					required: true,
 					minlength: 64,
-          noSpace: true
+          noSpace: true,
+          notEqualTo: function() {return $('#api_secret').val()}
 				},
         api_secret: {
 					required: true,
 					minlength: 64,
-          noSpace: true
+          noSpace: true,
+          notEqualTo: function() {return $('#api_key').val()}
 				},
         start_time: {
           required: true
@@ -345,15 +354,19 @@
       ajax_call()
     }
 
-    // generate uuid for the job
-    function uuidv4() {
-      return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-      );
-    }
+    // get short job uuid
+    $.ajax({
+      url: 'https://uuid.rocks/short',
+        success: function(data) {
+          id = data;
+          uuid(id)
+      }
+    })
 
     // add value to kv object
-    usr_data.id = uuidv4();
+    function uuid(id) {
+      usr_data.id = id;
+    }
 
     // ajax call
     function ajax_call() {
@@ -386,7 +399,7 @@
     function redirect() {
       const data = JSON.stringify(usr_data)
       sessionStorage.setItem("data", data)
-      window.location.href = "/success/";
+      window.location.href = "/resume/";
     }
 
 }); // end main $().ready(function()

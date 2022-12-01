@@ -91,12 +91,36 @@
       </div><!-- end ard card-outline card-primary  -->
 </div>
 <script>
+  // get job error if present
+  let error = {};
+
+  $.ajax({
+    url: "{% url 'errors' %}",
+      success: function(data) {
+        try {
+          error = data[0].error
+          getError(error)
+        } 
+        catch(err) {}
+    }
+  })
+
   // get variables from previous page stored in Session
   const data = sessionStorage.getItem("data");
   const jsondata = JSON.parse(data);
 
   console.log(jsondata)
+
   // fill table with values
+
+  function getError(error) { // 
+    if (error === jsondata.id) {  
+      $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-danger'>Error</button></td>");
+    } else {
+      $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-success'>Ready</button></td>");
+    }
+  }
+
   document.getElementById("tz").innerHTML = jsondata.tz; // timezone
   document.getElementById("start_time").innerHTML = jsondata.start_time; // start time
   document.getElementById("id").innerHTML = jsondata.id; // id
@@ -125,7 +149,7 @@
   if (jsondata.order_type === 'oco') {
     $("#order_type").replaceWith("<td id='order_type'><button type='button' class='btn btn-warning'>OCO</button></td>");
   }
-  //document.getElementById("order_type").innerHTML = orderType;
+
 </script>
 </body>
 </html>

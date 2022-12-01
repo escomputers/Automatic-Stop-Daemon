@@ -8,6 +8,6 @@ from . import views
 urlpatterns = [
     path('', TemplateView.as_view(template_name='index.html'), name="index"),
     path("getData/", views.getData, name="getData"),
-    # path("success/", views.success, name="success"),
-    path('success/', TemplateView.as_view(template_name='success.html'), name="success")
+    path('resume/', TemplateView.as_view(template_name='resume.html'), name="resume"),
+    path('errors/', views.error_list, name="errors")
 ]
