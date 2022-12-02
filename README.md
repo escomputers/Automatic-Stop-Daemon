@@ -20,7 +20,10 @@
   </p>
 </div>
 
-<!-- WHY BASD -->
+<!-- UPDATE -->
+## UPDATE ![Docker]
+Dockerized web version is currently under development, stay tuned!
+
 ## Why BASD?
 Binance is unquestionably the world greatest and most secure cryptocurrency exchange and many of us trade there.
 For those like me that open and close positions within the same day or few hours, it's extremely important to carefully watch graphs to monitor price movements.
@@ -113,3 +116,4 @@ Distributed under the Apache 2.0 License. See [license](https://github.com/escom
 [Windows]: https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white
 [Ubuntu]: https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white
 [Kaspersky]: https://camo.githubusercontent.com/a8908b2f9c27f5d9f81f8bfa1d41dcefcb4e75046eaf21e0dcda2c59d4273380/68747470733a2f2f696d672e736869656c64732e696f2f7374617469632f76313f7374796c653d666f722d7468652d6261646765266d6573736167653d4b6173706572736b7926636f6c6f723d303036443543266c6f676f3d4b6173706572736b79266c6f676f436f6c6f723d464646464646266c6162656c3d
+[Docker]: https://github.githubassets.com/images/icons/emoji/unicode/1f433.png
