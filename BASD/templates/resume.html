@@ -54,7 +54,7 @@
         </thead>
         <tbody>
           <tr>
-            <td><button type="button" class="btn btn-success">Working</button></td>
+            <td id="status"></td>
             <td><button type="button" id="id" class="btn btn-outline-primary"></button></td>
             <td id="alert"></td>
             <td><button type="button" id="tz" class="btn btn-outline-primary"></button></td>
@@ -92,18 +92,27 @@
 </div>
 <script>
   // get job error if present
-  let error = {};
+  let errorId = {};
 
+  function callError() {
   $.ajax({
     url: "{% url 'errors' %}",
       success: function(data) {
         try {
-          error = data[0].error
-          getError(error)
+          errorId = data[0].error
+          getError(errorId)
         } 
         catch(err) {}
     }
   })
+  function getError(errorId) { // 
+    if (errorId === jsondata.id) { 
+      $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-danger'>Error</button></td>");
+    } else {
+      $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-success'>Ready</button></td>");
+    }
+  }
+}
 
   // get variables from previous page stored in Session
   const data = sessionStorage.getItem("data");
@@ -112,15 +121,7 @@
   console.log(jsondata)
 
   // fill table with values
-
-  function getError(error) { // 
-    if (error === jsondata.id) {  
-      $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-danger'>Error</button></td>");
-    } else {
-      $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-success'>Ready</button></td>");
-    }
-  }
-
+  callError()
   document.getElementById("tz").innerHTML = jsondata.tz; // timezone
   document.getElementById("start_time").innerHTML = jsondata.start_time; // start time
   document.getElementById("id").innerHTML = jsondata.id; // id

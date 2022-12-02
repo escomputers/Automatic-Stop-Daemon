@@ -392,7 +392,8 @@ def getData(request):
             job_error.error = uuid
             job_error.save()
             # tempo.sleep(10)
-            # job_error.delete()
+            # latest_error = JobError.objects.latest('id')
+            # latest_error.delete()
         finally:
             if sender_email_def and not send_email.called:
                 context.update({'first_email': True, 'title': title})

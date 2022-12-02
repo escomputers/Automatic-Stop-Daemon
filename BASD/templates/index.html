@@ -397,6 +397,8 @@
 
     // then redirect after successful form submission
     function redirect() {
+      // delete useless data from object
+      ;[ 'api_key', 'api_secret', 'csrfmiddlewaretoken', 'sender_email', 'password' ].forEach(i => delete usr_data[i])
       const data = JSON.stringify(usr_data)
       sessionStorage.setItem("data", data)
       window.location.href = "/resume/";
