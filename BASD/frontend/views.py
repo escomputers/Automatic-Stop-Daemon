@@ -4,11 +4,11 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 from .models import JobError
 from django.forms.models import model_to_dict
+from django.core.exceptions import ObjectDoesNotExist
 import json
 import pytz
 import os
 import certifi
-import time as tempo
 from datetime import datetime, timedelta
 from binance.websocket.spot.websocket_client import SpotWebsocketClient
 from binance.spot import Spot as Client
@@ -28,6 +28,7 @@ def getData(request):
     usrdata = json.loads(request.POST['data'])
 
     request.session['context'] = usrdata
+
     # PLACE OCO ORDER
     def place_oco_order(symbol, qty, order_pr, last_pr):
 
@@ -326,7 +327,6 @@ def getData(request):
         except KeyError:
             pass
 
-    job_error = JobError()
     # SET GLOBAL VARIABLES
     context = {}
     send_email.called = False
@@ -368,14 +368,23 @@ def getData(request):
     usr_start_time = now.replace(hour=converted_start_time.hour, minute=converted_start_time.minute)
     usr_end_time = (usr_start_time + timedelta(hours=working_ival))
 
+    job_error = JobError()
+    # delete latest error if exists
+    try:
+        latest_error = JobError.objects.latest('id')
+        latest_error.delete()
+    except ObjectDoesNotExist:
+        pass
     # check if it's time to work or not
     if now >= usr_start_time and now <= usr_end_time:  # yes
         try:
             job = ' JOB ' + uuid
             nowstr = str(now.time())[:8]
 
-            client = Client(api_key, base_url='https://api.binance.com')
+            client = Client(api_key, api_secret, base_url='https://api.binance.com')
             response = client.new_listen_key()
+
+            print('Receving listen key : {}'.format(response['listenKey']))
 
             ws_client = SpotWebsocketClient(stream_url='wss://stream.binance.com:9443')
             ws_client.start()
@@ -391,9 +400,6 @@ def getData(request):
             title = 'Error! API-keys format invalid, check your keys!' + job + ' NOT started at ' + nowstr
             job_error.error = uuid
             job_error.save()
-            # tempo.sleep(10)
-            # latest_error = JobError.objects.latest('id')
-            # latest_error.delete()
         finally:
             if sender_email_def and not send_email.called:
                 context.update({'first_email': True, 'title': title})
@@ -413,4 +419,3 @@ def getData(request):
     # ws_client.stop()
 
     return render(request, 'index.html')
-

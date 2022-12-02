@@ -387,21 +387,26 @@
       loading();
     }
 
+    function sleep (time) {
+      return new Promise((resolve) => setTimeout(resolve, time));
+    }
+
     // loading
     function loading() {
       $('#btn_validate').hide()
       $('#staticBackdrop').modal('show')
-      // show loading div for 4 secs
-      setTimeout(redirect(), 4000);
-    }
 
-    // then redirect after successful form submission
-    function redirect() {
       // delete useless data from object
       ;[ 'api_key', 'api_secret', 'csrfmiddlewaretoken', 'sender_email', 'password' ].forEach(i => delete usr_data[i])
+
+      // save necessary values for next page
       const data = JSON.stringify(usr_data)
       sessionStorage.setItem("data", data)
-      window.location.href = "/resume/";
+
+      // show loading div for 4 secs
+      sleep(4000).then(() => {
+        window.location.href = "/resume/";
+    });
     }
 
 }); // end main $().ready(function()

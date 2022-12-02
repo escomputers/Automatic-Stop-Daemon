@@ -91,28 +91,6 @@
       </div><!-- end ard card-outline card-primary  -->
 </div>
 <script>
-  // get job error if present
-  let errorId = {};
-
-  function callError() {
-  $.ajax({
-    url: "{% url 'errors' %}",
-      success: function(data) {
-        try {
-          errorId = data[0].error
-          getError(errorId)
-        } 
-        catch(err) {}
-    }
-  })
-  function getError(errorId) { // 
-    if (errorId === jsondata.id) { 
-      $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-danger'>Error</button></td>");
-    } else {
-      $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-success'>Ready</button></td>");
-    }
-  }
-}
 
   // get variables from previous page stored in Session
   const data = sessionStorage.getItem("data");
@@ -121,7 +99,6 @@
   console.log(jsondata)
 
   // fill table with values
-  callError()
   document.getElementById("tz").innerHTML = jsondata.tz; // timezone
   document.getElementById("start_time").innerHTML = jsondata.start_time; // start time
   document.getElementById("id").innerHTML = jsondata.id; // id
@@ -150,6 +127,31 @@
   if (jsondata.order_type === 'oco') {
     $("#order_type").replaceWith("<td id='order_type'><button type='button' class='btn btn-warning'>OCO</button></td>");
   }
+
+  // get job error if present
+  function callError() {
+    $.ajax({
+      url: "{% url 'errors' %}",
+      data: { 
+        csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+        },
+      success: function(data) {
+        getError(data)
+        }
+    })
+    function getError(data) { 
+      try {
+        errorId = data[0].error
+        if (errorId === jsondata.id) { 
+          $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-danger'>Error</button></td>");
+        } 
+      } 
+      catch(err) {
+        $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-success'>Ready</button></td>");
+      }
+    }
+  }
+  callError()
 
 </script>
 </body>
