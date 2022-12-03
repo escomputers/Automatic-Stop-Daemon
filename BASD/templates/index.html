@@ -27,17 +27,64 @@
     <link rel="stylesheet" type="text/css" href="{% static 'plugins/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css' %}">
 	  <script src="{% static 'plugins/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js' %}"></script>
 
+    <!-- select2 -->
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/select2/css/select2.min.css' %}">
+    <link rel="stylesheet" href="{% static 'plugins/select2/css/select2-bootstrap4.min.css' %}">
+    <script src="{% static 'plugins/select2/js/select2.full.min.js' %}"></script>
+
     <!-- Font Awesome -->
 	  <script src="https://kit.fontawesome.com/cde9b9d9b2.js" crossorigin="anonymous"></script>
 
     <!-- github buttons -->
     <script src="{% static 'plugins/github/buttons.min.js' %}"></script>
 
+    <!-- load only USDT pairs-->
+    <script>
+      const quote = "USDT"
+      $.ajax({
+        url: "https://api.binance.com/api/v1/exchangeInfo",
+        success: function(data) {
+          filterSymbols(data)
+          }
+      })
+      function filterSymbols(data) {
+        const quote = "USDT"
+        const allSymbols = data.symbols
+        const USDTpairs = allSymbols.map(
+        (x)=> {
+            if (x.quoteAsset.includes(quote)) {
+                return x.baseAsset
+                }
+            }
+        ).filter((x)=> {if(x){return x}})
+        const USDTpairsDef = JSON.stringify(USDTpairs)
+        let $select = $('#pairs'); 
+        $select.find('option').remove();  
+        $.each(USDTpairs,function(key, value) 
+        {
+          $select.append('<option value=' + key + '>' + value + '</option>');
+        });
+      }
+    </script>
+
     <!-- initialize tooltip, timezone and datetimepicker plugins -->
     <script>
     $(function () {
       // bootstrap tooltip
       $('[data-toggle="tooltip"]').tooltip();
+
+      function addIcons (icon) {
+        if (!icon.id) { return icon.text; }
+          let $icon = $(
+            '<span><img src="{% static 'images/coins/' %}' + icon.text +
+            '.png"/> '  + icon.element.text + '</span>'
+          );
+        return $icon;
+      };
+      $('#pairs').select2({
+        theme: 'bootstrap4',
+        templateResult: addIcons,
+      })
 
       // get user timezone and fill input field
       usr_tz = moment.tz.guess()
@@ -103,7 +150,7 @@
               <div class="col-sm-2">
                 <div class="form-group">
                   <label for="order_type"><i class='fa fa-sort'></i> Order type</label> 
-                  <select id="order_type" name="order_type" class="form-control" style="width: 100%;" placeholder="Select order type">
+                  <select id="order_type" name="order_type" class="form-control" style="width: 100%;">
                     <option value="tp">Take Profit</option>
                     <option value="sl">Stop Loss</option>
                     <option value="oco">OCO</option>
@@ -147,6 +194,20 @@
                     <input type="email" class="form-control pull-right" id="receiver_email" name="receiver_email" data-toggle="tooltip" title="receiver email address" placeholder="Receiver email address">
                   </div>
                 </div>
+              </div>
+
+              <div class="btn-group-toggle" data-toggle="buttons">
+                  <label class="btn btn-light active">
+                    <input type="checkbox" id="toggle_pairs" checked><i class='fa fa-coins'></i> All pairs
+                  </label>
+              </div>
+                <div id="pairs_selection">
+                  <div class="col-sm">
+                    <div class="form-group">
+                      <select id="pairs" name="pairs" id="pairs" class="form-control" style="width: 100%;">
+                      </select> 
+                    </div>
+                  </div>
               </div>
             </div><!-- end second row -->
 
@@ -205,7 +266,7 @@
     let id = {};
 
     // hide email and order fields on page load
-    $("#email_fields, #OCO, #SL").hide();
+    $("#email_fields, #OCO, #SL, #pairs_selection").hide();
 
     // show order fields basing on selected value
     $("#order_type").change(function() {
@@ -229,6 +290,16 @@
         $("#email_fields").show();
       } else {
         $("#email_fields").hide();
+      }
+    });
+
+    // show pairs selection basing on checkbox
+    $("#toggle_pairs").change(function() {
+      checkbox_status = $("#toggle_pairs").prop("checked")
+      if (checkbox_status === true) {
+        $("#pairs_selection").hide();
+      } else {
+        $("#pairs_selection").show();
       }
     });
 
