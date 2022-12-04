@@ -30,7 +30,7 @@
 
   <div class="container-fluid">
     <h3 class="display-4">
-      Binance Automatic Stop Daemon
+      <b>B</b>inance <b>A</b>utomatic <b>S</b>top <b>D</b>aemon
       <small class="text-muted">- job details</small>
     </h3>
   </div>
@@ -47,9 +47,9 @@
             <th scope="col"><i class="fa fa-map-location"></i> Timezone</th>
             <th scope="col"><i class='fa fa-clock'></i> Start time</th>
             <th scope="col"><i class='fa fa-clock'></i> End time</th>
-            <th scope="col"><i class='fa fa-money-bill-1-wave'></i> Order type</th>
-            <th scope="col"><i class='fa fa-percent'></i> Stop</th>
-            <th scope="col"><i class='fa fa-percent'></i> Limit</th>
+            <th id="col_order_type" scope="col"><i class='fa fa-money-bill-1-wave'></i> Order type</th>
+            <th scope="col"><i class='fa fa-arrow-trend-up'></i> Stop</th>
+            <th scope="col"><i class='fa fa-arrow-trend-down'></i> Limit</th>
           </tr>
         </thead>
         <tbody>
@@ -61,8 +61,8 @@
             <td><button type="button" id="start_time" class="btn btn-outline-primary"></button></td>
             <td><button type="button" id="end_time" class="btn btn-outline-primary"></button></td>
             <td id="order_type"></td>
-            <td id="pct1">4.12</td>
-            <td id="pct2">4.03</td>
+            <td id="stop"></td>
+            <td id="limit"></td>
           </tr>
         </tbody>
       </table>
@@ -120,12 +120,23 @@
   let orderType = '';
   if (jsondata.order_type === 'tp') {
     $("#order_type").replaceWith("<td id='order_type'><button type='button' class='btn btn-success'>Take Profit</button></td>");
+    document.getElementById("stop").innerHTML = '<b>+' + jsondata.tp_s + '%</b>';
+    document.getElementById("limit").innerHTML = '<b>+' + jsondata.tp_l + ' %</b>';
   }
   if (jsondata.order_type === 'sl') {
     $("#order_type").replaceWith("<td id='order_type'><button type='button' class='btn btn-danger'>Stop Loss</button></td>");
+    document.getElementById("stop").innerHTML = '<b>-' + jsondata.sl_s + '%</b>';
+    document.getElementById("limit").innerHTML = '<b>-' + jsondata.sl_l + '%</b>';
   }
   if (jsondata.order_type === 'oco') {
     $("#order_type").replaceWith("<td id='order_type'><button type='button' class='btn btn-warning'>OCO</button></td>");
+        /*
+    $("col_order_type").after("<th scope='col'><i class='fa fa-arrow-trend-up'></i> Profit</th>");
+    $("order_type").after("<td id='profit'></td>");
+    document.getElementById("profit").innerHTML = '+' + jsondata.oco_tp + '%';
+    */
+    document.getElementById("stop").innerHTML = '<b>-' + jsondata.oco_sl_s + '%</b>';
+    document.getElementById("limit").innerHTML = '<b>-' + jsondata.oco_sl_l + '%</b>';
   }
 
   // get job error if present

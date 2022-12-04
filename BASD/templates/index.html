@@ -103,7 +103,7 @@
   <body>
 
 <div class="container-fluid">
-  <h3 class="display-4">Binance Automatic Stop Daemon</h3>
+  <h3 class="display-4"><b>B</b>inance <b>A</b>utomatic <b>S</b>top <b>D</b>aemon</h3>
 </div>
     
   <div class="container-fluid">
@@ -196,24 +196,33 @@
                 </div>
               </div>
 
-              <div class="btn-group-toggle" data-toggle="buttons">
-                  <label class="btn btn-light active">
-                    <input type="checkbox" id="toggle_pairs" checked><i class='fa fa-coins'></i> All pairs
-                  </label>
-              </div>
-                <div id="pairs_selection">
-                  <div class="col-sm">
-                    <div class="form-group">
-                      <select id="pairs" name="pairs" id="pairs" class="form-control" style="width: 100%;">
-                      </select> 
-                    </div>
-                  </div>
-              </div>
             </div><!-- end second row -->
 
-            <div class="col-sm">
-              <div class="form-group">
+            <div class="row"><!-- third row -->
+              <div class="col-sm-2">
+                <div class="btn-group-toggle" data-toggle="buttons">
+                  <label class="btn btn-light active">
+                  <input type="checkbox" id="toggle_pairs" checked><i class='fa fa-coins'></i> All pairs
+                  </label>
                 </div>
+              </div>
+              <div class="col-sm">
+                <div class="form-group">
+                  <div id="pairs_selection">
+                    <div class="col-sm-14">
+                      <div class="form-group">
+                        <select id="pairs" name="pairs" id="pairs" class="form-control" style="width: 100%;">
+                        </select> 
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div><!-- end third row -->
+
+            <div class="col-sm">
+             <div class="form-group">
+               </div>
             </div><!-- empty row -->
 
             <div id="btn_validate">
