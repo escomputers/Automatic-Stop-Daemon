@@ -57,10 +57,30 @@
                 }
             }
         ).filter((x)=> {if(x){return x}})
-        const USDTpairsDef = JSON.stringify(USDTpairs)
+
+        const regex1 = /UP$/
+        const regex2 = /DOWN$/
+        const regex3 = /BULL$/
+        const regex4 = /BEAR$/
+        const marginCoins1 = $.grep(USDTpairs, function (e) {
+          return regex1.test(e);
+        });
+        const marginCoins2 = $.grep(USDTpairs, function (e) {
+          return regex2.test(e);
+        });
+        const marginCoins3 = $.grep(USDTpairs, function (e) {
+          return regex3.test(e);
+        });
+        const marginCoins4 = $.grep(USDTpairs, function (e) {
+          return regex4.test(e);
+        });
+        const marginCoins = $.merge(marginCoins1, marginCoins2, marginCoins3, marginCoins4)
+        const filteredUSDTpairs = $.grep(USDTpairs, function(value) {
+          return $.inArray(value, marginCoins) < 0;
+        });
         let $select = $('#pairs'); 
         $select.find('option').remove();  
-        $.each(USDTpairs,function(key, value) 
+        $.each(filteredUSDTpairs,function(key, value) 
         {
           $select.append('<option value=' + key + '>' + value + '</option>');
         });
