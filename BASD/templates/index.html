@@ -40,19 +40,18 @@
 
     <!-- load only USDT pairs-->
     <script>
-      const quote = "USDT"
       $.ajax({
-        url: "https://api.binance.com/api/v1/exchangeInfo",
+        url: 'https://api.binance.com/api/v1/exchangeInfo',
         success: function(data) {
           filterSymbols(data)
           }
       })
       function filterSymbols(data) {
-        const quote = "USDT"
+        const quote = 'USDT'
         const allSymbols = data.symbols
         const USDTpairs = allSymbols.map(
         (x)=> {
-            if (x.quoteAsset.includes(quote)) {
+            if (x.quoteAsset.includes(quote) && x.status === 'TRADING') {
                 return x.baseAsset
                 }
             }
@@ -62,25 +61,27 @@
         const regex2 = /DOWN$/
         const regex3 = /BULL$/
         const regex4 = /BEAR$/
-        const marginCoins1 = $.grep(USDTpairs, function (e) {
+        const garbage1 = $.grep(USDTpairs, function (e) {
           return regex1.test(e);
         });
-        const marginCoins2 = $.grep(USDTpairs, function (e) {
+        const garbage2 = $.grep(USDTpairs, function (e) {
           return regex2.test(e);
         });
-        const marginCoins3 = $.grep(USDTpairs, function (e) {
+        const garbage3 = $.grep(USDTpairs, function (e) {
           return regex3.test(e);
         });
-        const marginCoins4 = $.grep(USDTpairs, function (e) {
+        const garbage4 = $.grep(USDTpairs, function (e) {
           return regex4.test(e);
         });
-        const marginCoins = $.merge(marginCoins1, marginCoins2, marginCoins3, marginCoins4)
+        const marginCoins1 = $.merge(garbage1, garbage2)
+        const marginCoins2 = $.merge(garbage3, garbage4)
+        const marginCoins = $.merge(marginCoins1, marginCoins2)
         const filteredUSDTpairs = $.grep(USDTpairs, function(value) {
           return $.inArray(value, marginCoins) < 0;
         });
         let $select = $('#pairs'); 
         $select.find('option').remove();  
-        $.each(filteredUSDTpairs,function(key, value) 
+        $.each(filteredUSDTpairs,function(key, value)
         {
           $select.append('<option value=' + key + '>' + value + '</option>');
         });
