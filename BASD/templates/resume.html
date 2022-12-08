@@ -47,6 +47,7 @@
             <th scope="col"><i class="fa fa-map-location"></i> Timezone</th>
             <th scope="col"><i class='fa fa-clock'></i> Start</th>
             <th scope="col"><i class='fa fa-clock'></i> End</th>
+            <th scope='col'><i class='fa fa-coins'></i> Coins</th>
             <th id="col_order_type" scope="col"><i class='fa fa-money-bill-1-wave'></i> Type</th>
             <th id="col_stop" scope="col"><i class='fa fa-arrow-trend-up'></i> Stop</th>
             <th id="col_limit" scope="col"><i class='fa fa-arrow-trend-down'></i> Limit</th>
@@ -60,6 +61,7 @@
             <td><button type="button" id="tz" class="btn btn-outline-primary"></button></td>
             <td><button type="button" id="start_time" class="btn btn-outline-primary"></button></td>
             <td><button type="button" id="end_time" class="btn btn-outline-primary"></button></td>
+            <td id='coins'></td>
             <td id="order_type"></td>
             <td id="stop"></td>
             <td id="limit"></td>
@@ -114,6 +116,12 @@
   const startDateTime = currentDate.set({hour:startTime.hour(),minute:startTime.minutes()})//.format("DD-MM-YYYY H:mm")
   const endTime = startDateTime.add(jsondata.active_hours, "hours").format("H:mm")
   document.getElementById("end_time").innerHTML = endTime;
+
+  if (jsondata.pairs != 0) {
+    document.getElementById("coins").innerHTML = '<img src="{% static 'images/coins/' %}' + jsondata.pairs + '.png"/>' + jsondata.pairs;
+  } else {
+    document.getElementById("coins").innerHTML = 'ALL';
+  }
 
   // order type
   let orderType = '';
