@@ -97,8 +97,6 @@
   const data = sessionStorage.getItem("data");
   const jsondata = JSON.parse(data);
 
-  console.log(jsondata)
-
   // fill table with values
   document.getElementById("tz").innerHTML = jsondata.tz; // timezone
   document.getElementById("start_time").innerHTML = jsondata.start_time; // start time
