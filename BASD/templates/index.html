@@ -232,6 +232,7 @@
                   <div id="pairs_selection">
                     <div class="col-sm-14">
                       <div class="form-group">
+                        <label for="pairs">USDT pairs</label>
                         <select id="pairs" name="pairs" id="pairs" class="form-control" style="width: 100%;">
                         </select> 
                       </div>
@@ -280,7 +281,6 @@
             <div class="d-flex justify-content-center">
               <a class="github-button" href="https://github.com/escomputers/BASD" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star escomputers/BASD on GitHub">Star</a>
               <a class="github-button" href="https://github.com/escomputers/BASD/fork" data-icon="octicon-repo-forked" data-size="large" data-show-count="true" aria-label="Fork escomputers/BASD on GitHub">Fork</a>
-              <a class="github-button" href="https://github.com/escomputers/BASD/issues" data-icon="octicon-issue-opened" data-size="large" data-show-count="true" aria-label="Issue escomputers/BASD on GitHub">Issue</a>
               <a class="github-button" href="https://github.com/escomputers/BASD/discussions" data-icon="octicon-comment-discussion" data-size="large" aria-label="Discuss escomputers/BASD on GitHub">Discuss</a>
             </div>
 
@@ -451,6 +451,12 @@
         usr_data[$(this).attr("name")] = $(this).val();
       });
 
+      // get coin selection and add to usr_data
+      if ($("#pairs").is(":visible")) {
+        const coin = $( "#pairs option:selected" ).text();
+        usr_data.pairs = coin;
+      }
+
       // call backend
       ajax_call()
     }
@@ -507,7 +513,7 @@
       // show loading div for 4 secs
       sleep(4000).then(() => {
         window.location.href = "/resume/";
-    });
+      });
     }
 
 }); // end main $().ready(function()
