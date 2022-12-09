@@ -360,11 +360,11 @@ def getData(request):
     working_ival = int(usrdata['active_hours'])
 
     coin = usrdata['pairs']
-    if coin == 0:
+    if coin == '0':
         context.update({'cointxt': 'ALL'})
     else:
-        cointxt = coin + '/USDT'
-        context.update({'cointxt': cointxt})
+        coinTxt = coin + '/USDT'
+        context.update({'cointxt': coinTxt})
 
     orderType = usrdata['order_type']
     sender_email = dict((k, usrdata[k]) for k in ['sender_email'] if k in usrdata)
@@ -436,14 +436,14 @@ def getData(request):
                 context.update({'first_email': True, 'title': title})
                 send_email(context)
     else:
-        txt1 = 'It\'s not time to work!\nStart time: ' + (str(usr_start_time))[:16]
-        txt2 = '\nEnd time: ' + (str(usr_end_time))[:16]
-        txt3 = '\nTimezone is ' + usr_tz
-        title = txt1 + txt2 + txt3
+        msg = 'It\'s not time to work!'
+        msg_start_time = 'Start time: ' + (str(usr_start_time))[:16]
+        msg_end_time = 'End time: ' + (str(usr_end_time))[:16]
+        msg_tz = 'Timezone is ' + usr_tz
         job_error.notready = 1
         job_error.save()
         if sender_email_def and not send_email.called:
-            context.update({'first_email': True, 'title': title})
+            context.update({'first_email': True, 'msg': msg, 'msg_start_time': msg_start_time, 'msg_end_time': msg_end_time, 'msg_tz': msg_tz})
             send_email(context)
             pass
 
