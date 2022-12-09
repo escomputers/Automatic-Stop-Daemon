@@ -159,15 +159,20 @@
         getError(data)
         }
     })
-    function getError(data) { 
-      try {
-        errorId = data[0].error
-        if (errorId === jsondata.id) { 
-          $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-danger'>Error</button></td>");
+    function getError(data) {
+      const notReady = data[0].notready
+      if (notReady === false) {
+        try {
+          const errorId = data[0].error
+          if (errorId === jsondata.id) { 
+            $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-danger'>Error</button></td>");
+          } 
         } 
-      } 
-      catch(err) {
-        $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-success'>Ready</button></td>");
+        catch(err) {
+          $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-success'>Ready</button></td>");
+        }
+      } else {
+        $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-warning'>Not ready</button></td>");
       }
     }
   }

@@ -353,12 +353,17 @@
 					</br> <!-- empty row -->
 					
 						<table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
-                          <tbody>
-						    <tr>
-							  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
-							  order type: <b>{{ order_type }}</b>
-							  </td>
-							</tr>
+              <tbody>
+                <tr>
+                  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
+                  pair: <b>{{ cointxt }}</b>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="color:#ffffff; font-family:'Source Sans Pro'; font-size:18px;">
+                  order type: <b>{{ order_type }}</b>
+                  </td>
+                </tr>
 
       {% if first_email %} <!-- JOB STARTING EMAIL-->
           {% if order_type == 'Stop Loss' %} <!-- Stop Loss data-->

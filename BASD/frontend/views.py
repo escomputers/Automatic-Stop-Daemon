@@ -146,7 +146,6 @@ def getData(request):
                 txt = 'Success! Take Profit sell order PLACED'
             except ClientError as error:
                 txt = 'Error! Take Profit sell order NOT PLACED'
-                print(error)
             finally:
                 if sender_email_def:
                     tp_mail_body(
@@ -301,29 +300,52 @@ def getData(request):
             if order_type == 'executionReport':
                 order_status = message['X']
                 side = message['S']
-# #########################################################################################################
-                if order_status == 'CANCELED' and side == 'BUY':  # CHANGE MEEEEEEEEEEEEEEEEEEEEEEEEE TO FILLED
-                    # get global variables
-                    # order_pr = float(message['p']) # #########################################################################################################
-                    order_pr = 20763
+# #############################################################################################################
+                if order_status == 'CANCELED' and side == 'BUY':  # CHANGE MEEEEEEEEEEEEEE TO FILLED
 
                     symbol = message['s']
+                    # if user selected specific coin
+                    if coin != '0':
+                        # filled order contains same user selected coin
+                        if symbol == coin:
 
-                    # qty = float(message['q']) # #########################################################################################################
-                    qty = 0.00052
+                            # get latest order info
+                            qty = 0.00052
+                            order_pr = 20763
+                            # qty = float(message['q']) # #############################################################
+                            # order_pr = float(message['p']) # ########################################################
+                            last_pr = get_last_pr(symbol)
 
-                    # get LAST SYMBOL PRICE
-                    last_pr = get_last_pr(symbol)
-
-                    # OCO order
-                    if orderType == 'OCO':
-                        place_oco_order(symbol, qty, order_pr, last_pr)
-                    # TAKE PROFIT order
-                    if orderType == 'tp':
-                        place_tp_order(symbol, qty, order_pr, last_pr)
-                    # STOP LOSS order
+                            # OCO order
+                            if orderType == 'OCO':
+                                place_oco_order(symbol, qty, order_pr, last_pr)
+                            # TAKE PROFIT order
+                            if orderType == 'tp':
+                                place_tp_order(symbol, qty, order_pr, last_pr)
+                            # STOP LOSS order
+                            else:
+                                place_sl_order(symbol, qty, order_pr, last_pr)
+                        # last filled order is not related to user selected pair, keep listening to orders
+                        else:
+                            pass
+                    # ALL pairs case
                     else:
-                        place_sl_order(symbol, qty, order_pr, last_pr)
+                        # get latest order info
+                        qty = 0.00052
+                        order_pr = 20763
+                        # qty = float(message['q']) # #############################################################
+                        # order_pr = float(message['p']) # ########################################################
+                        last_pr = get_last_pr(symbol)
+
+                        # OCO order
+                        if orderType == 'OCO':
+                            place_oco_order(symbol, qty, order_pr, last_pr)
+                        # TAKE PROFIT order
+                        if orderType == 'tp':
+                            place_tp_order(symbol, qty, order_pr, last_pr)
+                        # STOP LOSS order
+                        else:
+                            place_sl_order(symbol, qty, order_pr, last_pr)
         except KeyError:
             pass
 
@@ -336,6 +358,14 @@ def getData(request):
     usr_tz = usrdata['tz']
     start_time = usrdata['start_time']
     working_ival = int(usrdata['active_hours'])
+
+    coin = usrdata['pairs']
+    if coin == 0:
+        context.update({'cointxt': 'ALL'})
+    else:
+        cointxt = coin + '/USDT'
+        context.update({'cointxt': cointxt})
+
     orderType = usrdata['order_type']
     sender_email = dict((k, usrdata[k]) for k in ['sender_email'] if k in usrdata)
     sender_email_def = ' '.join(map(str, sender_email.values()))
@@ -384,7 +414,7 @@ def getData(request):
             client = Client(api_key, api_secret, base_url='https://api.binance.com')
             response = client.new_listen_key()
 
-            print('Receving listen key : {}'.format(response['listenKey']))
+            # print('Receving listen key : {}'.format(response['listenKey']))
 
             ws_client = SpotWebsocketClient(stream_url='wss://stream.binance.com:9443')
             ws_client.start()
@@ -399,6 +429,7 @@ def getData(request):
         except ClientError:
             title = 'Error! API-keys format invalid, check your keys!' + job + ' NOT started at ' + nowstr
             job_error.error = uuid
+            job_error.notready = 0
             job_error.save()
         finally:
             if sender_email_def and not send_email.called:
@@ -409,6 +440,8 @@ def getData(request):
         txt2 = '\nEnd time: ' + (str(usr_end_time))[:16]
         txt3 = '\nTimezone is ' + usr_tz
         title = txt1 + txt2 + txt3
+        job_error.notready = 1
+        job_error.save()
         if sender_email_def and not send_email.called:
             context.update({'first_email': True, 'title': title})
             send_email(context)
