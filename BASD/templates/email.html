@@ -351,6 +351,18 @@
 					      {{ title }}
               </td>
             </tr>
+              {% if msg_job %}
+                <tr>
+                  <td align="center" style="color:#ffffff; font-family:'Source Sans Pro'; font-size:24px;">
+                    JOB <i><u>{{ msg_job }}</u></i>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="color:#ffffff; font-family:'Source Sans Pro'; font-size:24px;">
+                    {{ msg_now }}
+                  </td>
+                </tr>
+              {% endif %}
             {% else %}
             <tr>
               <td align="center" style="color:#ffffff; font-family:'Source Sans Pro'; font-size:24px;">

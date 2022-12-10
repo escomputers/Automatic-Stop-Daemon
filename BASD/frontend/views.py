@@ -84,7 +84,7 @@ def getData(request):
                 try:
                     client.new_oco_order(**params)
                     txt = 'Success! OCO sell order PLACED'
-                except ClientError as error:
+                except ClientError:
                     txt = 'Error! OCO sell order NOT PLACED'
                 finally:
                     if sender_email_def:
@@ -144,7 +144,7 @@ def getData(request):
             try:
                 client.new_order(**params)
                 txt = 'Success! Take Profit sell order PLACED'
-            except ClientError as error:
+            except ClientError:
                 txt = 'Error! Take Profit sell order NOT PLACED'
             finally:
                 if sender_email_def:
@@ -196,7 +196,7 @@ def getData(request):
             try:
                 client.new_order(**params)
                 txt = 'Success! Stop Loss sell order PLACED'
-            except ClientError as error:
+            except ClientError:
                 txt = 'Error! Stop Loss sell order NOT PLACED'
             finally:
                 if sender_email_def:
@@ -408,7 +408,6 @@ def getData(request):
     # check if it's time to work or not
     if now >= usr_start_time and now <= usr_end_time:  # yes
         try:
-            job = ' JOB ' + uuid
             nowstr = str(now.time())[:8]
 
             client = Client(api_key, api_secret, base_url='https://api.binance.com')
@@ -425,15 +424,17 @@ def getData(request):
                 callback=listen_to_filled_orders,
             )
 
-            title = 'Success! ' + job + 'started at ' + nowstr
+            title = 'Success!'
+            msg_now = 'started at ' + nowstr
         except ClientError:
-            title = 'Error! API-keys format invalid, check your keys!' + job + ' NOT started at ' + nowstr
+            title = 'Error! API-keys format invalid, check your keys!'
+            msg_now = 'NOT started at ' + nowstr
             job_error.error = uuid
             job_error.notready = 0
             job_error.save()
         finally:
             if sender_email_def and not send_email.called:
-                context.update({'first_email': True, 'title': title})
+                context.update({'first_email': True, 'title': title, 'msg_job': uuid, 'msg_now': msg_now})
                 send_email(context)
     else:
         msg = 'It\'s not time to work!'
