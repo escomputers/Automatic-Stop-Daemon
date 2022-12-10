@@ -157,20 +157,26 @@
         getError(data)
         }
     })
+
     function getError(data) {
-      const notReady = data[0].notready
-      if (notReady === false) {
-        try {
-          const errorId = data[0].error
-          if (errorId === jsondata.id) { 
-            $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-danger'>Error</button></td>");
+      try {
+        const notReady = data[0].notready
+        if (notReady === false) {
+          try {
+            const errorId = data[0].error
+            if (errorId === jsondata.id) { 
+              $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-danger'>Error</button></td>");
+            } 
           } 
-        } 
-        catch(err) {
-          $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-success'>Ready</button></td>");
+          catch(err) {
+            $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-success'>Ready</button></td>");
+          }
+        } else {
+          $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-warning'>Not ready</button></td>");
         }
-      } else {
-        $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-warning'>Not ready</button></td>");
+      }
+      catch {
+        //pass
       }
     }
   }
@@ -180,22 +186,27 @@
   let now = new Date();
   const diff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startTime.hour(), startTime.minutes(), 0, 0) - now;
   if (diff < 0) {
+    try {
     diff += 86400000; // try later
+    }
+    catch { 
+      //pass 
+    }
   }
   setTimeout(function(){
     $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-success'>Ready</button></td>");
   }, diff);
 </script>
 
-<!-- confirmation before page refresh -->
+<!-- confirmation before page refresh 
 <script>
   function confirmMsg() {
     confirm('Refresh will stop current job, are you sure to cancel?')
   }
   window.addEventListener("load", (event) => {
-    confirmMsg(); // already declared somewhere else
+    confirmMsg();
   });
 </script>
-
+-->
 </body>
 </html>

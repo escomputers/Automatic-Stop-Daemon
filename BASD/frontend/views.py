@@ -304,10 +304,13 @@ def getData(request):
                 if order_status == 'CANCELED' and side == 'BUY':  # CHANGE MEEEEEEEEEEEEEE TO FILLED
 
                     symbol = message['s']
+
                     # if user selected specific coin
                     if coin != '0':
+                        pair = coin + 'USDT'
+
                         # filled order contains same user selected coin
-                        if symbol == coin:
+                        if symbol == pair:
 
                             # get latest order info
                             qty = 0.00052
