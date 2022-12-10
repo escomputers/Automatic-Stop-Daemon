@@ -24,7 +24,6 @@
     
         <!-- github buttons -->
         <script src="{% static 'plugins/github/buttons.min.js' %}"></script>
-
   </head>
   <body>
 
@@ -92,7 +91,6 @@
       </div><!-- end ard card-outline card-primary  -->
 </div>
 <script>
-
   // get variables from previous page stored in Session
   const data = sessionStorage.getItem("data");
   const jsondata = JSON.parse(data);
@@ -148,7 +146,7 @@
     document.getElementById("limit").innerHTML = '<b>-' + jsondata.oco_sl_l + '%</b>';
   }
 
-  // get job error if present
+  // get job error if presentformat("H:mm")
   function callError() {
     $.ajax({
       url: "{% url 'errors' %}",
@@ -178,6 +176,26 @@
   }
   callError()
 
+  // change status button according to start time
+  let now = new Date();
+  const diff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startTime.hour(), startTime.minutes(), 0, 0) - now;
+  if (diff < 0) {
+    diff += 86400000; // try later
+  }
+  setTimeout(function(){
+    $("#status").replaceWith("<td id='status'><button type='button' class='btn btn-success'>Ready</button></td>");
+  }, diff);
 </script>
+
+<!-- confirmation before page refresh -->
+<script>
+  function confirmMsg() {
+    confirm('Refresh will stop current job, are you sure to cancel?')
+  }
+  window.addEventListener("load", (event) => {
+    confirmMsg(); // already declared somewhere else
+  });
+</script>
+
 </body>
 </html>
