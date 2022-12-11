@@ -20,6 +20,10 @@
   </p>
 </div>
 
+<!-- DEMO -->
+## Web demo (under dev)
+<a href="https://emilianospada.pythonanywhere.com">Link hosted on Python Anywhere »</a>
+
 <!-- WHY BASD -->
 ## Why BASD?
 Binance is unquestionably the world greatest and most secure cryptocurrency exchange and many of us trade there.
