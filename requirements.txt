@@ -2,3 +2,4 @@ django==3.2.16
 certifi
 binance-connector
 jinja2
+python-dotenv
