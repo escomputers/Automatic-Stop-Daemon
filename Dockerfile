@@ -2,7 +2,7 @@
 FROM python:3.10-slim-buster
 
 ENV PYTHONUNBUFFERED 1
-ENV DJANGO_SECRET_KEY FXV7sX2YZC@Z5V8M9QkhKI0MnfxESFfDp1c9XLQ5t@wbzRxI7QsqHKTDfddEeeWHMwn
+ENV DJANGO_SECRET_KEY 
 
 # install app dependencies
 RUN apt-get update && apt-get install -y python3 python3-pip
