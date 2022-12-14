@@ -2,6 +2,7 @@
 FROM python:3.10-slim-buster
 
 ENV PYTHONUNBUFFERED 1
+ENV DJANGO_SECRET_KEY FXV7sX2YZC@Z5V8M9QkhKI0MnfxESFfDp1c9XLQ5t@wbzRxI7QsqHKTDfddEeeWHMwn
 
 # install app dependencies
 RUN apt-get update && apt-get install -y python3 python3-pip
@@ -17,5 +18,4 @@ RUN pip install -r requirements.txt
 # install app
 COPY BASD /app
 
-RUN chmod 777 /app/entrypoint.sh
-CMD [ "bash /app/entrypoint.sh" ]
+CMD sh entrypoint.sh
