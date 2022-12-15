@@ -50,10 +50,15 @@ BASD requires <b>Binance.com API key and API secret key</b>. If you don't know h
 <!-- GETTING STARTED -->
 ## Getting started
 
+### Docker version
+```docker pull escomputers/basd```
+
+```docker run -e DJANGO_SECRET_KEY='' -dp 8000:8000 escomputers/basd```
+
+### Binary version
 For Windows and Ubuntu/Debian just download last stable binary file from [releases](https://github.com/escomputers/BASD/releases) page.
 Extract zip archive and run BASD
 
-<!-- Supported OS-->
 Do not move or delete ```templates``` directory, otherwise it won't work!
 * Tested on ![Windows][Windows]
 * Tested on ![Ubuntu][Ubuntu]
