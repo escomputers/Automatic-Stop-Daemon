@@ -20,10 +20,6 @@
   </p>
 </div>
 
-<!-- UPDATE -->
-## UPDATE ![Docker]
-Dockerized web version is currently under development, stay tuned!
-
 ## Why BASD?
 Binance is unquestionably the world greatest and most secure cryptocurrency exchange and many of us trade there.
 For those like me that open and close positions within the same day or few hours, it's extremely important to carefully watch graphs to monitor price movements.
