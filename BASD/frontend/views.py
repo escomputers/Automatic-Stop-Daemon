@@ -300,8 +300,7 @@ def getData(request):
             if order_type == 'executionReport':
                 order_status = message['X']
                 side = message['S']
-# #############################################################################################################
-                if order_status == 'CANCELED' and side == 'BUY':  # CHANGE MEEEEEEEEEEEEEE TO FILLED
+                if order_status == 'FILLED' and side == 'BUY':
 
                     symbol = message['s']
 
@@ -313,10 +312,8 @@ def getData(request):
                         if symbol == pair:
 
                             # get latest order info
-                            qty = 0.00052
-                            order_pr = 20763
-                            # qty = float(message['q']) # #############################################################
-                            # order_pr = float(message['p']) # ########################################################
+                            qty = float(message['q']) # #############################################################
+                            order_pr = float(message['p']) # ########################################################
                             last_pr = get_last_pr(symbol)
 
                             # OCO order
@@ -334,10 +331,8 @@ def getData(request):
                     # ALL pairs case
                     else:
                         # get latest order info
-                        qty = 0.00052
-                        order_pr = 20763
-                        # qty = float(message['q']) # #############################################################
-                        # order_pr = float(message['p']) # ########################################################
+                        qty = float(message['q']) # #############################################################
+                        order_pr = float(message['p']) # ########################################################
                         last_pr = get_last_pr(symbol)
 
                         # OCO order
