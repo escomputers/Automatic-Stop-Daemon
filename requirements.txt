@@ -1,4 +1,5 @@
 django==3.2.16
+whitenoise
 certifi
 binance-connector
 jinja2

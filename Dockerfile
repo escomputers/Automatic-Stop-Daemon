@@ -14,7 +14,4 @@ COPY entrypoint.sh /app/entrypoint.sh
 COPY BASD /app
 RUN pip install -r requirements.txt
 
-# install app
-COPY BASD /app
-
 CMD sh entrypoint.sh
