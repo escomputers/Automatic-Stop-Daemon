@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: basd-deployment
+  labels:
+    app: basd
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: basd
+  template:
+    metadata:
+      labels:
+        app: basd
+    spec:
+      containers:
+      - name: basd
+        image: escomputers/basd:latest
+        ports:
+        - containerPort: 8000
+      env:
+       - name: DJANGO_SECRET_KEY
+         valueFrom:
+           secretKeyRef:
+             name: django-secret-key
+             key: django-secret-key
