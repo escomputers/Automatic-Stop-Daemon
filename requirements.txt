@@ -1,4 +1,4 @@
-django==3.2.19
+django==3.2.22
 whitenoise
 certifi
 binance-connector
